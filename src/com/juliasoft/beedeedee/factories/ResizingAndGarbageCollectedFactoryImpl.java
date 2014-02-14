@@ -109,22 +109,22 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public BDDImpl makeVar(int i) {
-		if (i >= NUMBER_OF_PREALLOCATED_VARS)
-			synchronized (ut.getGCLock()) {
+		synchronized (ut.getGCLock()) {
+			if (i >= NUMBER_OF_PREALLOCATED_VARS)
 				return new BDDImpl(MK(i, ZERO, ONE));
-			}
-		else
-			return new BDDImpl(vars[i]);
+			else
+				return new BDDImpl(vars[i]);
+		}
 	}
 
 	@Override
 	public BDDImpl makeNotVar(int i) {
-		if (i >= NUMBER_OF_PREALLOCATED_VARS)
-			synchronized (ut.getGCLock()) {
+		synchronized (ut.getGCLock()) {
+			if (i >= NUMBER_OF_PREALLOCATED_VARS)
 				return new BDDImpl(MK(i, ONE, ZERO));
-			}
-		else
-			return new BDDImpl(notVars[i]);
+			else
+				return new BDDImpl(notVars[i]);
+		}
 	}
 
 	private class BDDImpl implements BDD {
@@ -1036,14 +1036,16 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public BDD makeZero() {
-		// we do not need enter()/exit() since ZERO is never replaced
-		return new BDDImpl(ZERO);
+		synchronized (ut.getGCLock()) {
+			return new BDDImpl(ZERO);
+		}
 	}
 
 	@Override
 	public BDD makeOne() {
-		// we do not need enter()/exit() since ONE is never replaced
-		return new BDDImpl(ONE);
+		synchronized (ut.getGCLock()) {
+			return new BDDImpl(ONE);
+		}
 	}
 
 	@Override
