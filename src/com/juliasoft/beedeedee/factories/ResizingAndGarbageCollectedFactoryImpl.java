@@ -42,8 +42,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		// and their negation
 		for (int var = 0; var < NUMBER_OF_PREALLOCATED_VARS; var++)
 			notVars[var] = ut.get(var, ONE, ZERO);
-		
-		maxVar = NUMBER_OF_PREALLOCATED_VARS - 1;
 	}
 
 	@Override
