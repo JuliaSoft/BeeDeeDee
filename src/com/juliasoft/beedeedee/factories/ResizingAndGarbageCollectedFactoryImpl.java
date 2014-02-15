@@ -126,7 +126,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 	}
 
-	private AtomicInteger freedBDDs = new AtomicInteger();
+	private int freedBDDsCounter;
 	
 	private class BDDImpl implements BDD {
 
@@ -172,11 +172,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			else
 				id = -1;
 
-			// when there are enough free bdds, shrink the list
-			if (freedBDDs.incrementAndGet() > 100000)
+			shrinkTheListOfAllBDDsIfTooLarge();
+		}
+
+		private void shrinkTheListOfAllBDDsIfTooLarge() {
+			if (++freedBDDsCounter > 100000)
 				synchronized (ut.getGCLock()) {
 					synchronized (allBDDsCreatedSoFar) {
-						if (freedBDDs.get() > 100000) {
+						if (freedBDDsCounter > 100000) {
 							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
 							allBDDsCreatedSoFar.clear();
 
@@ -185,7 +188,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 									allBDDsCreatedSoFar.add(bdd);
 								}
 							
-							freedBDDs.set(0);
+							freedBDDsCounter = 0;
 						}
 					}
 				}
