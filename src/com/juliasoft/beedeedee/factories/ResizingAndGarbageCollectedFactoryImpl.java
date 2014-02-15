@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -125,6 +126,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 	}
 
+	private AtomicInteger freedBDDs = new AtomicInteger();
+	
 	private class BDDImpl implements BDD {
 
 		/**
@@ -168,6 +171,24 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 			else
 				id = -1;
+
+			// when there are enough free bdds, shrink the list
+			if (freedBDDs.incrementAndGet() > 100000)
+				synchronized (ut.getGCLock()) {
+					synchronized (allBDDsCreatedSoFar) {
+						if (freedBDDs.get() > 100000) {
+							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
+							allBDDsCreatedSoFar.clear();
+
+							for (BDDImpl bdd : copy)
+								if (bdd.id >= NUM_OF_PREALLOCATED_NODES) {
+									allBDDsCreatedSoFar.add(bdd);
+								}
+							
+							freedBDDs.set(0);
+						}
+					}
+				}
 		}
 
 		@Override
