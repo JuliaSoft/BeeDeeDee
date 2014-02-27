@@ -1124,9 +1124,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	/**
 	 * Replaces the index of each BDD created so far into the new id provided
-	 * by the remapping.
+	 * by the given map.
 	 *
-	 * @param remapping a map from old to new index
+	 * @param newPositions a map from old to new index
 	 */
 
 	protected void updateIndicesOfAllBDDsCreatedSoFar(int[] newPositions) {

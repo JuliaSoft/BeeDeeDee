@@ -22,15 +22,88 @@ package com.juliasoft.beedeedee.factories;
  * A UniqueTable contains all the BDD nodes in a Factory.
  */
 interface UniqueTable {
+	
+	/**
+	 * Returns the size of the table.
+	 * 
+	 * @return the size
+	 */
 	public int getSize();
+	
+	/**
+	 * Returns the size of the computation cache.
+	 * 
+	 * @return the size of the computation cache
+	 */
 	public int getCacheSize();
+	
+	/**
+	 * Returns the number of nodes in the table.
+	 * 
+	 * @return the number of nodes
+	 */
 	public int nodesCount();
+	
+	/**
+	 * Returns the high branch of the given node.
+	 * 
+	 * @param id the node id
+	 * @return the high branch
+	 */
 	public int high(int id);
+
+	/**
+	 * Returns the low branch of the given node.
+	 * 
+	 * @param id the node id
+	 * @return the low branch
+	 */
 	public int low(int id);
+	
+	/**
+	 * Returns the variable number of the given node.
+	 * 
+	 * @param id the node id
+	 * @return the variable number
+	 */
 	public int var(int id);
-	public int get(int var, int bdd1, int bdd2);
+	
+	/**
+	 * Returns the node with the given attributes, creating it if not present.
+	 * 
+	 * @param var the variable number
+	 * @param low the low branch node
+	 * @param high the high branch node
+	 * @return the node
+	 */
+	public int get(int var, int low, int high);
+
+	/**
+	 * Gets a result from the computation cache.
+	 * 
+	 * @param op the operator
+	 * @param bdd1 the first bdd operand
+	 * @param bdd2 the second bdd operand
+	 * @return the result, or -1 if not present
+	 */
 	public int getFromCache(Operator op, int bdd1, int bdd2);
+	
+	/**
+	 * Puts a result in the computation cache.
+	 * 
+	 * @param op the operator
+	 * @param bdd1 the first bdd operand
+	 * @param bdd2 the second bdd operand
+	 * @param result the computation result
+	 */
 	public void putIntoCache(Operator op, int bdd1, int bdd2, int result);
+	
 	public void printStatistics();
+	
+	/**
+	 * Returns a GraphViz format representation of the table.
+	 * 
+	 * @return a String with the table in GraphViz format
+	 */
 	public String toDot();
 }
