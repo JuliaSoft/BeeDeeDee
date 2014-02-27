@@ -20,6 +20,9 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
+/**
+ * The cache for existential and universal quantification.
+ */
 class QuantCache {
 	private final static int ENTRY_SIZE = 2;
 	private final int[] cache;
@@ -27,6 +30,11 @@ class QuantCache {
 	private final int size;
 	private final Object[] locks = new Object[100];
 	
+	/**
+	 * Constructs a QuantCache of the given size.
+	 * 
+	 * @param size the size of the cache
+	 */
 	QuantCache(int size) {
 		this.size = size;
 		int arraySize = size * ENTRY_SIZE;
@@ -38,12 +46,24 @@ class QuantCache {
 			locks[pos] = new Object();
 	}
 
+	/**
+	 * Clears all the entries in this cache.
+	 */
 	void clear() {
 		int arraySize = size * ENTRY_SIZE;
 		for (int i = 0; i < arraySize; i += ENTRY_SIZE)
 			cache[i] = -1;
 	}
 
+	/**
+	 * Gets an entry from this cache.
+	 * 
+	 * @param exist true if it is an existential quantification result
+	 * @param bdd the operand bdd index
+	 * @param vs the var set
+	 * @param hashCodeOfVs the hashCode of the vs array
+	 * @return the index of the result, or -1 if not found
+	 */
 	int get(boolean exist, int bdd, int[] vs, int hashCodeOfVs) {
 		if (exist)
 			bdd = -bdd;
@@ -64,6 +84,15 @@ class QuantCache {
 		return ENTRY_SIZE * (Math.abs(bdd ^ hashCodeOfVs) % size);
 	}
 
+	/**
+	 * Puts an entry into this cache.
+	 * 
+	 * @param exist true if it is an existential quantification result
+	 * @param bdd the operand bdd index
+	 * @param vs the var set
+	 * @param hashCodeOfVs the hashCode of the vs array
+	 * @param result the computation result
+	 */
 	void put(boolean exist, int bdd, int[] vs, int hashCodeOfVs, int result) {
 		if (exist)
 			bdd = -bdd;

@@ -30,7 +30,9 @@ import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
 
-
+/**
+ * Example program computing more n-queens problem BDDs in parallel.
+ */
 public class MultiQueens {
 
 	private static int utSize = 1000 * 1000;
@@ -38,6 +40,11 @@ public class MultiQueens {
 	private static ResizingAndGarbageCollectedFactory factory;
 
 	public static void main(String[] args) {
+		if (args.length < 1) {
+			System.out.println("Usage: java -jar beedeedee.jar N1 N2 ... [-u<TableSize>] [-c<CacheSize>]"
+					+ "\nwhere each N is the size of an N-queens problem.");
+		}
+		
 		ArrayList<Integer> ens = new ArrayList<Integer>();
 		
 		for (String a : args) {

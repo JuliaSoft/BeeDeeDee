@@ -18,6 +18,9 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+/**
+ * Operators for the APPLY operation.
+ */
 enum Operator {
 	AND, OR, IMP, BIIMP, XOR
 }

@@ -18,12 +18,20 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+/**
+ * The cache for restrict operations.
+ */
 class RestrictCache {
 	private final static int ENTRY_SIZE = 4;
 	private final int[] cache;
 	private final int size;
 	private final Object[] locks = new Object[100];
 	
+	/**
+	 * Constructs a RestrictCache of the given size.
+	 * 
+	 * @param size the size of the cache
+	 */
 	RestrictCache(int size) {
 		this.size = size;
 		int arraySize = size * ENTRY_SIZE;
@@ -34,12 +42,23 @@ class RestrictCache {
 			locks[pos] = new Object();
 	}
 
+	/**
+	 * Clears all the entries in this cache.
+	 */
 	void clear() {
 		int arraySize = size * ENTRY_SIZE;
 		for (int i = 0; i < arraySize; i += ENTRY_SIZE)
 			cache[i] = -1;
 	}
 
+	/**
+	 * Gets an entry from this cache.
+	 * 
+	 * @param bdd the operand bdd index
+	 * @param var the variable to restrict
+	 * @param value the value to restrict the variable to
+	 * @return the index of the result, or -1 if not found
+	 */
 	int get(int bdd, int var, boolean value) {
 		int pos = hash(bdd, var);
 		int[] cache = this.cache;
@@ -64,6 +83,14 @@ class RestrictCache {
 		return ENTRY_SIZE * (Math.abs(PAIR(bdd, var)) % size);
 	}
 
+	/**
+	 * Puts an entry into this cache.
+	 * 
+	 * @param bdd the operand bdd index
+	 * @param var the variable to restrict
+	 * @param value the value to restrict the variable to
+	 * @param result the computation result
+	 */
 	void put(int bdd, int var, boolean value, int result) {
 		int pos = hash(bdd, var);
 		int[] cache = this.cache;

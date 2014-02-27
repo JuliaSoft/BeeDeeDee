@@ -20,6 +20,9 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Map;
 
+/**
+ * The cache for replace operations.
+ */
 class ReplaceCache {
 	private final static int ENTRY_SIZE = 2;
 	private final int[] cache;
@@ -28,6 +31,11 @@ class ReplaceCache {
 	private final int size;
 	private final Object[] locks = new Object[100];
 	
+	/**
+	 * Constructs a ReplaceCache of the given size.
+	 * 
+	 * @param size the size of the cache
+	 */
 	public ReplaceCache(int size) {
 		this.size = size;
 		int arraySize = size * ENTRY_SIZE;
@@ -38,13 +46,24 @@ class ReplaceCache {
 		for (int pos = 0; pos < locks.length; pos++)
 			locks[pos] = new Object();
 	}
-
+	
+	/**
+	 * Clears all the entries in this cache.
+	 */
 	void clear() {
 		int arraySize = size * ENTRY_SIZE;
 		for (int i = 0; i < arraySize; i += ENTRY_SIZE)
 			cache[i] = -1;
 	}
 
+	/**
+	 * Gets an entry from this cache.
+	 * 
+	 * @param bdd the operand bdd index
+	 * @param renaming a map for variable renaming
+	 * @param hashOfRenaming the hashCode of the renaming map
+	 * @return the index of the result, or -1 if not found
+	 */
 	int get(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
 		int pos = hash(bdd, hashOfRenaming);
 
@@ -65,6 +84,14 @@ class ReplaceCache {
 		return ENTRY_SIZE * (Math.abs((bdd ^ hashOfRenaming)) % size);
 	}
 
+	/**
+	 * Puts an entry into this cache.
+	 * 
+	 * @param bdd the operand bdd index
+	 * @param renaming a map for variable renaming
+	 * @param result the computation result
+	 * @param hashOfRenaming the hashCode of the renaming map
+	 */
 	void put(int bdd, Map<Integer, Integer> renaming, int result, int hashOfRenaming) {
 		int pos = hash(bdd, hashOfRenaming);
 

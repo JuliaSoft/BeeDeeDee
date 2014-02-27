@@ -39,6 +39,9 @@ import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 
+/**
+ * An adapter class to use BeeDeeDee through the JavaBDD interface.
+ */
 public class JavaBDDAdapterFactory extends BDDFactory {
 
 	private ResizingAndGarbageCollectedFactory factory;

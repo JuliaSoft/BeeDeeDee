@@ -90,5 +90,8 @@ public abstract class Factory {
 		return new ResizingAndGarbageCollectedFactoryImpl(utSize, cacheSize);
 	}
 
+	/**
+	 * Call this method when the factory is no longer needed.
+	 */
 	public abstract void done();
 }

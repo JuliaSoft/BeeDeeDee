@@ -18,6 +18,9 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+/**
+ * A UniqueTable contains all the BDD nodes in a Factory.
+ */
 interface UniqueTable {
 	public int getSize();
 	public int getCacheSize();

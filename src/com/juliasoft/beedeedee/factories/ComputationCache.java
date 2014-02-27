@@ -18,11 +18,19 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+/**
+ * The cache for APPLY computations.
+ */
 class ComputationCache {
 	private final static int ENTRY_SIZE = 4;
 	private final int[] cache;
 	private final int size;
 
+	/**
+	 * Constructs a ComputationCache of the given size.
+	 * 
+	 * @param size the size of the cache
+	 */
 	ComputationCache(int size) {
 		this.size = size;
 		int arraySize = size * ENTRY_SIZE;
@@ -34,6 +42,9 @@ class ComputationCache {
 			locks[pos] = new Object();
 	}
 
+	/**
+	 * Clears all the entries in this cache.
+	 */
 	void clear() {
 		int arraySize = size * ENTRY_SIZE;
 		for (int i = 0; i < arraySize; i += ENTRY_SIZE)
@@ -42,6 +53,14 @@ class ComputationCache {
 
 	private final Object[] locks = new Object[1000];
 
+	/**
+	 * Gets an entry from this cache.
+	 * 
+	 * @param op the operator
+	 * @param bdd1 the first operand bdd index
+	 * @param bdd2 the second operand bdd index
+	 * @return the index of the result, or -1 if not found
+	 */
 	int get(Operator op, int bdd1, int bdd2) {
 		if (op != Operator.IMP)
 			// we ensure that symmetrical operations are kept in a normal form
@@ -63,6 +82,14 @@ class ComputationCache {
 		return -1;
 	}
 
+	/**
+	 * Puts an entry into this cache.
+	 * 
+	 * @param op the operator
+	 * @param bdd1 the first operand bdd index
+	 * @param bdd2 the second operand bdd index
+	 * @param result the computation result
+	 */
 	void put(Operator op, int bdd1, int bdd2, int result) {
 		if (op != Operator.IMP)
 			// we ensure that symmetrical operations are kept in a normal form
@@ -85,6 +112,11 @@ class ComputationCache {
 			}
 	}
 
+	/**
+	 * Returns the size of this cache.
+	 * 
+	 * @return the size
+	 */
 	int getSize() {
 		return size;
 	}
