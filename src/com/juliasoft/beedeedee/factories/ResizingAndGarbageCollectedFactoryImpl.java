@@ -68,13 +68,15 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	}
 
 	private int MK(int var, int low, int high) {
+		return low == high ? low : ut.get(var, low, high);
+	}
+
+	private void updateMaxVar(int var) {
 		if (var > maxVar)  // track maximum variable index (for satCount)
 			synchronized (this) {
 				if (var > maxVar)
 					maxVar = var;
 			}
-
-		return low == high ? low : ut.get(var, low, high);
 	}
 
 	private int MKSimple(int var, int low, int high) {
@@ -126,21 +128,33 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	@Override
 	public BDDImpl makeVar(int i) {
 		synchronized (ut.getGCLock()) {
-			if (i >= NUMBER_OF_PREALLOCATED_VARS)
-				return new BDDImpl(MK(i, ZERO, ONE));
-			else
-				return new BDDImpl(vars[i]);
+			return mkOptimized(i);
 		}
+	}
+
+	private BDDImpl mkOptimized(int v) {
+		updateMaxVar(v);
+
+		if (v >= NUMBER_OF_PREALLOCATED_VARS)
+			return new BDDImpl(MK(v, ZERO, ONE));
+		else
+			return new BDDImpl(vars[v]);
 	}
 
 	@Override
 	public BDDImpl makeNotVar(int i) {
 		synchronized (ut.getGCLock()) {
-			if (i >= NUMBER_OF_PREALLOCATED_VARS)
-				return new BDDImpl(MK(i, ONE, ZERO));
-			else
-				return new BDDImpl(notVars[i]);
+			return mkOptmizedNot(i);
 		}
+	}
+
+	private BDDImpl mkOptmizedNot(int v) {
+		updateMaxVar(v);
+
+		if (v >= NUMBER_OF_PREALLOCATED_VARS)
+			return new BDDImpl(MK(v, ONE, ZERO));
+		else
+			return new BDDImpl(notVars[v]);
 	}
 
 	private int freedBDDsCounter;
@@ -1044,7 +1058,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			synchronized (ut.getGCLock()) {
 				for (int v : vars) {
-					BDD var = new BDDImpl(MK(v, ZERO, ONE));
+					BDD var = ResizingAndGarbageCollectedFactoryImpl.this.mkOptimized(v);
 					if (!truthTable.get(v))
 						var.notWith();
 				
