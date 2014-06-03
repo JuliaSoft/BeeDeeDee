@@ -20,6 +20,7 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
@@ -88,7 +89,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	private final Object[] getLocks = new Object[1000];
 
-	private final Object[] gcLocks = new Object[5000];
+	private final ReentrantLock[] gcLocks = new ReentrantLock[5000];
 
 	private final Object[] updateLocks = new Object[1000];
 
@@ -101,7 +102,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			getLocks[pos] = new Object();
 
 		for (int pos = 0; pos < gcLocks.length; pos++)
-			gcLocks[pos] = new Object();
+			gcLocks[pos] = new ReentrantLock();
 
 		for (int pos = 0; pos < updateLocks.length; pos++)
 			updateLocks[pos] = new Object();
@@ -132,7 +133,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		while (true);
 	}
 
-	protected Object getGCLock() {
+	protected ReentrantLock getGCLock() {
 		return gcLocks[nextGCLocks = (nextGCLocks + 1) % gcLocks.length];
 	}
 
@@ -252,15 +253,25 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	@Override
 	public String toString() {
-		synchronized (gcLocks[nextGCLocks = (nextGCLocks + 1) % gcLocks.length]) {
+		ReentrantLock lock = getGCLock();
+		lock.lock();
+		try {
 			return super.toString();
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public String toDot() {
-		synchronized (gcLocks[nextGCLocks = (nextGCLocks + 1) % gcLocks.length]) {
+		ReentrantLock lock = getGCLock();
+		lock.lock();
+		try {
 			return super.toDot();
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
@@ -302,39 +313,38 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	}
 
 	private boolean getAllLocksAndGC(int pos) {
-		if (pos < gcLocks.length) {
-			synchronized (gcLocks[pos]) {
-				return getAllLocksAndGC(pos + 1);
-			}
-		}
-		else {
-			int size = getSize();	
-			long start = System.currentTimeMillis();
-	
-			GarbageCollectionListener listener = gcListener;
-			if (listener != null)
-				listener.onStart(numOfGCs, size, size - nextPos, totalGCTime);
-	
-			// find live nodes and compact the unique table
-			boolean[] aliveNodes = new boolean[size];
-			factory.markAliveNodes(aliveNodes);
+		for (ReentrantLock lock: gcLocks)
+			lock.lock();
 
-			int collected = compactTable(aliveNodes);
-		
-			// update hash table
-			Arrays.fill(H, -1);
-			updateHashTable();
-	
-			long gcTime = System.currentTimeMillis() - start;
-			totalGCTime += gcTime;
-			numOfGCs++;
-	
-			listener = gcListener;
-			if (listener != null)
-				listener.onStop(numOfGCs, size, size - nextPos, gcTime, totalGCTime);
+		int size = getSize();	
+		long start = System.currentTimeMillis();
 
-			return collected > nextPos * minFreeNodes;
-		}
+		GarbageCollectionListener listener = gcListener;
+		if (listener != null)
+			listener.onStart(numOfGCs, size, size - nextPos, totalGCTime);
+
+		// find live nodes and compact the unique table
+		boolean[] aliveNodes = new boolean[size];
+		factory.markAliveNodes(aliveNodes);
+
+		int collected = compactTable(aliveNodes);
+	
+		// update hash table
+		Arrays.fill(H, -1);
+		updateHashTable();
+
+		long gcTime = System.currentTimeMillis() - start;
+		totalGCTime += gcTime;
+		numOfGCs++;
+
+		listener = gcListener;
+		if (listener != null)
+			listener.onStop(numOfGCs, size, size - nextPos, gcTime, totalGCTime);
+
+		for (ReentrantLock lock: gcLocks)
+			lock.unlock();
+
+		return collected > nextPos * minFreeNodes;
 	}
 
 	protected void scheduleGC() {

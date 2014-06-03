@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -113,22 +114,37 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	
 	@Override
 	public int nodesCount() {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			return ut.nodesCount();
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public void printStatistics() {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			ut.printStatistics();
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public BDDImpl makeVar(int i) {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			return mkOptimized(i);
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
@@ -143,8 +159,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public BDDImpl makeNotVar(int i) {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			return mkOptmizedNot(i);
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
@@ -207,8 +228,10 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		private void shrinkTheListOfAllBDDsIfTooLarge() {
-			if (++freedBDDsCounter > 100000)
-				synchronized (ut.getGCLock()) {
+			if (++freedBDDsCounter > 100000) {
+				ReentrantLock lock = ut.getGCLock();
+				lock.lock();
+				try {
 					synchronized (allBDDsCreatedSoFar) {
 						if (freedBDDsCounter > 100000) {
 							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
@@ -223,6 +246,10 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 						}
 					}
 				}
+				finally {
+					lock.unlock();
+				}
+			}
 		}
 
 		@Override
@@ -230,8 +257,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			if (id < 0)
 				return "[freed zombie BDD]";
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return id + ": " + ut.var(id) + ">" + ut.low(id) + ">" + ut.high(id);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -389,15 +421,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD or(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyOR(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD orWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyOR(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -409,15 +451,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD and(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyAND(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD andWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyAND(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -429,15 +481,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD xor(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyXOR(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD xorWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyXOR(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -449,15 +511,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD nand(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD nandWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -469,15 +541,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD not() {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyIMP(id, ZERO));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD notWith() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyIMP(id, ZERO));
+			}
+			finally {
+				lock.unlock();
 			}
 			
 			return this;
@@ -487,15 +569,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD imp(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyIMP(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD impWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyIMP(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -507,15 +599,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD biimp(BDD other) {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(applyBIIMP(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(applyBIIMP(id, ((BDDImpl) other).id));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			other.free();
@@ -527,8 +629,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD copy() {
 			ut.gcIfAlmostFull();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(id);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -536,8 +643,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public Assignment anySat() throws UnsatException {
 			AssignmentImpl assignment = new AssignmentImpl();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				anySat(id, assignment);
+			}
+			finally {
+				lock.unlock();
 			}
 
 			return assignment;
@@ -560,8 +672,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public List<Assignment> allSat() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return allSat(id);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -599,8 +716,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		//TODO this should probably return a BigInteger
 		@Override
 		public long satCount(int maxVar) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return (long) (Math.pow(2, ut.var(id)) * count(id, maxVar));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -617,8 +739,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public long pathCount() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return pathCount(id);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 		
@@ -631,7 +758,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD restrict(BDD var) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				int res = id;
 				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId)) {
 					if (ut.low(varId) == ZERO)
@@ -642,11 +771,16 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	
 				return new BDDImpl(res);
 			}
+			finally {
+				lock.unlock();
+			}
 		}
 
 		@Override
 		public BDD restrictWith(BDD var) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				int res = id;
 				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId)) {
 					if (ut.low(varId) == ZERO)
@@ -657,14 +791,22 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	
 				setId(res);
 			}
+			finally {
+				lock.unlock();
+			}
 
 			return this;
 		}
 
 		@Override
 		public BDD restrict(int var, boolean value) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(restrict(id, var, value));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -718,7 +860,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ArrayList<Integer> vars = new ArrayList<Integer>();
 			int pos = 0;
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				int varId = ((BDDImpl) var).id;
 
 				while (varId >= FIRST_NODE_NUM) {
@@ -731,6 +875,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					removedVars[pos++] = i;
 	
 				return new BDDImpl(quant_rec(id, removedVars, exist, Arrays.hashCode(removedVars)));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -767,8 +914,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD simplify(BDD d) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(simplify(((BDDImpl) d).id, id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 		
@@ -814,8 +966,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public int[] varProfile() {
 			int[] varp = new int[maxVar + 1];
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				varProfile(id, varp, new HashSet<Integer>());
+			}
+			finally {
+				lock.unlock();
 			}
 			
 			return varp;
@@ -837,8 +994,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			if (nodeCount >= 0)
 				return nodeCount;
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return nodeCount = nodeCount(id, new HashSet<Integer>());
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 		
@@ -863,8 +1025,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			int hash = renaming.hashCode();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(replace(id, renaming, hash));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -875,8 +1042,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			int hashCodeOfRenaming = renaming.hashCode();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				setId(replace(id, renaming, hashCodeOfRenaming));
+			}
+			finally {
+				lock.unlock();
 			}
 
 			return this;
@@ -910,8 +1082,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		
 		@Override
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(ite(id, ((BDDImpl) thenBDD).id, ((BDDImpl) elseBDD).id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -962,8 +1139,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		
 		@Override
 		public BDD compose(BDD other, int var) {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(compose(id, ((BDDImpl) other).id, var));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 		
@@ -992,8 +1174,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			BDDImpl otherImpl = (BDDImpl) other;
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return id == otherImpl.id;
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
@@ -1004,22 +1191,37 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public int var() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return ut.var(id);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD high() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(ut.high(id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD low() {
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				return new BDDImpl(ut.low(id));
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 	}
@@ -1040,8 +1242,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public boolean holds(BDD var) throws IndexOutOfBoundsException {
 			int varNum;
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				varNum = ut.var(((BDDImpl) var).id);
+			}
+			finally {
+				lock.unlock();
 			}
 
 			Boolean result = truthTable.get(varNum);
@@ -1056,7 +1263,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			BDD res = makeOne();
 			Set<Integer> vars = truthTable.keySet();
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				for (int v : vars) {
 					BDD var = ResizingAndGarbageCollectedFactoryImpl.this.mkOptimized(v);
 					if (!truthTable.get(v))
@@ -1064,6 +1273,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				
 					res.andWith(var);
 				}
+			}
+			finally {
+				lock.unlock();
 			}
 
 			return res;
@@ -1082,22 +1294,37 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public void printNodeTable() {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			System.out.println(ut);
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public BDD makeZero() {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			return new BDDImpl(ZERO);
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
 	@Override
 	public BDD makeOne() {
-		synchronized (ut.getGCLock()) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
 			return new BDDImpl(ONE);
+		}
+		finally {
+			lock.unlock();
 		}
 	}
 
@@ -1228,8 +1455,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		for (BDD bdd : bdds) {
 			BDDImpl bddi = (BDDImpl) bdd;
 
-			synchronized (ut.getGCLock()) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
 				count += bddi.nodeCount(bddi.id, seen);
+			}
+			finally {
+				lock.unlock();
 			}
 		}
 		
