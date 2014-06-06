@@ -2,4 +2,11 @@
 .project
 .settings/
 bin/
-
+# ant build folders
+ant-build
+ant-dist
+ant-doc
+# no comment
+.DS_Store
+# automated versioning (from Git/SVN)
+src/com/juliasoft/beedeedee/VersionInfo.java

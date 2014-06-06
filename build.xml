@@ -32,14 +32,6 @@
 		<isset property="SVN_REVISION" />
 	</condition>
 
-	<exec executable="git" failonerror="false">
-		<arg value="show" />
-		<arg value="--quiet" />
-	</exec>
-	<exec executable="git" failonerror="false">
-		<arg value="diff" />
-		<arg value="--shortstat" />
-	</exec>
 	<exec executable="git" outputproperty="scm.wc.commit.last" errorproperty="build.null" failonerror="false">
 		<arg value="show" />
 		<arg value="--quiet" />
@@ -86,10 +78,6 @@
 		<delete dir="${build.dist.folder}" />
 	</target>
 
-	<target name="clean-julia-output">
-		<delete dir="${julia.output.dir}" />
-	</target>
-
 	<target name="update-version-info">
 		<copy file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java.template" 
 			tofile="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java"
@@ -114,8 +102,19 @@
 		</replace>
     </target>
 	
-	<target name="compile" depends="clean-bin, clean-dist, clean-julia-output, clean-doc, update-version-info">
+	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info">
 		<mkdir dir="${build.out.folder}" />
+		
+		<!-- Show information about the current working copy -->
+		<exec executable="git" failonerror="false">
+			<arg value="show" />
+			<arg value="--quiet" />
+		</exec>
+		<exec executable="git" failonerror="false">
+			<arg value="diff" />
+			<arg value="--shortstat" />
+		</exec>
+		
 		<javac includeantruntime="false" srcdir="${build.in.folder}" destdir="${build.out.folder}">
 			<include name="**/*.java" />
 
@@ -131,48 +130,18 @@
 		</javac>
 	</target>
 
-	<target name="plain.jar" depends="compile">
+	<target name="redistributable.jar" depends="compile">
 
 		<mkdir dir="${build.dist.folder}" />
-		<jar destfile="${build.dist.folder}/${jar.plain.name}">
+		<jar destfile="${build.dist.folder}/${jar.name}">
 			<manifest>
-				<attribute name="Implementation-Title" value="Julia" />
+				<attribute name="Implementation-Title" value="BeeDeeDee" />
 				<attribute name="Implementation-Vendor" value="Julia S.R.L." />
 				<attribute name="Julia-CID" value="${scm.wc.commit.last}" />
 				<attribute name="Julia-BuildId" value="${manifest.build.id}" />
 			</manifest>
 			<fileset dir="${build.out.folder}" includes="**/*.class" />
 		</jar>
-	</target>
-
-	<target name="redistributable.jar" depends="plain.jar">
-		<JuliaEngineTask engineClass="com.juliasoft.julia.engine.Julia" framework="java" verboseTask="true" 
-			silent="true" librarymode="true" 
-			mergeArrays="true" dumpBytecode="true" outputpath="${julia.output.dir}">
-			<IncludedPackage prefix="java." />
-			<statisticalincludes dir="${build.dist.folder}">
-				<include name="${jar.plain.name}" />
-			</statisticalincludes>
-			<checkerspecification name="Obfuscator" >
-				<CheckerOption key="where" value="expAlias" />
-				<CheckerOption key="kind" value="loopOnCalculations" />
-			</checkerspecification>
-		</JuliaEngineTask>
-
-		<delete file="${build.dist.folder}/${jar.name}">
-		</delete>
-
-		<jar destfile="${build.dist.folder}/${jar.name}">
-			<manifest>
-				<attribute name="Implementation-Title" value="Julia" />
-				<attribute name="Implementation-Vendor" value="Julia S.R.L." />
-				<attribute name="Julia-CID" value="${scm.wc.commit.last}" />
-				<attribute name="Julia-BuildId" value="${manifest.build.id}" />
-				<attribute name="Main-Class" value="${manifest.build.mainclass}" />
-			</manifest>
-			<zipfileset src="${julia.output.dir}/classes.jar"></zipfileset>
-		</jar>
-
 	</target>
 
 	<!-- This task is intended to be used by Jenkins or any other other tool 
@@ -187,6 +156,7 @@
 		<zip destfile="${build.dist.folder}/${ant.project.name}-bundle-full-${beedeedee.version}.zip">
 			<zipfileset dir="${build.dist.folder}" includes="${jar.name}" />
 			<zipfileset dir="lib" prefix="lib" includes="*.jar" />
+			<zipfileset dir="." includes="gpl-license.txt"></zipfileset>
 		</zip>
 	</target>
 
