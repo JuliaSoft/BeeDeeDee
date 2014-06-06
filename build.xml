@@ -1,0 +1,193 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="beedeedee" basedir="." default="compile">
+
+	<!-- load the properties stored into the external file -->
+	<property file="build.properties" />
+
+	<!-- set build properties -->
+	<dirname property="antfile.dir" file="${ant.file}" />
+	<pathconvert property="build.artifacts.dir">
+		<path location="${antfile.dir}/../julia-artifacts">
+		</path>
+	</pathconvert>
+	<!-- convert the path to the julia-core dependencies in a system-independent way -->
+	<pathconvert property="build.julia-core.lib.folder">
+			<path location="${antfile.dir}/${julia-core.lib.folder}">
+			</path>
+	</pathconvert>
+	
+	<tstamp>
+		<format property="build.timestamp" pattern="yyyyMMdd" />
+	</tstamp>
+
+	<property name="jar.name" value="${ant.project.name}-${beedeedee.version}.jar" />
+	
+	<!-- name of the unobfuscated jar -->
+	<property name="jar.plain.name" value="${ant.project.name}-${beedeedee.version}-plain.jar" />
+
+	<condition property="scm.commit.id" value="${GIT_COMMIT}">
+		<isset property="GIT_COMMIT" />
+	</condition>
+	<condition property="scm.commit.id" value="r${SVN_REVISION}">
+		<isset property="SVN_REVISION" />
+	</condition>
+
+	<exec executable="git" failonerror="false">
+		<arg value="show" />
+		<arg value="--quiet" />
+	</exec>
+	<exec executable="git" failonerror="false">
+		<arg value="diff" />
+		<arg value="--shortstat" />
+	</exec>
+	<exec executable="git" outputproperty="scm.wc.commit.last" errorproperty="build.null" failonerror="false">
+		<arg value="show" />
+		<arg value="--quiet" />
+		<arg value="--pretty=%H" />
+	</exec>
+	<exec executable="git" outputproperty="scm.wc.commit.last.date" errorproperty="build.null" failonerror="false">
+			<arg value="show" />
+			<arg value="--quiet" />
+			<arg value="--pretty=%ai" />
+		</exec>
+	
+	<!-- ant properties are "final", so this only works if the property has not been already set  (hl=headless) -->
+	<property name="scm.commit.id" value="hl" />
+	<property name="manifest.build.id" value="${ant.project.name}-${beedeedee.version}-${build.timestamp}-${scm.commit.id}" />
+		
+	<!-- Task definition. Set classpath to "julia-ant" and "julia-core" libraries of Julia and related dependencies -->
+	<taskdef name="JuliaEngineTask" classname="com.juliasoft.julia.ant.JuliaEngineTask">
+		<classpath>
+			<fileset dir="${build.lib.folder}">
+				<include name="**/*.jar" />
+			</fileset>
+			<fileset dir="${build.artifacts.dir}">
+				<include name="julia-api-${julia-api.version}.jar" />
+				<include name="julia-annotations-${julia-annotations.version}.jar" />
+				<include name="julia-ant-${julia-ant.version}.jar" />
+				<include name="julia-core-${julia-core.version}.jar" />
+			</fileset>
+			<fileset dir="${build.julia-core.lib.folder}">
+				<include name="**/*.jar" />
+			</fileset>
+		</classpath>
+	</taskdef>
+
+
+	<target name="clean-bin">
+		<delete dir="${build.out.folder}" />
+	</target>
+
+	<target name="clean-doc">
+		<delete dir="${javadoc.out.folder}" />
+	</target>
+
+	<target name="clean-dist">
+		<delete dir="${build.dist.folder}" />
+	</target>
+
+	<target name="clean-julia-output">
+		<delete dir="${julia.output.dir}" />
+	</target>
+
+	<target name="update-version-info">
+		<copy file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java.template" 
+			tofile="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java"
+			overwrite="true"/>
+		<tstamp>
+			<format property="build.date" pattern="d MMM yyyy" locale="en"/>
+		</tstamp>
+		<replace 
+		    file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java">
+		  <replacefilter 
+		    token="[version]"
+		    value="${beedeedee.version}"/>
+		  <replacefilter 
+		    token="[build.date]" 
+		    value="${build.date}"/>
+		  <replacefilter 
+		    token="[scm.commit.date]" 
+		    value="${scm.wc.commit.last.date}"/>
+          <replacefilter 
+			token="[scm.commit.id]" 
+			value="${scm.wc.commit.last}"/>	
+		</replace>
+    </target>
+	
+	<target name="compile" depends="clean-bin, clean-dist, clean-julia-output, clean-doc, update-version-info">
+		<mkdir dir="${build.out.folder}" />
+		<javac includeantruntime="false" srcdir="${build.in.folder}" destdir="${build.out.folder}">
+			<include name="**/*.java" />
+
+			<classpath>
+				<fileset dir="${build.lib.folder}">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${build.artifacts.dir}">
+					<include name="julia-api-${julia-api.version}.jar" />
+					<include name="julia-annotations-${julia-annotations.version}.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="plain.jar" depends="compile">
+
+		<mkdir dir="${build.dist.folder}" />
+		<jar destfile="${build.dist.folder}/${jar.plain.name}">
+			<manifest>
+				<attribute name="Implementation-Title" value="Julia" />
+				<attribute name="Implementation-Vendor" value="Julia S.R.L." />
+				<attribute name="Julia-CID" value="${scm.wc.commit.last}" />
+				<attribute name="Julia-BuildId" value="${manifest.build.id}" />
+			</manifest>
+			<fileset dir="${build.out.folder}" includes="**/*.class" />
+		</jar>
+	</target>
+
+	<target name="redistributable.jar" depends="plain.jar">
+		<JuliaEngineTask engineClass="com.juliasoft.julia.engine.Julia" framework="java" verboseTask="true" 
+			silent="true" librarymode="true" 
+			mergeArrays="true" dumpBytecode="true" outputpath="${julia.output.dir}">
+			<IncludedPackage prefix="java." />
+			<statisticalincludes dir="${build.dist.folder}">
+				<include name="${jar.plain.name}" />
+			</statisticalincludes>
+			<checkerspecification name="Obfuscator" >
+				<CheckerOption key="where" value="expAlias" />
+				<CheckerOption key="kind" value="loopOnCalculations" />
+			</checkerspecification>
+		</JuliaEngineTask>
+
+		<delete file="${build.dist.folder}/${jar.name}">
+		</delete>
+
+		<jar destfile="${build.dist.folder}/${jar.name}">
+			<manifest>
+				<attribute name="Implementation-Title" value="Julia" />
+				<attribute name="Implementation-Vendor" value="Julia S.R.L." />
+				<attribute name="Julia-CID" value="${scm.wc.commit.last}" />
+				<attribute name="Julia-BuildId" value="${manifest.build.id}" />
+				<attribute name="Main-Class" value="${manifest.build.mainclass}" />
+			</manifest>
+			<zipfileset src="${julia.output.dir}/classes.jar"></zipfileset>
+		</jar>
+
+	</target>
+
+	<!-- This task is intended to be used by Jenkins or any other other tool 
+		which may need to build multiple julia-* projects. It does simply copy the 
+		library jars to a folder shared with with dependent projects -->
+	<target name="share-libs">
+		<copy file="${build.dist.folder}/${jar.name}" todir="${build.artifacts.dir}">
+		</copy>
+	</target>
+
+	<target name="bundle-full.zip" depends="">
+		<zip destfile="${build.dist.folder}/${ant.project.name}-bundle-full-${beedeedee.version}.zip">
+			<zipfileset dir="${build.dist.folder}" includes="${jar.name}" />
+			<zipfileset dir="lib" prefix="lib" includes="*.jar" />
+		</zip>
+	</target>
+
+</project>
