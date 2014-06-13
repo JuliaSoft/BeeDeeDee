@@ -115,13 +115,13 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	@Override
 	public final int get(int var, int low, int high) {
 		do {
-			Object myLock;
-			int pos = hash(var, low, high), size = this.size;
+			int size = this.size, pos = hash(var, low, high);
 
 			int result = getOptimistic(var, low, high, pos);
 			if (result >= 0)
 				return result;
 
+			Object myLock;
 			synchronized (myLock = getLocks[pos % getLocks.length]) {
 				// if the size changed, it means that a resize occurred while
 				// we were trying to access the critical section: in that case

@@ -3,7 +3,7 @@ package com.juliasoft.beedeedee;
 public class VersionInfo {
 
     /**
-     * Logical version of teh software
+     * Logical version of the software
      */
     public static final String VERSION = "[version]";
 
@@ -23,5 +23,4 @@ public class VersionInfo {
      * This may be the Git commit-hash or SVN revision or any other human-readable identifier
      */
     public static final String SCM_ID = "[scm.commit.id]";
-
 }
