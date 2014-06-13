@@ -2,6 +2,7 @@
 .project
 .settings/
 bin/
+src/META-INF/
 # ant build folders
 ant-build
 ant-dist

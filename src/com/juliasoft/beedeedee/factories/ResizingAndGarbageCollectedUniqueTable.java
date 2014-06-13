@@ -108,14 +108,12 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			updateLocks[pos] = new Object();
 
 		this.factory = factory;
-		//this.aliveNodes = new boolean[size];
-		//this.newPositions = new int[size];
 	}
 
 	@Override
 	public final int get(int var, int low, int high) {
 		do {
-			int size = this.size, pos = hash(var, low, high);
+			int size = this.size, pos = hash(var, low, high, size);
 
 			int result = getOptimistic(var, low, high, pos);
 			if (result >= 0)

@@ -185,6 +185,10 @@ class SimpleUniqueTable implements UniqueTable {
 	}
 
 	protected final int hash(int var, int low, int high) {
+		return hash(var, low, high, size);
+	}
+
+	protected final int hash(int var, int low, int high, int size) {
 		int num = low;
 
 		while (low > 0) {
