@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="beedeedee" basedir="." default="compile">
+<project name="beedeedee" basedir="." default="compile" xmlns:ivy="antlib:org.apache.ivy.ant">
 
 	<!-- load the properties stored into the external file -->
 	<property file="build.properties" />
@@ -12,16 +12,16 @@
 	</pathconvert>
 	<!-- convert the path to the julia-core dependencies in a system-independent way -->
 	<pathconvert property="build.julia-core.lib.folder">
-			<path location="${antfile.dir}/${julia-core.lib.folder}">
-			</path>
+		<path location="${antfile.dir}/${julia-core.lib.folder}">
+		</path>
 	</pathconvert>
-	
+
 	<tstamp>
 		<format property="build.timestamp" pattern="yyyyMMdd" />
 	</tstamp>
 
 	<property name="jar.name" value="${ant.project.name}-${beedeedee.version}.jar" />
-	
+
 	<!-- name of the unobfuscated jar -->
 	<property name="jar.plain.name" value="${ant.project.name}-${beedeedee.version}-plain.jar" />
 
@@ -38,33 +38,17 @@
 		<arg value="--pretty=%H" />
 	</exec>
 	<exec executable="git" outputproperty="scm.wc.commit.last.date" errorproperty="build.null" failonerror="false">
-			<arg value="show" />
-			<arg value="--quiet" />
-			<arg value="--pretty=%ai" />
-		</exec>
-	
+		<arg value="show" />
+		<arg value="--quiet" />
+		<arg value="--pretty=%ai" />
+	</exec>
+
 	<!-- ant properties are "final", so this only works if the property has not been already set  (hl=headless) -->
 	<property name="scm.commit.id" value="hl" />
 	<property name="manifest.build.id" value="${ant.project.name}-${beedeedee.version}-${build.timestamp}-${scm.commit.id}" />
-		
-	<!-- Task definition. Set classpath to "julia-ant" and "julia-core" libraries of Julia and related dependencies -->
-	<taskdef name="JuliaEngineTask" classname="com.juliasoft.julia.ant.JuliaEngineTask">
-		<classpath>
-			<fileset dir="${build.lib.folder}">
-				<include name="**/*.jar" />
-			</fileset>
-			<fileset dir="${build.artifacts.dir}">
-				<include name="julia-api-${julia-api.version}.jar" />
-				<include name="julia-annotations-${julia-annotations.version}.jar" />
-				<include name="julia-ant-${julia-ant.version}.jar" />
-				<include name="julia-core-${julia-core.version}.jar" />
-			</fileset>
-			<fileset dir="${build.julia-core.lib.folder}">
-				<include name="**/*.jar" />
-			</fileset>
-		</classpath>
-	</taskdef>
 
+	<taskdef name="ivypublish" classname="org.apache.ivy.ant.IvyPublish" />
+	<taskdef name="ivyresolve" classname="org.apache.ivy.ant.IvyResolve" />
 
 	<target name="clean-bin">
 		<delete dir="${build.out.folder}" />
@@ -79,32 +63,21 @@
 	</target>
 
 	<target name="update-version-info">
-		<copy file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java.template" 
-			tofile="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java"
-			overwrite="true"/>
+		<copy file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java.template" tofile="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java" overwrite="true" />
 		<tstamp>
-			<format property="build.date" pattern="d MMM yyyy" locale="en"/>
+			<format property="build.date" pattern="d MMM yyyy" locale="en" />
 		</tstamp>
-		<replace 
-		    file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java">
-		  <replacefilter 
-		    token="[version]"
-		    value="${beedeedee.version}"/>
-		  <replacefilter 
-		    token="[build.date]" 
-		    value="${build.date}"/>
-		  <replacefilter 
-		    token="[scm.commit.date]" 
-		    value="${scm.wc.commit.last.date}"/>
-          <replacefilter 
-			token="[scm.commit.id]" 
-			value="${scm.wc.commit.last}"/>	
+		<replace file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java">
+			<replacefilter token="[version]" value="${beedeedee.version}" />
+			<replacefilter token="[build.date]" value="${build.date}" />
+			<replacefilter token="[scm.commit.date]" value="${scm.wc.commit.last.date}" />
+			<replacefilter token="[scm.commit.id]" value="${scm.wc.commit.last}" />
 		</replace>
-    </target>
-	
+	</target>
+
 	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info">
 		<mkdir dir="${build.out.folder}" />
-		
+
 		<!-- Show information about the current working copy -->
 		<exec executable="git" failonerror="false">
 			<arg value="show" />
@@ -114,17 +87,12 @@
 			<arg value="diff" />
 			<arg value="--shortstat" />
 		</exec>
-		
+
 		<javac includeantruntime="false" srcdir="${build.in.folder}" destdir="${build.out.folder}">
 			<include name="**/*.java" />
-
 			<classpath>
 				<fileset dir="${build.lib.folder}">
 					<include name="**/*.jar" />
-				</fileset>
-				<fileset dir="${build.artifacts.dir}">
-					<include name="julia-api-${julia-api.version}.jar" />
-					<include name="julia-annotations-${julia-annotations.version}.jar" />
 				</fileset>
 			</classpath>
 		</javac>
@@ -152,11 +120,20 @@
 		</copy>
 	</target>
 
+	<target name="publish-artifacts">	
+		<ivy:deliver conf="*(public)" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" />
+		<ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
+		<ivypublish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" publishivy="false">
+			<artifacts pattern="${build.dist.folder}/[module](-[revision]).[ext]">
+			</artifacts>
+		</ivypublish>
+	</target>
+
 	<target name="bundle-full.zip" depends="">
 		<zip destfile="${build.dist.folder}/${ant.project.name}-bundle-full-${beedeedee.version}.zip">
 			<zipfileset dir="${build.dist.folder}" includes="${jar.name}" />
 			<zipfileset dir="lib" prefix="lib" includes="*.jar" />
-			<zipfileset dir="." includes="gpl-license.txt"></zipfileset>
+			<zipfileset dir="." includes="gpl-license.txt" />
 		</zip>
 	</target>
 

@@ -11,3 +11,5 @@ ant-doc
 .DS_Store
 # automated versioning (from Git/SVN)
 src/com/juliasoft/beedeedee/VersionInfo.java
+# Ivy resolver stuff
+distrib
