@@ -47,9 +47,6 @@
 	<property name="scm.commit.id" value="hl" />
 	<property name="manifest.build.id" value="${ant.project.name}-${beedeedee.version}-${build.timestamp}-${scm.commit.id}" />
 
-	<taskdef name="ivypublish" classname="org.apache.ivy.ant.IvyPublish" />
-	<taskdef name="ivyresolve" classname="org.apache.ivy.ant.IvyResolve" />
-
 	<target name="clean-bin">
 		<delete dir="${build.out.folder}" />
 	</target>
@@ -121,12 +118,13 @@
 	</target>
 
 	<target name="publish-artifacts">	
+	    <ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
 		<ivy:deliver conf="*(public)" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" />
 		<ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
-		<ivypublish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" publishivy="false">
+		<ivy:publish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" publishivy="false">
 			<artifacts pattern="${build.dist.folder}/[module](-[revision]).[ext]">
 			</artifacts>
-		</ivypublish>
+		</ivy:publish>
 	</target>
 
 	<target name="bundle-full.zip" depends="">

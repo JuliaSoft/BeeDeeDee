@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ivysettings>
 	<settings defaultResolver="chained" />
-	<credentials host="webdev.juliasoft.com" realm="Repository Archiva Managed julia-private Repository" username="USR_HERE" passwd="PWD_HERE" />
+	<credentials host="webdev.juliasoft.com" realm="Repository Archiva Managed julia-private Repository" username="${julia.archiva.usr}" passwd="${julia.archiva.pass}" />
 	<resolvers>
 		<!-- try to resolve dependency using the first repo in list providing the 
 			needed artifacts -->
