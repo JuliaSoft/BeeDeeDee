@@ -109,6 +109,13 @@
 		</jar>
 	</target>
 
+	<target name="javadoc.jar" depends="clean-doc">
+		<javadoc destdir="${build.doc.folder}" sourcepath="src" access="public">
+		</javadoc>
+		<jar destfile="${build.dist.folder}/${ant.project.name}-${beedeedee.version}-javadoc.jar" basedir="${build.doc.folder}">
+		</jar>
+	</target>
+	
 	<!-- This task is intended to be used by Jenkins or any other other tool 
 		which may need to build multiple julia-* projects. It does simply copy the 
 		library jars to a folder shared with with dependent projects -->
@@ -122,7 +129,7 @@
 		<ivy:deliver conf="*(public)" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" />
 		<ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
 		<ivy:publish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" publishivy="false">
-			<artifacts pattern="${build.dist.folder}/[module](-[revision]).[ext]">
+			<artifacts pattern="${build.dist.folder}/[module]-[revision](-[classifier]).[ext]">
 			</artifacts>
 		</ivy:publish>
 	</target>

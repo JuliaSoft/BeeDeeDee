@@ -7,7 +7,7 @@
 			needed artifacts -->
 		<chain name="chained" returnFirst="true">
 			<ibiblio name="julia-private" m2compatible="true" 
-				root="https://webdev.juliasoft.com/apache-archiva-2.0.1/repository/julia-private" pattern="julia/[module]/[revision]/[artifact]-[revision].[ext]" />
+				root="https://webdev.juliasoft.com/apache-archiva-2.0.1/repository/julia-private" pattern="[module]/[artifact]/[revision]/[artifact]-[revision](-[classifier]).[ext]" />
 			<ibiblio name="maven2" m2compatible="true" />
 		</chain>
 	</resolvers>
