@@ -21,6 +21,9 @@ package com.juliasoft.beedeedee.examples;
 import java.util.HashMap;
 import java.util.Map;
 
+import checkers.nullness.quals.Inner0NonNull;
+import checkers.nullness.quals.Inner1NonNull;
+
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
@@ -31,7 +34,7 @@ public class Queens {
 	private static int N = 11;
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
-	private static BDD[][] X; /* BDD variable array */
+	private static @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
 
 	public static void main(String[] args) {
 

@@ -28,6 +28,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import checkers.nullness.quals.Inner0NonNull;
+
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
@@ -682,7 +684,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
-		private List<Assignment> allSat(int bdd) {
+		private @Inner0NonNull List<Assignment> allSat(int bdd) {
 			List<Assignment> list = new ArrayList<Assignment>();
 
 			if (bdd != ZERO)
@@ -1288,7 +1290,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			for (int v : truthTable.keySet())
 				sb.append(v).append(":").append(truthTable.get(v) ? 1 : 0).append(", ");
 			
-			return sb.substring(0, sb.length() - 2).concat(">").toString();
+			return sb.substring(0, sb.length() - 2).concat(">");
 		}
 	}
 
@@ -1449,11 +1451,16 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public int nodeCount(Collection<BDD> bdds) {
+		if (bdds == null)
+			throw new IllegalArgumentException("null is not allowed here");
+
 		int count = 0;
 		Set<Integer> seen = new HashSet<Integer>();
 		
 		for (BDD bdd : bdds) {
 			BDDImpl bddi = (BDDImpl) bdd;
+			if (bddi == null)
+				continue;
 
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();

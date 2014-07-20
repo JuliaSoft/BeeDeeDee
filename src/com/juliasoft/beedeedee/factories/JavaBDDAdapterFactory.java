@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import checkers.nullness.quals.NonNull;
+
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
@@ -44,7 +46,8 @@ import net.sf.javabdd.BDDPairing;
  */
 public class JavaBDDAdapterFactory extends BDDFactory {
 
-	private ResizingAndGarbageCollectedFactory factory;
+	// this is non-null since it is definitely initialized by the static pseudo-constructor
+	private @NonNull ResizingAndGarbageCollectedFactory factory;
 	private int bddVarNum;
 
 	private JavaBDDAdapterFactory() {}
@@ -152,6 +155,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 	@Override
 	public void registerGCCallback(final Object o, final Method m) {
+		if (m == null)
+			throw new IllegalArgumentException("garbage collection callback cannot be null");
+
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 
 			@Override
@@ -227,6 +233,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 	@Override
 	public void registerResizeCallback(final Object o, final Method m) {
+		if (m == null)
+			throw new IllegalArgumentException("resize callback cannot be null");
+
 		factory.setResizeListener(new ResizeListener() {
 
 			@Override
@@ -652,16 +661,21 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 		
 		@Override
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
+			ensuresNonNull(thenBDD);
+			ensuresNonNull(elseBDD);
 			return new JavaBDDAdapterBDD(bdd.ite(((JavaBDDAdapterBDD)thenBDD).bdd, ((JavaBDDAdapterBDD)elseBDD).bdd));
 		}
 
 		@Override
 		public BDD relprod(BDD that, BDD var) {
+			ensuresNonNull(that);
+			ensuresNonNull(var);
 			return new JavaBDDAdapterBDD(bdd.relProd(((JavaBDDAdapterBDD)that).bdd, ((JavaBDDAdapterBDD)var).bdd));
 		}
 
 		@Override
 		public BDD compose(BDD g, int var) {
+			ensuresNonNull(g);
 			if (var < 0 || var >= bddVarNum)
 				throw new BDDException("Unknown variable " + var + " max allowed is " + (bddVarNum - 1));
 			
@@ -688,11 +702,13 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 		@Override
 		public BDD exist(BDD var) {
+			ensuresNonNull(var);
 			return new JavaBDDAdapterBDD(bdd.exist(((JavaBDDAdapterBDD)var).bdd));
 		}
 
 		@Override
 		public BDD forAll(BDD var) {
+			ensuresNonNull(var);
 			return new JavaBDDAdapterBDD(bdd.forAll(((JavaBDDAdapterBDD)var).bdd));
 		}
 
@@ -707,17 +723,20 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 		@Override
 		public BDD restrict(BDD var) {
+			ensuresNonNull(var);
 			return new JavaBDDAdapterBDD(bdd.restrict(((JavaBDDAdapterBDD)var).bdd));
 		}
 
 		@Override
 		public BDD restrictWith(BDD var) {
+			ensuresNonNull(var);
 			bdd.restrictWith(((JavaBDDAdapterBDD)var).bdd);
 			return this;
 		}
 
 		@Override
 		public BDD simplify(BDD d) {
+			ensuresNonNull(d);
 			return new JavaBDDAdapterBDD(bdd.simplify(((JavaBDDAdapterBDD)d).bdd));
 		}
 
@@ -732,6 +751,8 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 		@Override
 		public BDD apply(BDD that, BDDOp opr) {
+			ensuresNonNull(that);
+
 			if (opr == and)
 				return and(that);
 			if (opr == xor)
@@ -881,57 +902,72 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 		
 		@Override
 		public BDD and(BDD that) {
+			ensuresNonNull(that);
 			return new JavaBDDAdapterBDD(bdd.and(((JavaBDDAdapterBDD)that).bdd));
 		}
 		
 		@Override
 		public BDD andWith(BDD that) {
+			ensuresNonNull(that);
 			bdd.andWith(((JavaBDDAdapterBDD)that).bdd);
 			return this;
 		}
 		
 		@Override
 		public BDD or(BDD that) {
+			ensuresNonNull(that);
 			return new JavaBDDAdapterBDD(bdd.or(((JavaBDDAdapterBDD)that).bdd));
 		}
 		
 		@Override
 		public BDD orWith(BDD that) {
+			ensuresNonNull(that);
 			bdd.orWith(((JavaBDDAdapterBDD)that).bdd);
 			return this;
 		}
 
 		@Override
 		public BDD xor(BDD that) {
+			ensuresNonNull(that);
 			return new JavaBDDAdapterBDD(bdd.xor(((JavaBDDAdapterBDD)that).bdd));
 		}
 		
 		@Override
 		public BDD xorWith(BDD that) {
+			ensuresNonNull(that);
 			bdd.xorWith(((JavaBDDAdapterBDD)that).bdd);
 			return this;
 		}
 
 		@Override
 		public BDD imp(BDD that) {
+			ensuresNonNull(that);
 			return new JavaBDDAdapterBDD(bdd.imp(((JavaBDDAdapterBDD)that).bdd));
 		}
 		
 		@Override
 		public BDD impWith(BDD that) {
+			ensuresNonNull(that);
 			bdd.impWith(((JavaBDDAdapterBDD)that).bdd);
 			return this;
 		}
 
 		@Override
 		public BDD biimp(BDD that) {
+			ensuresNonNull(that);
 			return new JavaBDDAdapterBDD(bdd.biimp(((JavaBDDAdapterBDD)that).bdd));
 		}
 		
 		@Override
 		public BDD biimpWith(BDD that) {
+			ensuresNonNull(that);
 			bdd.biimpWith(((JavaBDDAdapterBDD)that).bdd);
 			return this;
+		}
+
+		private void ensuresNonNull(Object o) {
+			if (o == null)
+				throw new IllegalArgumentException("null is not allowed");
 		}
 
 		@Override
