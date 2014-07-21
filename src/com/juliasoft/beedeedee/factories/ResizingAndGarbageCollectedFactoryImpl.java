@@ -1288,7 +1288,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			for (int v : truthTable.keySet())
 				sb.append(v).append(":").append(truthTable.get(v) ? 1 : 0).append(", ");
 			
-			return sb.substring(0, sb.length() - 2).concat(">").toString();
+			return sb.substring(0, sb.length() - 2).concat(">");
 		}
 	}
 

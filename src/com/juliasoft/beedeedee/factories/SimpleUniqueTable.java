@@ -38,7 +38,6 @@ class SimpleUniqueTable implements UniqueTable {
 	protected ReplaceCache replaceCache;
 	protected QuantCache quantCache;
 
-	private int hits;
 	private final int[] hitCounters = new int[Operator.values().length];
 	private final int[] opCounters = new int[Operator.values().length];
 	protected int hashCodeAuxCounter;
@@ -76,8 +75,6 @@ class SimpleUniqueTable implements UniqueTable {
 			System.out.print(" +" + opCounters[i]);
 			System.out.print(" *" + hitCounters[i]);
 		}
-
-		System.out.println("Hits: " + hits);
 	}
 
 	/*
@@ -207,10 +204,8 @@ class SimpleUniqueTable implements UniqueTable {
 			return H[pos] = setAtNextPos(var, low, high, bin);
 		else
 			do {
-				if (isVarLowHigh(bin, var, low, high)) {
-					//hits++;
+				if (isVarLowHigh(bin, var, low, high))
 					return bin;
-				}
 
 				int old = bin;
 				if ((bin = next(bin)) < 0 || var(bin) > var) {
