@@ -1,14 +1,10 @@
 package com.juliasoft.beedeedee.factories;
 
-import static org.junit.Assert.*;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.BDD;
-import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl;
 
 public class BDDTest {
 
@@ -98,7 +94,7 @@ public class BDDTest {
 	}
 	*/
 //	@Test
-	public void testImpWith() {
+	private void testImpWith() {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 		
@@ -113,7 +109,7 @@ public class BDDTest {
 	}
 	
 //	@Test
-	public void testBiImpWith() {
+	private void testBiImpWith() {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 		BDD x3 = factory.makeVar(3);

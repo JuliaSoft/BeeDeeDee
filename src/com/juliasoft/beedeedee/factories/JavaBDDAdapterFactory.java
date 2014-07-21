@@ -614,7 +614,7 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 		private final com.juliasoft.beedeedee.bdd.BDD bdd;
 
-		public JavaBDDAdapterBDD(com.juliasoft.beedeedee.bdd.BDD bdd) {
+		private JavaBDDAdapterBDD(com.juliasoft.beedeedee.bdd.BDD bdd) {
 			this.bdd = bdd;
 		}
 

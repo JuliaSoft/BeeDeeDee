@@ -25,6 +25,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
 import com.juliasoft.utils.concurrent.Task;
+import static checkers.nullness.support.NullnessAssertions.*;
 
 /**
  * An utility class to run tasks in parallel or asynchronously.
@@ -120,7 +121,8 @@ public abstract class Executors {
 			// in a lot of methods
 			catch (InterruptedException e) {
 				e.printStackTrace();
-				throw (RuntimeException) e.getCause();
+				Throwable cause = e.getCause();
+				throw cause instanceof RuntimeException ? (RuntimeException) cause : new RuntimeException(cause);
 			}
 			catch (ExecutionException e) {
 				e.printStackTrace();
@@ -135,6 +137,7 @@ public abstract class Executors {
 	 */
 
 	public static void parallelise(Runnable... tasks) {
+		assertNonNull(tasks);
 		Future<?>[] future = new Future<?>[tasks.length];
 
 		for (int i = 0; i < future.length; i++)
@@ -165,22 +168,24 @@ public abstract class Executors {
 	 */
 
 	public static void parallelise(Collection<? extends Runnable> tasks) {
-		Future<?>[] future = new Future<?>[tasks.size()];
+		assertNonNull(tasks);
+		Future<?>[] futures = new Future<?>[tasks.size()];
 
 		int i = 0;
 		for (Runnable task: tasks)
-			future[i++] = exec.submit(task);
+			futures[i++] = exec.submit(task);
 
-		for (i = 0; i < future.length; i++)
+		for (Future<?> future: futures)
 			try {
-				future[i].get();
+				future.get();
 			}
 			// we transform any exception in a runtime exception
 			// so that we do not have to express a throws clause
 			// in a lot of methods
 			catch (InterruptedException e) {
 				e.printStackTrace();
-				throw (RuntimeException) e.getCause();
+				Throwable cause = e.getCause();
+				throw cause instanceof RuntimeException ? (RuntimeException) cause : new RuntimeException(cause);
 			}
 			catch (ExecutionException e) {
 				e.printStackTrace();
@@ -197,6 +202,7 @@ public abstract class Executors {
 	 */
 
 	public static void parallelise(RunnableFactory factory) {
+		assertNonNull(factory);
 		Runnable[] tasks = new Runnable[cpus];
 
 		for (int i = 0; i < cpus; i++)

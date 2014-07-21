@@ -5,6 +5,7 @@ package com.juliasoft.beedeedee.factories;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedUniqueTable;
 
 // TODO broken
@@ -19,6 +20,51 @@ public class UniqueTableTest extends ResizingAndGarbageCollectedUniqueTable {
 	private static int N4 = indexForNode(4);
 	private static int N5 = indexForNode(5);
 	private static FactoryStub factoryStub = new FactoryStub(10, 10);
+
+	private static class FactoryStub extends ResizingAndGarbageCollectedFactoryImpl {
+
+		private int[] handles = new int[10];
+		
+		private FactoryStub(int utSize, int cacheSize) {
+			super(utSize, cacheSize);
+		}
+
+		@Override
+		public int nodesCount() {
+			return 0;
+		}
+
+		@Override
+		public void printStatistics() {
+		}
+
+//		@Override
+//		public BDD makeVar(int i) {
+//			return null;
+//		}
+
+		@Override
+		public void printNodeTable() {
+		}
+
+		@Override
+		public BDD makeZero() {
+			return null;
+		}
+
+		@Override
+		public BDD makeOne() {
+			return null;
+		}
+
+		@Override
+		public void gc() {
+		}
+
+		void insertHandles(int... handles) {
+			this.handles = handles;
+		}
+	}
 
 	public UniqueTableTest() {
 		super(INITIAL_NODE_NUM, 1000, factoryStub);
