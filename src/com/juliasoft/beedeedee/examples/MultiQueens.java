@@ -22,6 +22,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
+import checkers.nullness.quals.Inner0NonNull;
+import checkers.nullness.quals.Inner1NonNull;
+import checkers.nullness.quals.NonNull;
+
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.UnsatException;
@@ -37,7 +41,7 @@ public class MultiQueens {
 
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
-	private static ResizingAndGarbageCollectedFactory factory;
+	private static @NonNull ResizingAndGarbageCollectedFactory factory;
 
 	public static void main(String[] args) {
 		if (args.length < 1) {
@@ -109,7 +113,7 @@ public class MultiQueens {
 	private static class QueensThread extends Thread {
 
 		private final int N;
-		private final BDD[][] X; /* BDD variable array */
+		private final @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
 
 		public QueensThread(int N) {
 			super("Queen solver for size " + N);

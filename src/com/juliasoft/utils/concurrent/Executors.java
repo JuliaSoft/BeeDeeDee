@@ -149,7 +149,8 @@ public abstract class Executors {
 			// in a lot of methods
 			catch (InterruptedException e) {
 				e.printStackTrace();
-				throw (RuntimeException) e.getCause();
+				Throwable cause = e.getCause();
+				throw cause instanceof RuntimeException ? (RuntimeException) cause : new RuntimeException(cause);
 			}
 			catch (ExecutionException e) {
 				e.printStackTrace();
