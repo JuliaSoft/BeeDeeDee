@@ -35,12 +35,12 @@
 	<exec executable="git" outputproperty="scm.wc.commit.last" errorproperty="build.null" failonerror="false">
 		<arg value="show" />
 		<arg value="--quiet" />
-		<arg value="--pretty=%H" />
+		<arg value="--pretty=format:%H" />
 	</exec>
 	<exec executable="git" outputproperty="scm.wc.commit.last.date" errorproperty="build.null" failonerror="false">
 		<arg value="show" />
 		<arg value="--quiet" />
-		<arg value="--pretty=%ai" />
+		<arg value="--pretty=format:%ai" />
 	</exec>
 
 	<!-- ant properties are "final", so this only works if the property has not been already set  (hl=headless) -->
@@ -72,9 +72,13 @@
 		</replace>
 	</target>
 
-	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info">
+	<target name="resolve">
+		<ivy:resolve />
+	</target>
+	
+	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info, resolve">
 		<mkdir dir="${build.out.folder}" />
-
+		<ivy:cachepath pathid="ivy.cachedpath" />
 		<!-- Show information about the current working copy -->
 		<exec executable="git" failonerror="false">
 			<arg value="show" />
@@ -92,6 +96,7 @@
 					<include name="**/*.jar" />
 				</fileset>
 			</classpath>
+			<classpath refid="ivy.cachedpath" />
 		</javac>
 	</target>
 

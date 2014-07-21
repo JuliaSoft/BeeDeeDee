@@ -29,6 +29,7 @@ import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import checkers.nullness.quals.Inner0NonNull;
+import static checkers.nullness.support.NullnessAssertions.*;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -1451,8 +1452,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public int nodeCount(Collection<BDD> bdds) {
-		if (bdds == null)
-			throw new IllegalArgumentException("null is not allowed here");
+		assertNonNull(bdds, "the collection of BBDs cannot be null here");
 
 		int count = 0;
 		Set<Integer> seen = new HashSet<Integer>();
