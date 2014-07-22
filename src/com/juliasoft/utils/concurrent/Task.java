@@ -108,7 +108,8 @@ public class Task<T> {
 
 		synchronized(this) {
 			try {
-				if (result == null) {
+				// future might be null if get() is called twice and the first time the result was null
+				if (result == null && future != null) {
 					result = future.get();
 					future = null;
 				}
