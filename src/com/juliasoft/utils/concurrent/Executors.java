@@ -56,6 +56,7 @@ public abstract class Executors {
 	 */
 
 	public static <T> Task<T> submit(Callable<T> task) {
+		assertNonNull(task);
 		return new Task<T>(exec.submit(new WrapperCallable<T>(task)));
 	}
 
@@ -88,12 +89,18 @@ public abstract class Executors {
 
 		@Override
 		public T call() throws Exception {
-			T result = callable.call();
+			Callable<T> callable = this.callable;
 
-			// we unlink the callable and everything that might be reachable from it
-			this.callable = null;
+			if (callable != null) {
+				T result = callable.call();
 
-			return result;
+				// we unlink the callable and everything that might be reachable from it
+				this.callable = null;
+
+				return result;
+			}
+
+			return null;
 		}
 		
 	}
