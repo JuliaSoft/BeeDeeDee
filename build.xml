@@ -72,9 +72,10 @@
 		</replace>
 	</target>
 
-	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info">
+	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info, resolve">
 		<mkdir dir="${build.out.folder}" />
-
+        <ivy:cachepath pathid="ivy.cachedpath" />
+		
 		<!-- Show information about the current working copy -->
 		<exec executable="git" failonerror="false">
 			<arg value="show" />
@@ -87,11 +88,7 @@
 
 		<javac includeantruntime="false" srcdir="${build.in.folder}" destdir="${build.out.folder}">
 			<include name="**/*.java" />
-			<classpath>
-				<fileset dir="${build.lib.folder}">
-					<include name="**/*.jar" />
-				</fileset>
-			</classpath>
+			<classpath refid="ivy.cachedpath" />
 		</javac>
 	</target>
 
@@ -116,19 +113,18 @@
 		</jar>
 	</target>
 	
-	<!-- This task is intended to be used by Jenkins or any other other tool 
-		which may need to build multiple julia-* projects. It does simply copy the 
-		library jars to a folder shared with with dependent projects -->
-	<target name="share-libs">
-		<copy file="${build.dist.folder}/${jar.name}" todir="${build.artifacts.dir}">
-		</copy>
-	</target>
+    <target name="resolve">
+        <ivy:resolve revision="${beedeedee.version}" />
+    </target>
 
 	<target name="publish-artifacts">	
 	    <ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
 		<ivy:deliver conf="*(public)" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" />
 		<ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
-		<ivy:publish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" publishivy="false">
+	    <ivy:makepom ivyfile="${basedir}/distrib/ivys/ivy-${beedeedee.version}.xml" pomfile="${basedir}/ant-dist/${ant.project.name}-${beedeedee.version}.pom" conf="default">
+	        <mapping conf="default" scope="runtime"/>
+	    </ivy:makepom>
+		<ivy:publish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}">
 			<artifacts pattern="${build.dist.folder}/[module]-[revision](-[classifier]).[ext]">
 			</artifacts>
 		</ivy:publish>

@@ -7,10 +7,12 @@
 	<info organisation="Julia S.R.L." module="beedeedee" status="integration" />
 	
 	<publications>
-        <artifact name="beedeedee" ext="jar"/>
-        <artifact name="beedeedee" e:classifier="javadoc" ext="jar"/>
+       <artifact name="beedeedee" ext="jar"/>
+       <artifact name="beedeedee" e:classifier="javadoc" ext="jar"/>
+       <artifact name="beedeedee" ext="pom"/>
     </publications>
     
 	<dependencies>
+	   <dependency org="javabdd" name="javabdd" rev="1.0b2"/>
 	</dependencies>
 </ivy-module>
