@@ -4,6 +4,7 @@ import static org.junit.Assert.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -31,7 +32,7 @@ public class FactoryTest {
 	private BDD x3;
 	private BDD x4;
 	private BDD x5;
-	private HashMap<Integer, Integer> renaming;
+	private Map<Integer, Integer> renaming;
 
 	@Before
 	public void setUp() {
@@ -70,7 +71,7 @@ public class FactoryTest {
 	*/
 	
 //	@Test
-	public void test() {
+	private void test() {
 		BDD biimp = x1.biimp(x2);
 //		System.out.println(biimp);
 //		factory.printNodeTable();		
@@ -89,7 +90,7 @@ public class FactoryTest {
 	}
 
 //	@Test
-	public void testConcurrency() throws InterruptedException, ExecutionException {
+	private void testConcurrency() throws InterruptedException, ExecutionException {
 		
 		int threads = 100;
 		
@@ -131,7 +132,7 @@ public class FactoryTest {
 	}
 	
 //	@Test
-	public void testRestrict1() {
+	private void testRestrict1() {
 		// ex. from page 20 of Andersen's notes
 		
 		BDD biimp = x1.biimp(x2);
@@ -145,7 +146,7 @@ public class FactoryTest {
 	}
 	
 //	@Test
-	public void testRestrict2() {
+	private void testRestrict2() {
 		BDD biimp = x1.biimp(x2);
 		BDD or = biimp.or(x3);
 		
@@ -161,7 +162,7 @@ public class FactoryTest {
 	}
 	
 //	@Test
-	public void testExist1() {
+	private void testExist1() {
 		
 		BDD and = x1.and(x2);
 		BDD or = and.or(x3);
@@ -174,7 +175,7 @@ public class FactoryTest {
 	}
 	
 //	@Test
-	public void testExist2() {
+	private void testExist2() {
 		BDD and = x1.and(x2);
 		BDD or = and.or(x3);
 		
@@ -199,7 +200,7 @@ public class FactoryTest {
 	}
 	
 	//	@Test
-	public void testXor() {
+	private void testXor() {
 		BDD xor = x1.xor(x2);
 //		factory.printNodeTable();
 //		System.out.println(xor);

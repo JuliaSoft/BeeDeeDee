@@ -18,6 +18,8 @@
 */
 package com.juliasoft.utils.concurrent;
 
+import static checkers.nullness.support.NullnessAssertions.assertNonNull;
+
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +51,7 @@ public class Task<T> {
 	 */
 
 	protected Task(Future<T> future) {
+		assertNonNull(future);
 		this.future = future;
 	}
 
@@ -105,7 +108,8 @@ public class Task<T> {
 
 		synchronized(this) {
 			try {
-				if (result == null) {
+				// future might be null if get() is called twice and the first time the result was null
+				if (result == null && future != null) {
 					result = future.get();
 					future = null;
 				}
@@ -116,7 +120,8 @@ public class Task<T> {
 			// so that we do not have to put a throws clause
 			// in a lot of methods
 			catch (InterruptedException e) {
-				throw (RuntimeException) e.getCause();
+				Throwable cause = e.getCause();
+				throw cause instanceof RuntimeException ? (RuntimeException) cause : new RuntimeException(cause);
 			}
 			catch (ExecutionException e) {
 				throw new RuntimeException(e.getCause());

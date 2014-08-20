@@ -35,12 +35,12 @@
 	<exec executable="git" outputproperty="scm.wc.commit.last" errorproperty="build.null" failonerror="false">
 		<arg value="show" />
 		<arg value="--quiet" />
-		<arg value="--pretty=%H" />
+		<arg value="--pretty=format:%H" />
 	</exec>
 	<exec executable="git" outputproperty="scm.wc.commit.last.date" errorproperty="build.null" failonerror="false">
 		<arg value="show" />
 		<arg value="--quiet" />
-		<arg value="--pretty=%ai" />
+		<arg value="--pretty=format:%ai" />
 	</exec>
 
 	<!-- ant properties are "final", so this only works if the property has not been already set  (hl=headless) -->
@@ -72,10 +72,13 @@
 		</replace>
 	</target>
 
+	<target name="resolve">
+		<ivy:resolve />
+	</target>
+	
 	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info, resolve">
 		<mkdir dir="${build.out.folder}" />
-        <ivy:cachepath pathid="ivy.cachedpath" />
-		
+		<ivy:cachepath pathid="ivy.cachedpath" />
 		<!-- Show information about the current working copy -->
 		<exec executable="git" failonerror="false">
 			<arg value="show" />
@@ -112,10 +115,6 @@
 		<jar destfile="${build.dist.folder}/${ant.project.name}-${beedeedee.version}-javadoc.jar" basedir="${build.doc.folder}">
 		</jar>
 	</target>
-	
-    <target name="resolve">
-        <ivy:resolve revision="${beedeedee.version}" />
-    </target>
 
 	<target name="publish-artifacts">	
 	    <ivy:resolve revision="${beedeedee.version}"></ivy:resolve>

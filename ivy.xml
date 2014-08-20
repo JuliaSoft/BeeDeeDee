@@ -13,6 +13,7 @@
     </publications>
     
 	<dependencies>
-	   <dependency org="javabdd" name="javabdd" rev="1.0b2"/>
+		<dependency org="Julia S.R.L." name="julia-annotations" rev="1.0.3" />
+		<dependency org="javabdd" name="javabdd" rev="1.0b2"/>
 	</dependencies>
 </ivy-module>

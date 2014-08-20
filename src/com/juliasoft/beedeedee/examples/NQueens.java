@@ -18,6 +18,9 @@
 */
 package com.juliasoft.beedeedee.examples;
 
+import checkers.nullness.quals.Inner0NonNull;
+import checkers.nullness.quals.Inner1NonNull;
+
 import com.juliasoft.beedeedee.factories.JavaBDDAdapterFactory;
 
 import net.sf.javabdd.*;
@@ -30,7 +33,7 @@ public class NQueens {
 
     static boolean TRACE;
     static int N = 10; /* Size of the chess board */
-    static BDD[][] X; /* BDD variable array */
+    static @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
     static BDD queen; /* N-queen problem expressed as a BDD */
     static BDD solution; /* One solution */
 
@@ -61,7 +64,7 @@ public class NQueens {
 //        B = null;
     }
 
-    public static double runTest() {
+    private static double runTest() {
 
         if (B == null) {
             /* Initialize with reasonable nodes and cache size and NxN variables */
@@ -124,7 +127,7 @@ public class NQueens {
         return result;
     }
 
-    public static void freeAll() {
+    private static void freeAll() {
         for (int i = 0; i < N; i++)
             for (int j = 0; j < N; j++)
                 X[i][j].free();
@@ -132,7 +135,7 @@ public class NQueens {
         solution.free();
     }
     
-    static void build(int i, int j) {
+    private static void build(int i, int j) {
         BDD a = B.one(), b = B.one(), c = B.one(), d = B.one();
         int k, l;
 

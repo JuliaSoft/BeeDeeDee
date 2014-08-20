@@ -28,6 +28,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
+import checkers.nullness.quals.Inner0NonNull;
+import static checkers.nullness.support.NullnessAssertions.*;
+
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
@@ -419,6 +422,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD or(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -433,6 +437,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD orWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -449,6 +454,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD and(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -463,6 +469,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD andWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -479,6 +486,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD xor(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -493,6 +501,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD xorWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -509,6 +518,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD nand(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -523,6 +533,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD nandWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -567,6 +578,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD imp(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -581,6 +593,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD impWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -597,6 +610,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD biimp(BDD other) {
+			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			ReentrantLock lock = ut.getGCLock();
@@ -611,6 +625,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD biimpWith(BDD other) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -682,7 +697,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
-		private List<Assignment> allSat(int bdd) {
+		private @Inner0NonNull List<Assignment> allSat(int bdd) {
 			List<Assignment> list = new ArrayList<Assignment>();
 
 			if (bdd != ZERO)
@@ -758,6 +773,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD restrict(BDD var) {
+			assertNonNull(var);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -778,6 +794,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD restrictWith(BDD var) {
+			assertNonNull(var);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -840,6 +857,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD exist(BDD var) {
+			assertNonNull(var);
 			return quant(var, true);
 		}
 
@@ -853,10 +871,12 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD forAll(BDD var) {
+			assertNonNull(var);
 			return quant(var, false);
 		}
 		
 		private BDD quant(BDD var, boolean exist) {
+			assertNonNull(var);
 			ArrayList<Integer> vars = new ArrayList<Integer>();
 			int pos = 0;
 
@@ -914,6 +934,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD simplify(BDD d) {
+			assertNonNull(d);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1018,6 +1039,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD replace(Map<Integer, Integer> renaming) {
+			assertNonNull(renaming);
 			if (id == ZERO)
 				return makeZero();
 			if (id == ONE)
@@ -1037,6 +1059,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD replaceWith(Map<Integer, Integer> renaming) {
+			assertNonNull(renaming);
 			if (id < FIRST_NODE_NUM) // terminal node
 				return this;
 
@@ -1055,6 +1078,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		private int replace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
+			assertNonNull(renaming);
 			if (bdd < FIRST_NODE_NUM) // terminal node
 				return bdd;
 
@@ -1082,6 +1106,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		
 		@Override
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
+			assertNonNull(thenBDD);
+			assertNonNull(elseBDD);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1133,12 +1159,15 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD relProd(BDD other, BDD var) {
+			assertNonNull(other);
+			assertNonNull(var);
 			// TODO this implementation is correct, but not efficient
 			return and(other).exist(var);
 		}
 		
 		@Override
 		public BDD compose(BDD other, int var) {
+			assertNonNull(other);
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1169,6 +1198,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public boolean equalsAux(BDD other) {
+			assertNonNull(other);
 			if (this == other)
 				return true;
 
@@ -1240,6 +1270,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public boolean holds(BDD var) throws IndexOutOfBoundsException {
+			assertNonNull(var);
 			int varNum;
 
 			ReentrantLock lock = ut.getGCLock();
@@ -1268,7 +1299,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			try {
 				for (int v : vars) {
 					BDD var = ResizingAndGarbageCollectedFactoryImpl.this.mkOptimized(v);
-					if (!truthTable.get(v))
+					if (truthTable.get(v) == Boolean.FALSE)
 						var.notWith();
 				
 					res.andWith(var);
@@ -1286,9 +1317,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			StringBuilder sb = new StringBuilder("<");
 			
 			for (int v : truthTable.keySet())
-				sb.append(v).append(":").append(truthTable.get(v) ? 1 : 0).append(", ");
+				sb.append(v).append(":").append(truthTable.get(v) == Boolean.TRUE ? 1 : 0).append(", ");
 			
-			return sb.substring(0, sb.length() - 2).concat(">").toString();
+			return sb.substring(0, sb.length() - 2).concat(">");
 		}
 	}
 
@@ -1449,11 +1480,15 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	@Override
 	public int nodeCount(Collection<BDD> bdds) {
+		assertNonNull(bdds, "the collection of BBDs cannot be null here");
+
 		int count = 0;
 		Set<Integer> seen = new HashSet<Integer>();
 		
 		for (BDD bdd : bdds) {
 			BDDImpl bddi = (BDDImpl) bdd;
+			if (bddi == null)
+				continue;
 
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
