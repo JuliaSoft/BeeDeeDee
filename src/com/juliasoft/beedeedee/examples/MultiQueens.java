@@ -68,24 +68,24 @@ public class MultiQueens {
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 			@Override
 			public void onStart(int num, int size, int free, long totalTime) {
-				System.out.print("Starting GC... " );// + size + " " + free + " " + totalTime);
+				System.out.print("GC " + (num+1) + "...");// + size + " " + free + " " + totalTime);
 			}
 			
 			@Override
 			public void onStop(int num, int size, int free, long time, long totalTime) {
-				System.out.println("Done GC " + num + ". S:" + size + " F:" + free + " T:" + time + "/" + totalTime);
+				System.out.println("Done. Size:" + size + ". Free:" + free + ". Time:" + time + "/" + totalTime);
 			}
 		});
 
 		factory.setResizeListener(new ResizeListener() {
 			@Override
 			public void onStart(int num, int oldSize, int newSize, long totalTime) {
-				System.out.print("Starting Resizing...");// + num + ". " + oldSize + " " + newSize + " " + totalTime);
+				System.out.print("Resize " + (num+1) + "...");// + num + ". " + oldSize + " " + newSize + " " + totalTime);
 			}
 			
 			@Override
 			public void onStop(int num, int oldSize, int newSize, long time, long totalTime) {
-				System.out.println("Done Resizing " + num + ". OS:" + oldSize + " NS:" + newSize + " T:" + time + "/" + totalTime);
+				System.out.println(" Done. Old size:" + oldSize + ". New size:" + newSize + ". Time:" + time + "/" + totalTime);
 			}
 		});
 		
@@ -116,7 +116,7 @@ public class MultiQueens {
 		private final @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
 
 		public QueensThread(int N) {
-			super("Queen solver for size " + N);
+			super("Queens solver for size " + N);
 
 			this.N = N;
 			this.X = new BDD[N][N];
@@ -207,9 +207,10 @@ public class MultiQueens {
 			//long count = queen.satCount();
 			
 			synchronized (MultiQueens.QueensThread.class) {
-				System.out.println("\n**************************************************\nFinished with the queen problem of size " + N);
-				System.out.println("\nqueen = " + queen + "; factory.nodesCount() = " + factory.nodesCount());
-				factory.printStatistics();
+				System.out.println("\n**************************************************\n");
+				System.out.println("Built BDD for " + N + "-queens.");
+//				System.out.println("\nqueen = " + queen + "; factory.nodesCount() = " + factory.nodesCount());
+//				factory.printStatistics();
 				System.out.println("There are " + queen.satCount(N * N - 1) + " solutions.");
 
 				try {
@@ -234,7 +235,7 @@ public class MultiQueens {
 		}
 
 		private void printAssignment(Assignment assignment) {
-			System.out.println("Finding a satisfying assignment...\n");
+			System.out.println("Here is one solution:\n");
 			for (int i = 0; i < N; i++) {
 				for (int j = 0; j < N; j++)
 					System.out.print("  " + (assignment.holds(X[i][j]) ? 'Q' : '-'));
