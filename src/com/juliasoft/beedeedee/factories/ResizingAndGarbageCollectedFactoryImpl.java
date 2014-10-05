@@ -83,10 +83,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 	}
 
-	private int MKSimple(int var, int low, int high) {
-		return low == high ? low : ut.get(var, low, high);
-	}
-
 	/* 
 	 * used only by replace()
 	 * Precondition: 
@@ -102,17 +98,17 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			throw new ReplacementWithExistingVarException(var);
 		
 		if (var < varLow && var < varHigh)
-			return MKSimple(var, low, high);
+			return MK(var, low, high);
 		
 		if (varLow == varHigh)
-			return MKSimple(varLow, MKInOrder(var, ut.low(low), ut.low(high)), MKInOrder(var, ut.high(low), ut.high(high)));
+			return MK(varLow, MKInOrder(var, ut.low(low), ut.low(high)), MKInOrder(var, ut.high(low), ut.high(high)));
 		if (varLow < varHigh)
-			return MKSimple(varLow, MKInOrder(var, ut.low(low), high), MKInOrder(var, ut.high(low), high));
+			return MK(varLow, MKInOrder(var, ut.low(low), high), MKInOrder(var, ut.high(low), high));
 		/*
 		 * since var cannot appear in low and high
  		 * we have: varHigh < varLow &&  varHigh < var) 
 		 */
-		return MKSimple(varHigh, MKInOrder(var, low, ut.low(high)), MKInOrder(var, low, ut.high(high)));
+		return MK(varHigh, MKInOrder(var, low, ut.low(high)), MKInOrder(var, low, ut.high(high)));
 	}
 	
 	@Override
@@ -293,11 +289,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.AND, bdd1, bdd2,
-						result = MKSimple(v1, applyAND(ut.low(bdd1), ut.low(bdd2)), applyAND(ut.high(bdd1), ut.high(bdd2))));
+						result = MK(v1, applyAND(ut.low(bdd1), ut.low(bdd2)), applyAND(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MKSimple(v1, applyAND(ut.low(bdd1), bdd2), applyAND(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v1, applyAND(ut.low(bdd1), bdd2), applyAND(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MKSimple(v2, applyAND(bdd1, ut.low(bdd2)), applyAND(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v2, applyAND(bdd1, ut.low(bdd2)), applyAND(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -322,11 +318,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.OR, bdd1, bdd2,
-						result = MKSimple(v1, applyOR(ut.low(bdd1), ut.low(bdd2)), applyOR(ut.high(bdd1), ut.high(bdd2))));
+						result = MK(v1, applyOR(ut.low(bdd1), ut.low(bdd2)), applyOR(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MKSimple(v1, applyOR(ut.low(bdd1), bdd2), applyOR(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v1, applyOR(ut.low(bdd1), bdd2), applyOR(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MKSimple(v2, applyOR(bdd1, ut.low(bdd2)), applyOR(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v2, applyOR(bdd1, ut.low(bdd2)), applyOR(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -354,11 +350,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2,
-						result = MKSimple(v1, applyBIIMP(ut.low(bdd1), ut.low(bdd2)), applyBIIMP(ut.high(bdd1), ut.high(bdd2))));
+						result = MK(v1, applyBIIMP(ut.low(bdd1), ut.low(bdd2)), applyBIIMP(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MKSimple(v1, applyBIIMP(ut.low(bdd1), bdd2), applyBIIMP(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v1, applyBIIMP(ut.low(bdd1), bdd2), applyBIIMP(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MKSimple(v2, applyBIIMP(bdd1, ut.low(bdd2)), applyBIIMP(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v2, applyBIIMP(bdd1, ut.low(bdd2)), applyBIIMP(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -383,11 +379,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.XOR, bdd1, bdd2,
-						result = MKSimple(v1, applyXOR(ut.low(bdd1), ut.low(bdd2)), applyXOR(ut.high(bdd1), ut.high(bdd2))));
+						result = MK(v1, applyXOR(ut.low(bdd1), ut.low(bdd2)), applyXOR(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MKSimple(v1, applyXOR(ut.low(bdd1), bdd2), applyXOR(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v1, applyXOR(ut.low(bdd1), bdd2), applyXOR(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MKSimple(v2, applyXOR(bdd1, ut.low(bdd2)), applyXOR(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v2, applyXOR(bdd1, ut.low(bdd2)), applyXOR(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -410,11 +406,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.IMP, bdd1, bdd2,
-						result = MKSimple(v1, applyIMP(ut.low(bdd1), ut.low(bdd2)), applyIMP(ut.high(bdd1), ut.high(bdd2))));
+						result = MK(v1, applyIMP(ut.low(bdd1), ut.low(bdd2)), applyIMP(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MKSimple(v1, applyIMP(ut.low(bdd1), bdd2), applyIMP(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v1, applyIMP(ut.low(bdd1), bdd2), applyIMP(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MKSimple(v2, applyIMP(bdd1, ut.low(bdd2)), applyIMP(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v2, applyIMP(bdd1, ut.low(bdd2)), applyIMP(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -837,7 +833,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			if (diff > 0)
 				return u;
 			else if (diff < 0) {
-				result = MKSimple(ut.var(u), restrict(ut.low(u), var, value), restrict(ut.high(u), var, value));
+				result = MK(ut.var(u), restrict(ut.low(u), var, value), restrict(ut.high(u), var, value));
 				ut.getRestrictCache().put(u, var, value, result);
 				return result;
 			}
@@ -924,7 +920,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if (a == oldA && b == oldB)
 					result = bdd;
 				else
-					result = MKSimple(var, a, b);
+					result = MK(var, a, b);
 			}
 
 			ut.getQuantCache().put(exist, bdd, vars, hashCodeOfVars, result);
@@ -955,7 +951,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			int vu = ut.var(u), vd = ut.var(d);
 
 			if (d == ONE)
-				return MKSimple(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
+				return MK(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
 			
 			if (vd == vu) {
 				if (ut.low(d) == ZERO)
@@ -964,13 +960,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if (ut.high(d) == ZERO)
 					return simplify(ut.low(d), ut.low(u));
 
-				return MKSimple(vu, simplify(ut.low(d), ut.low(u)), simplify(ut.high(d), ut.high(u)));
+				return MK(vu, simplify(ut.low(d), ut.low(u)), simplify(ut.high(d), ut.high(u)));
 			}
 			
 			if (vd < vu)
-				return MKSimple(vd, simplify(ut.low(d), u), simplify(ut.high(d), u));
+				return MK(vd, simplify(ut.low(d), u), simplify(ut.high(d), u));
 
-			return MKSimple(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
+			return MK(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
 		}
 
 		@Override
@@ -1136,25 +1132,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			if (vf == vg)
 				if (vf == vh)
-					return MKSimple(vf, ite(ut.low(f), ut.low(g), ut.low(h)), ite(ut.high(f), ut.high(g), ut.high(h)));
+					return MK(vf, ite(ut.low(f), ut.low(g), ut.low(h)), ite(ut.high(f), ut.high(g), ut.high(h)));
 				else if (vf < vh)
-					return MKSimple(vf, ite(ut.low(f), ut.low(g), h), ite(ut.high(f), ut.high(g), h));
+					return MK(vf, ite(ut.low(f), ut.low(g), h), ite(ut.high(f), ut.high(g), h));
 				else
-					return MKSimple(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
 			else if (vf < vg)
 				if (vf == vh)
-					return MKSimple(vf, ite(ut.low(f), g, ut.low(h)), ite(ut.high(f), g, ut.high(h)));
+					return MK(vf, ite(ut.low(f), g, ut.low(h)), ite(ut.high(f), g, ut.high(h)));
 				else if (vf < vh)
-					return MKSimple(vf, ite(ut.low(f), g, h), ite(ut.high(f), g, h));
+					return MK(vf, ite(ut.low(f), g, h), ite(ut.high(f), g, h));
 				else
-					return MKSimple(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
 			else
 				if (vg == vh)
-					return MKSimple(vg, ite(f, ut.low(g), ut.low(h)), ite(f, ut.high(g), ut.high(h)));
+					return MK(vg, ite(f, ut.low(g), ut.low(h)), ite(f, ut.high(g), ut.high(h)));
 				else if (vg < vh)
-					return MKSimple(vg, ite(f, ut.low(g), h), ite(f, ut.high(g), h));
+					return MK(vg, ite(f, ut.low(g), h), ite(f, ut.high(g), h));
 				else
-					return MKSimple(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
 		}
 
 		@Override
@@ -1187,11 +1183,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			
 			if (v1 < var)
 				if (v1 == v2)
-					return MKSimple(v1, compose(ut.low(id1), ut.low(id2), var), compose(ut.high(id1), ut.high(id2), var));
+					return MK(v1, compose(ut.low(id1), ut.low(id2), var), compose(ut.high(id1), ut.high(id2), var));
 				else if (v1 < v2)
-					return MKSimple(v1, compose(ut.low(id1), id2, var), compose(ut.high(id1), id2, var));
+					return MK(v1, compose(ut.low(id1), id2, var), compose(ut.high(id1), id2, var));
 				else
-					return MKSimple(v2, compose(id1, ut.low(id2), var), compose(id1, ut.high(id2), var));
+					return MK(v2, compose(id1, ut.low(id2), var), compose(id1, ut.high(id2), var));
 			else
 				return ite(id2, ut.high(id1), ut.low(id1));
 		}
