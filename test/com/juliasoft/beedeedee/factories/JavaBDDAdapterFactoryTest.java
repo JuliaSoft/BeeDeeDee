@@ -61,8 +61,8 @@ public class JavaBDDAdapterFactoryTest {
 		assertEquals(0, factory.one().nodeCount());
 	}
 
-	@Test
-	public void testReplace() {
+	//@Test
+	private void testReplace() {
 		BDD x0 = jfactory.ithVar(0);
 		BDD x1 = jfactory.ithVar(1);
 		BDD myX0 = factory.ithVar(0);

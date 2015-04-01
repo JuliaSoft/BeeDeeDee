@@ -107,7 +107,6 @@
 				<attribute name="Main-Class" value="com.juliasoft.beedeedee.examples.MultiQueens"/>
 			</manifest>
 			<fileset dir="${build.out.folder}" includes="**/*.class" />
-			<zipgroupfileset dir="${ivy.home}" includes="**/julia-annotations-*.jar" />
 		</jar>
 	</target>
 
@@ -132,11 +131,15 @@
 	</target>
 
 	<target name="bundle-full.zip" depends="">
+	      <!-- Copy ivy managed dependencies to be included in bundle (needed here for manifest generation) -->
+	        <ivy:retrieve pattern="${build.dist.folder}/lib/[artifact]-[revision](-[classifier]).[ext]" conf="default" />
 		<zip destfile="${build.dist.folder}/${ant.project.name}-bundle-full-${beedeedee.version}.zip">
 			<zipfileset dir="${build.dist.folder}" includes="${jar.name}" />
+			<zipfileset dir="${build.dist.folder}/lib" prefix="lib" includes="*.jar" />
 			<zipfileset dir="lib" prefix="lib" includes="*.jar" />
 			<zipfileset dir="." includes="gpl-license.txt" />
 		</zip>
+		<delete dir="${build.dist.folder}/lib" failonerror="false"/>
 	</target>
 
 </project>
