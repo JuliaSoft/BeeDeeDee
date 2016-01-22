@@ -82,4 +82,18 @@ public class BDDGerTest {
 
 		assertTrue(and.isEquivalentTo(originalAnd));
 	}
+
+	@Test
+	public void testNot() {
+		// (x1 <-> x2) | x3
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.orWith(factory.makeVar(3));
+		BDD bddGer = new BDDGer(bdd);
+
+		BDD not = bddGer.not();
+		BDD originalNot = bdd.not();
+
+		assertTrue(not.isEquivalentTo(originalNot));
+	}
 }

@@ -118,8 +118,11 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD not() {
-		// TODO Auto-generated method stub
-		return null;
+		GER notGer = ger.not();
+		BDDGer notBddGer = new BDDGer(null);
+		notBddGer.ger = notGer;
+
+		return notBddGer;
 	}
 
 	@Override
