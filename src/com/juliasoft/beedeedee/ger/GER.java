@@ -83,8 +83,8 @@ public class GER {
 	}
 
 	/**
-	 * Computes negation of this. It uses the equivalence !(L & n) = !L | !n =
-	 * !p1 | !p2 | ... | !pn | !n. The result is then normalized.
+	 * Computes negation of this GER. It uses the equivalence !(L & n) = !L | !n
+	 * = !p1 | !p2 | ... | !pn | !n. The result is then normalized.
 	 * 
 	 * @return the negation
 	 */
