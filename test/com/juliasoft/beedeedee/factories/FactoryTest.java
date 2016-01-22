@@ -1,6 +1,7 @@
 package com.juliasoft.beedeedee.factories;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,9 +19,6 @@ import org.junit.Test;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl;
-
 
 @SuppressWarnings("unused")
 public class FactoryTest {
@@ -103,7 +101,7 @@ public class FactoryTest {
 			ecs.submit(new Callable<BDD>() {
 				
 				@Override
-				public BDD call() throws Exception {
+				public BDD call() throws InterruptedException  {
 					
 					// wait others to maximize concurrency
 					cdl.countDown();
@@ -363,7 +361,7 @@ public class FactoryTest {
 		BDD expected = other.and(bdd.restrict(var, true))
 				.or(other.not().and(bdd.restrict(var, false)));
 		
-		assertTrue(compose.equalsAux(expected));
+		assertTrue(compose.isEquivalentTo(expected));
 	}
 
 	@Test
@@ -375,7 +373,7 @@ public class FactoryTest {
 
 		BDD simplified = or.simplify(d);
 
-		assertTrue(or.and(d).equalsAux(simplified.and(d)));
+		assertTrue(or.and(d).isEquivalentTo(simplified.and(d)));
 	}
 	
 	@Test
@@ -387,6 +385,6 @@ public class FactoryTest {
 		BDD ite = biimp.ite(or, xor);
 		BDD expected = biimp.and(or).or(biimp.not().and(xor));
 
-		assertTrue(ite.equalsAux(expected));
+		assertTrue(ite.isEquivalentTo(expected));
 	}
 }

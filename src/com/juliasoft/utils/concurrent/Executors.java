@@ -24,8 +24,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import com.juliasoft.utils.concurrent.Task;
-import static checkers.nullness.support.NullnessAssertions.*;
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.*;
 
 /**
  * An utility class to run tasks in parallel or asynchronously.

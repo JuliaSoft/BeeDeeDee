@@ -36,7 +36,7 @@ class ReplaceCache {
 	 * 
 	 * @param size the size of the cache
 	 */
-	public ReplaceCache(int size) {
+	ReplaceCache(int size) {
 		this.size = size;
 		int arraySize = size * ENTRY_SIZE;
 		this.cache = new int[arraySize];

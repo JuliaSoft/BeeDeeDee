@@ -16,18 +16,17 @@
   You should have received a copy of the GNU General Public License
   along with BeeDeeDee.  If not, see <http://www.gnu.org/licenses/>.
 */
-package com.juliasoft.beedeedee.examples;
+package com.juliasoft.beedeedee.examples.queens;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import checkers.nullness.quals.Inner0NonNull;
-import checkers.nullness.quals.Inner1NonNull;
-
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
-
+import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
+import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
+import com.juliasoft.utils.concurrent.Executors;
 
 public class Queens {
 
@@ -132,7 +131,7 @@ public class Queens {
 		System.out.println('\n');
 		System.out.println("\n" + queen + " " + factory.nodesCount());
 		factory.printStatistics();
-		long count = (long) queen.satCount();
+		long count = queen.satCount();
 		System.out.println("There are " + count + " solutions.");
 //factory.printUT();
 		if (count > 0) {
@@ -149,7 +148,7 @@ public class Queens {
 		*/
 		
 		System.out.println("Replacing, worst case...");
-		Map<Integer, Integer> renaming = new HashMap<Integer, Integer>();
+		Map<Integer, Integer> renaming = new HashMap<>();
 		for (j = N*N, i = j - 1; i >= 0; i--, j++) {
 			renaming.put(i, j);
 		}
@@ -165,6 +164,7 @@ public class Queens {
 		start = System.currentTimeMillis();
 		queen.exist(vars);
 		factory.done();
+		Executors.shutdown();
 		System.out.println("Done, ms: " + (System.currentTimeMillis() - start));
 	}
 

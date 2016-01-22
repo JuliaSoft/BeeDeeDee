@@ -1,6 +1,7 @@
 package com.juliasoft.beedeedee.factories;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedWriter;
 import java.io.IOException;
@@ -22,7 +23,7 @@ public class JavaBDDAdapterFactoryTest {
 	private BDDFactory jfactory;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		factory = JavaBDDAdapterFactory.init(100, 10);
 		factory.setVarNum(10);
 		jfactory = JFactory.init(100, 10);
@@ -90,25 +91,28 @@ public class JavaBDDAdapterFactoryTest {
 	 * @param myBdd an adapter's bdd
 	 * @param bdd a JFactory bdd
 	 */
-	private void assertBDDEquals(BDD myBdd, BDD bdd) {
-		try {
-			StringWriter mySw = new StringWriter();
-			BufferedWriter myOut = new BufferedWriter(mySw);
+	public void assertBDDEquals(BDD myBdd, BDD bdd) {
+		StringWriter sw = new StringWriter(), mySw = new StringWriter();
+
+		try (BufferedWriter myOut = new BufferedWriter(mySw)) {
 			factory.save(myOut, myBdd);
-			myOut.close();
-			
-			StringWriter sw = new StringWriter();
-			BufferedWriter out = new BufferedWriter(sw);
-			jfactory.save(out, bdd);
-			out.close();
-			
-			System.out.println(mySw);
-			System.out.println(sw);
-			assertEquals(mySw.toString(), sw.toString());
-			
-		} catch (IOException e) {
-			e.printStackTrace();
 		}
+		catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		try (BufferedWriter out = new BufferedWriter(sw)) {
+			jfactory.save(out, bdd);
+		}
+		catch (IOException e) {
+			e.printStackTrace();
+			return;
+		}
+			
+		System.out.println(mySw);
+		System.out.println(sw);
+		assertEquals(mySw.toString(), sw.toString());
 	}
 
 	@Test

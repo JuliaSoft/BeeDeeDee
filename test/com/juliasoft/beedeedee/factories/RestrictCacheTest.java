@@ -1,7 +1,7 @@
 package com.juliasoft.beedeedee.factories;
 
-import static checkers.nullness.support.NullnessAssertions.assertNonNull;
-import static org.junit.Assert.*;
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -11,7 +11,7 @@ public class RestrictCacheTest {
 	private RestrictCache cache;
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() {
 		cache = new RestrictCache(1000);
 	}
 

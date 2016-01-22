@@ -21,6 +21,9 @@ package com.juliasoft.beedeedee.bdd;
 import java.util.List;
 import java.util.Map;
 
+import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.ger.LeaderFunction;
+
 /**
  * A Binary Decision Diagram.
  */
@@ -32,19 +35,19 @@ public interface BDD {
 	 * This BDD is no more usable after this call.
 	 */
 
-	public abstract void free();
+	public void free();
 
 	/**
 	 * @return true if this BDD represents the constant zero
 	 */
 	
-	public abstract boolean isZero();
+	public boolean isZero();
 
 	/**
 	 * @return true if this BDD represents the constant one
 	 */
 	
-	public abstract boolean isOne();
+	public boolean isOne();
 	
 	/**
 	 * Computes the logical OR of this bdd with another one.
@@ -53,7 +56,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD or(BDD other);
+	public BDD or(BDD other);
 
 	/**
 	 * Computes the logical OR of this bdd with another one,
@@ -63,7 +66,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD orWith(BDD other);
+	public BDD orWith(BDD other);
 
 	/**
 	 * Computes the logical AND of this bdd with another one.
@@ -72,7 +75,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD and(BDD other);
+	public BDD and(BDD other);
 
 	/**
 	 * Computes the logical AND of this bdd with another one,
@@ -82,7 +85,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD andWith(BDD other);
+	public BDD andWith(BDD other);
 
 	/**
 	 * Computes the logical XOR of this bdd with another one.
@@ -91,7 +94,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD xor(BDD other);
+	public BDD xor(BDD other);
 	
 	/**
 	 * Computes the logical XOR of this bdd with another one,
@@ -101,7 +104,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD xorWith(BDD other);
+	public BDD xorWith(BDD other);
 
 	/**
 	 * Computes the logical NAND of this bdd with another one.
@@ -110,7 +113,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD nand(BDD other);
+	public BDD nand(BDD other);
 
 	/**
 	 * Computes the logical NAND of this bdd with another one,
@@ -120,7 +123,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD nandWith(BDD other);
+	public BDD nandWith(BDD other);
 
 	/**
 	 * Computes the logical NOT of this bdd.
@@ -128,7 +131,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD not();
+	public BDD not();
 
 	/**
 	 * Computes the logical NOT of this bdd and store the result in this object.
@@ -136,7 +139,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD notWith();
+	public BDD notWith();
 
 	/**
 	 * Computes the logical implication of this bdd with another one.
@@ -145,7 +148,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD imp(BDD other);
+	public BDD imp(BDD other);
 
 	/**
 	 * Computes the logical implication of this bdd with another one,
@@ -155,7 +158,7 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD impWith(BDD other);
+	public BDD impWith(BDD other);
 
 	/**
 	 * Computes the logical biimplication of this bdd with another one.
@@ -164,7 +167,7 @@ public interface BDD {
 	 * @return the resulting BDD object
 	 */
 	
-	public abstract BDD biimp(BDD other);
+	public BDD biimp(BDD other);
 	
 	/**
 	 * Computes the logical biimplication of this bdd with another one,
@@ -174,13 +177,13 @@ public interface BDD {
 	 * @return the resulting BDD object (this)
 	 */
 	
-	public abstract BDD biimpWith(BDD other);
+	public BDD biimpWith(BDD other);
 
 	/**
 	 * @return a new BDD object representing the same diagram
 	 */
 	
-	public abstract BDD copy();
+	public BDD copy();
 
 	/**
 	 * Yields a satisfying assignment for the formula represented by this bdd.
@@ -189,7 +192,7 @@ public interface BDD {
 	 * @throws UnsatException if there is no satisfying assignment
 	 */
 	
-	public abstract Assignment anySat() throws UnsatException;
+	public Assignment anySat() throws UnsatException;
 
 	/**
 	 * Yields a list of the assignments satisfying the formula represented by this bdd.
@@ -197,7 +200,7 @@ public interface BDD {
 	 * @return a list of the satisfying assignments
 	 */
 	
-	public abstract List<Assignment> allSat();
+	public List<Assignment> allSat();
 
 	/**
 	 * Counts the number of solutions (satisfying assignments) of this bdd,
@@ -206,7 +209,7 @@ public interface BDD {
 	 * @return the number of solutions
 	 */
 	
-	public abstract long satCount();
+	public long satCount();
 
 	/**
 	 * Counts the number of solutions (satisfying assignments) of this bdd.
@@ -215,7 +218,7 @@ public interface BDD {
 	 * @return the number of solutions
 	 */
 	
-	public abstract long satCount(int maxVar);
+	public long satCount(int maxVar);
 
 	/**
 	 * Restricts this bdd by constraining the given variable to a value.
@@ -225,7 +228,7 @@ public interface BDD {
 	 * @return the resulting bdd
 	 */
 	
-	public abstract BDD restrict(int var, boolean value);
+	public BDD restrict(int var, boolean value);
 
 	/**
 	 * Restricts this bdd by constraining the given variables to a value.
@@ -236,7 +239,7 @@ public interface BDD {
 	 * @return the resulting bdd
 	 */
 	
-	public abstract BDD restrict(BDD var);
+	public BDD restrict(BDD var);
 
 	 /**
 	  * Restricts this bdd by constraining the given variables to a value,
@@ -248,7 +251,7 @@ public interface BDD {
 	  * @return this
 	  */
 
-	public abstract BDD restrictWith(BDD var);
+	public BDD restrictWith(BDD var);
 	
 	/**
 	 * Existential quantification.
@@ -257,7 +260,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD exist(int var);
+	public BDD exist(int var);
 
 	/**
 	 * Existential quantification.
@@ -267,7 +270,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD exist(BDD var);
+	public BDD exist(BDD var);
 	
 	/**
 	 * Universal quantification.
@@ -276,7 +279,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD forAll(int var);
+	public BDD forAll(int var);
 
 	/**
 	 * Universal quantification.
@@ -286,7 +289,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD forAll(BDD var);
+	public BDD forAll(BDD var);
 	
 	/**
 	 * Simplifies this bdd to be true for every assignment satisfying d.
@@ -298,7 +301,7 @@ public interface BDD {
 	 * @return the resulting bdd
 	 */
 	
-	public abstract BDD simplify(BDD d);
+	public BDD simplify(BDD d);
 
 	/**
 	 * Computes the number of occurrences of each variable in this bdd.
@@ -306,13 +309,13 @@ public interface BDD {
 	 * @return an array mapping a variable index to its number of occurrences
 	 */
 	
-	public abstract int[] varProfile();
+	public int[] varProfile();
 
 	/**
 	 * @return the number of nodes of this bdd
 	 */
 	
-	public abstract int nodeCount();
+	public int nodeCount();
 
 	/**
 	 * Renames the variables in this bdd according to the given renaming.
@@ -321,7 +324,7 @@ public interface BDD {
 	 * @return the new bdd
 	 */
 	
-	public abstract BDD replace(Map<Integer,Integer> renaming);
+	public BDD replace(Map<Integer,Integer> renaming);
 
 	/**
 	 * Renames the variables in this bdd according to the given renaming,
@@ -331,7 +334,7 @@ public interface BDD {
 	 * @return this
 	 */
 	
-	public abstract BDD replaceWith(Map<Integer, Integer> renaming);
+	public BDD replaceWith(Map<Integer, Integer> renaming);
 
 	/**
 	 * Counts the number of paths leading to the one terminal of this bdd.
@@ -339,7 +342,7 @@ public interface BDD {
 	 * @return the number of paths
 	 */
 	
-	public abstract long pathCount();
+	public long pathCount();
 	
 	/**
 	 * Computes the If-Then-Else operation.
@@ -349,7 +352,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD ite(BDD thenBDD, BDD elseBDD);
+	public BDD ite(BDD thenBDD, BDD elseBDD);
 
 	/**
 	 * The relational product.
@@ -359,7 +362,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD relProd(BDD other, BDD var);
+	public BDD relProd(BDD other, BDD var);
 
 	/**
 	 * Functional composition.
@@ -370,28 +373,41 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public abstract BDD compose(BDD other, int var);
+	public BDD compose(BDD other, int var);
 	
-	public abstract boolean equalsAux(BDD other);
+	public boolean isEquivalentTo(BDD other);
 	
-	public abstract int hashCodeAux();
+	public int hashCodeAux();
 
 	/**
 	 * @return the variable number of this bdd
 	 */
 	
-	public abstract int var();
+	public int var();
 
 	/**
 	 * @return a BDD object representing the high branch of this bdd
 	 */
 	
-	public abstract BDD high();
+	public BDD high();
 
 	/**
 	 * @return a BDD object representing the high branch of this bdd
 	 */
 	
-	public abstract BDD low();
+	public BDD low();
 
+	/**
+	 * Squeezes equivalent variables from the BDD.
+	 * See paper by Bagnara & Schachte.
+	 * 
+	 * @param leaderFunction a function returning the leader (minimum) of the equivalence class of each variable
+	 * @return the resulting BDD
+	 */
+	public BDD squeezeEquiv(LeaderFunction leaderFunction);
+
+	/**
+	 * @return the factory which created this BDD
+	 */
+	public Factory getFactory();
 }

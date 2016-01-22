@@ -18,6 +18,8 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -27,20 +29,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import checkers.nullness.quals.NonNull;
-import static checkers.nullness.support.NullnessAssertions.assertNonNull;
-
-import com.juliasoft.beedeedee.bdd.Assignment;
-import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
-
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDBitVector;
 import net.sf.javabdd.BDDDomain;
 import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
+
+import com.juliasoft.beedeedee.bdd.Assignment;
+import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.julia.checkers.nullness.NonNull;
 
 /**
  * An adapter class to use BeeDeeDee through the JavaBDD interface.
@@ -85,8 +85,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 				("defaultGCCallback", new Class[] { int.class, BDDFactory.GCStats.class });
 			registerGCCallback(this, m);
 		}
-		catch (SecurityException e) {}
-		catch (NoSuchMethodException e) {}
+		catch (SecurityException | NoSuchMethodException e) {
+			throw new RuntimeException("Unexpected exception " + e);
+		}
 	}
 
 	@Override
@@ -164,9 +165,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 			public void onStart(int num, int size, int free, long totalTime) {
 				try {
 					m.invoke(o, 1, new GCStats(num, size, free, 0L, totalTime));
-				} catch (IllegalAccessException e) {
-				} catch (IllegalArgumentException e) {
-				} catch (InvocationTargetException e) {
+				}
+				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					throw new RuntimeException("Unexpected exception " + e);
 				}
 			}
 
@@ -174,9 +175,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 			public void onStop(int num, int size, int free, long time, long totalTime) {
 				try {
 					m.invoke(o, 0, new GCStats(num, size, free, time, totalTime));
-				} catch (IllegalAccessException e) {
-				} catch (IllegalArgumentException e) {
-				} catch (InvocationTargetException e) {
+				}
+				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					throw new RuntimeException("Unexpected exception " + e);
 				}
 			}
 		});
@@ -246,9 +247,9 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 			public void onStop(int num, int oldSize, int newSize, long time, long totalTime) {
 				try {
 					m.invoke(o, oldSize, newSize);
-				} catch (IllegalAccessException e) {
-				} catch (IllegalArgumentException e) {
-				} catch (InvocationTargetException e) {
+				}
+				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					throw new RuntimeException("Unexpected exception " + e);
 				}
 			}
 		});
@@ -882,7 +883,7 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 		@Override
 		public boolean equals(BDD that) {
 			return that instanceof JavaBDDAdapterBDD &&
-					bdd.equalsAux(((JavaBDDAdapterBDD) that).bdd);
+					bdd.isEquivalentTo(((JavaBDDAdapterBDD) that).bdd);
 		}
 
 		@Override

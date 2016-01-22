@@ -25,13 +25,11 @@ import com.juliasoft.beedeedee.bdd.BDD;
 /**
  * A factory for Binary Decision Diagrams.
  */
-
 public abstract class Factory {
 
 	/**
 	 * @return the current number of nodes in the factory
 	 */
-	
  	public abstract int nodesCount();
 
 	/**
@@ -40,7 +38,6 @@ public abstract class Factory {
 	 * @param i the number of the variable
 	 * @return the variable as a BDD object 
 	 */
-
 	public abstract BDD makeVar(int i);
 
 	/**
@@ -49,7 +46,6 @@ public abstract class Factory {
 	 * @param i the number of the variable
 	 * @return the negation of the variable as a BDD object 
 	 */
-
 	public abstract BDD makeNotVar(int i);
 
 	public abstract void printStatistics();
@@ -59,13 +55,11 @@ public abstract class Factory {
 	/**
 	 * @return a BDD object representing the constant zero
 	 */
-	
 	public abstract BDD makeZero();
 
 	/**
 	 * @return a BDD object representing the constant one
 	 */
-	
 	public abstract BDD makeOne();
 
 	/**
@@ -75,7 +69,6 @@ public abstract class Factory {
 	 * @param bdds the collection of BDDs
 	 * @return the total number of nodes
 	 */
-	
 	public abstract int nodeCount(Collection<BDD> bdds);
 
 	/**
@@ -85,13 +78,31 @@ public abstract class Factory {
 	 * @param cacheSize the size of the caches
 	 * @return an instance of the factory
 	 */
-
 	public static ResizingAndGarbageCollectedFactory mkResizingAndGarbageCollected(int utSize, int cacheSize) {
 		return new ResizingAndGarbageCollectedFactoryImpl(utSize, cacheSize);
+	}
+
+	/**
+	 * Constructs a factory with automatic resizing and garbage collection.
+	 * 
+	 * @param utSize the initial size of the node table
+	 * @param cacheSize the size of the caches
+	 * @param numberOfPreallocatedVars the number of variables to preallocate
+	 * @return an instance of the factory
+	 */
+
+	public static ResizingAndGarbageCollectedFactory mkResizingAndGarbageCollected(int utSize, int cacheSize, int numberOfPreallocatedVars) {
+		return new ResizingAndGarbageCollectedFactoryImpl(utSize, cacheSize, numberOfPreallocatedVars);
 	}
 
 	/**
 	 * Call this method when the factory is no longer needed.
 	 */
 	public abstract void done();
+
+	/**
+	 * @return the maximum variable index used so far
+	 */
+	public abstract int getMaxVar();
 }
+

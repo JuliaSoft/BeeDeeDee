@@ -18,6 +18,8 @@
 */
 package com.juliasoft.beedeedee.factories;
 
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -28,28 +30,37 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import checkers.nullness.quals.Inner0NonNull;
-import static checkers.nullness.support.NullnessAssertions.*;
-
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
+import com.juliasoft.beedeedee.ger.LeaderFunction;
+import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
 class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollectedFactory {
 	private final static int FIRST_NODE_NUM = 2;
-	private final static int NUMBER_OF_PREALLOCATED_VARS = 1000;
-	private final static int NUM_OF_PREALLOCATED_NODES = FIRST_NODE_NUM + 2 * NUMBER_OF_PREALLOCATED_VARS;
+	private final int NUMBER_OF_PREALLOCATED_VARS;
+	private final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
+	private final int NUM_OF_PREALLOCATED_NODES;
 	protected final ResizingAndGarbageCollectedUniqueTable ut;
 	private final List<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
 	private final int ZERO;
 	private final int ONE;
-	private final int[] vars = new int[NUMBER_OF_PREALLOCATED_VARS];
-	private final int[] notVars = new int[NUMBER_OF_PREALLOCATED_VARS];
+	private final int[] vars;
+	private final int[] notVars;
 	private int maxVar;
 	
 	ResizingAndGarbageCollectedFactoryImpl(int utSize, int cacheSize) {
+		this(utSize, cacheSize, DEFAULT_NUMBER_OF_PREALLOCATED_VARS);
+	}
+
+	ResizingAndGarbageCollectedFactoryImpl(int utSize, int cacheSize, int numberOfPreallocatedVars) {
+		NUMBER_OF_PREALLOCATED_VARS = numberOfPreallocatedVars;
+		NUM_OF_PREALLOCATED_NODES = FIRST_NODE_NUM + 2 * NUMBER_OF_PREALLOCATED_VARS;
+		vars = new int[NUMBER_OF_PREALLOCATED_VARS];
+		notVars = new int[NUMBER_OF_PREALLOCATED_VARS];
+
 		utSize = Math.max(utSize, NUM_OF_PREALLOCATED_NODES);
 		ut = new ResizingAndGarbageCollectedUniqueTable(utSize, cacheSize, this);
 
@@ -179,7 +190,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 	private int freedBDDsCounter;
 	
-	private class BDDImpl implements BDD {
+	class BDDImpl implements BDD {
 
 		/**
 		 * The position of this BDD inside the table of BDD nodes.
@@ -259,11 +270,40 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return id + ": " + ut.var(id) + ">" + ut.low(id) + ">" + ut.high(id);
+				return "digraph G {\n" + toDot(id) + "}\n";
 			}
 			finally {
 				lock.unlock();
 			}
+		}
+
+		private String toDot(int currentId) {
+			String s = "";
+
+			boolean terminal = false;
+
+			int var = ut.var(currentId);
+			if (currentId < 2) {
+				var = currentId == 0 ? 0 : 1;
+
+				terminal = true;
+			}
+
+			int low = ut.low(currentId);
+			int high = ut.high(currentId);
+
+			s += currentId + " [label=" + var + (terminal ? ",shape=box]\n" : "]\n");
+			if (terminal) {
+				return s;
+			}
+
+			s += currentId + " -> " + low + " [style=dotted];\n";
+			s += currentId + " -> " + high + ";\n";
+
+			s += toDot(low);
+			s += toDot(high);
+
+			return s;
 		}
 
 		/**
@@ -1193,7 +1233,33 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public boolean equalsAux(BDD other) {
+		public BDD squeezeEquiv(LeaderFunction leaderFunction) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return new BDDImpl(squeezeEquiv(id, leaderFunction));
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+
+		private int squeezeEquiv(int bdd, LeaderFunction leaderFunction) {
+			if (bdd < FIRST_NODE_NUM) {
+				return bdd;
+			}
+			int var = ut.var(bdd);
+			if (leaderFunction.get(var) == var) {
+				return MK(var, squeezeEquiv(ut.low(bdd), leaderFunction), squeezeEquiv(ut.high(bdd), leaderFunction));
+			}
+			if (ut.high(bdd) == 0) {
+				return squeezeEquiv(ut.low(bdd), leaderFunction);
+			}
+			return squeezeEquiv(ut.high(bdd), leaderFunction);
+		}
+
+		@Override
+		public boolean isEquivalentTo(BDD other) {
 			assertNonNull(other);
 			if (this == other)
 				return true;
@@ -1250,8 +1316,18 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				lock.unlock();
 			}
 		}
+
+		@Override
+		public Factory getFactory() {
+			return ResizingAndGarbageCollectedFactoryImpl.this;
+		}
 	}
-	
+
+	@Override
+	public int getMaxVar() {
+		return maxVar;
+	}
+
 	private class AssignmentImpl implements Assignment {
 
 		private final Map<Integer, Boolean> truthTable;
@@ -1497,5 +1573,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 		
 		return count;
+	}
+
+	ArrayList<BDDImpl> getAllBDDsCreatedSoFarCopy() {
+		return new ArrayList<>(allBDDsCreatedSoFar);
 	}
 }

@@ -18,7 +18,7 @@
 */
 package com.juliasoft.beedeedee.factories;
 
-import static checkers.nullness.support.NullnessAssertions.assertNonNull;
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
 import java.util.Arrays;
 

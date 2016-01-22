@@ -15,5 +15,6 @@
 	<dependencies>
 		<dependency org="Julia S.R.L." name="julia-annotations" rev="1.0.13" />
 		<dependency org="javabdd" name="javabdd" rev="1.0b2"/>
+		<dependency org="org.mockito" name="mockito-all" rev="1.8.4"/>
 	</dependencies>
 </ivy-module>

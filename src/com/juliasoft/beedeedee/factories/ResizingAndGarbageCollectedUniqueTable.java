@@ -135,15 +135,15 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		return gcLocks[nextGCLocks = (nextGCLocks + 1) % gcLocks.length];
 	}
 
-	private int expandTable(int var, int low, int high, Object myLock, int pos) {
-		int bin;
+	int expandTable(int var, int low, int high, Object myLock, int pos) {
+		int bin = H[pos];
 
-		if ((bin = H[pos]) < 0) {
+		if (bin < 0) {	// empty bin, created node is first
 			int allocationPoint = nextPos(myLock);
 			setAt(allocationPoint, var, low, high);
 			return H[pos] = allocationPoint;
 		}
-		else
+		else	// append to collision list
 			while (true) {
 				if (isVarLowHigh(bin, var, low, high))
 					return bin;
@@ -215,7 +215,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	private void resize() {
 		// we precompute as much as we can outside the critical section
-		ResizeData data = new ResizeData();
+		ResizeData data = new ResizeData(this);
 
 		lockAllAndResize(0, data);
 
@@ -314,7 +314,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		for (ReentrantLock lock: gcLocks)
 			lock.lock();
 
-		int size = getSize();	
+		int size = getSize();
 		long start = System.currentTimeMillis();
 
 		GarbageCollectionListener listener = gcListener;
@@ -411,7 +411,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		return oldMinFreeNodes;
 	}
 
-	private class ResizeData {
+	private static class ResizeData {
 		private final long start;
 		private final int oldSize;
 		private final int newSize;
@@ -422,18 +422,18 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		private final QuantCache quantCache;
 		private final ReplaceCache replaceCache;
 
-		private ResizeData() {
+		private ResizeData(ResizingAndGarbageCollectedUniqueTable table) {
 			start = System.currentTimeMillis();
-			oldSize = getSize();
-			newSize = oldSize * (increaseFactor - 1) > maxIncrease ?
-				oldSize + maxIncrease : (int) (oldSize * increaseFactor);
-			int oldCacheSize = getCacheSize();
-			int newCacheSize = newSize * cacheRatio > oldCacheSize ?
-				((int) (newSize * cacheRatio)) : oldCacheSize;
+			oldSize = table.getSize();
+			newSize = oldSize * (table.increaseFactor - 1) > table.maxIncrease ?
+				oldSize + table.maxIncrease : (int) (oldSize * table.increaseFactor);
+			int oldCacheSize = table.getCacheSize();
+			int newCacheSize = newSize * table.cacheRatio > oldCacheSize ?
+				((int) (newSize * table.cacheRatio)) : oldCacheSize;
 
-			ResizeListener listener = resizeListener;
+			ResizeListener listener = table.resizeListener;
 			if (listener != null)
-				listener.onStart(numOfResizes, oldSize, newSize, totalResizeTime);
+				listener.onStart(table.numOfResizes, oldSize, newSize, table.totalResizeTime);
 
 			newH = new int[newSize];
 			Arrays.fill(newH, -1);
@@ -470,14 +470,11 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			listener.onStop(numOfResizes, data.oldSize, data.newSize, resizeTime, totalResizeTime);
 	}
 
-	private void updateHashTable() {
+	void updateHashTable() {
 		if (size >= 600000) {
 			parallelUpdateHashTable();
 			return;
 		}
-
-		int[] ut = this.ut;
-		int[] H = this.H;
 
 		for (int i = nextPos - 1, index = i * NODE_SIZE + VAR_OFFSET; i >= 0; i--, index -= NODE_SIZE)
 			// we only consider valid entries
@@ -502,17 +499,15 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 			@Override
 			public void run() {
-				int[] nodes = ut;
-				int[] table = H;
 
 				for (int i = nextPos - 1 - offset, index = i * NODE_SIZE + VAR_OFFSET; i >= 0; i -= total, index -= NODE_SIZE * total)
 					// we only consider valid entries
-					if (nodes[index] >= 0) {
-						int pos = hash(nodes[index], nodes[index + 1], nodes[index + 2]);
+					if (ut[index] >= 0) {
+						int pos = hash(ut[index], ut[index + 1], ut[index + 2]);
 
 						synchronized (updateLocks[pos % updateLocks.length]) {
-							setNext(i, table[pos]);
-							table[pos] = i;
+							setNext(i, H[pos]);
+							H[pos] = i;
 						}
 					}
 			}
@@ -525,7 +520,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		Executors.parallelise(slaves);
 	}
 
-	private int compactTable(boolean[] aliveNodes) {
+	int compactTable(boolean[] aliveNodes) {
 		int collected = 0;
 		int[] newPositions = new int[size];
 

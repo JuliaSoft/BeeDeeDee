@@ -16,12 +16,12 @@
   You should have received a copy of the GNU General Public License
   along with BeeDeeDee.  If not, see <http://www.gnu.org/licenses/>.
 */
-package com.juliasoft.beedeedee.examples;
-
-import checkers.nullness.quals.Inner0NonNull;
-import checkers.nullness.quals.Inner1NonNull;
+package com.juliasoft.beedeedee.examples.queens;
 
 import com.juliasoft.beedeedee.factories.JavaBDDAdapterFactory;
+import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
+import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
+import com.juliasoft.utils.concurrent.Executors;
 
 import net.sf.javabdd.*;
 
@@ -56,7 +56,9 @@ public class NQueens {
         freeAll();
         time = System.currentTimeMillis() - time;
         System.out.println("Time: "+time/1000.+" seconds");
-//        BDDFactory.CacheStats cachestats = B.getCacheStats();
+
+        Executors.shutdown();
+        //        BDDFactory.CacheStats cachestats = B.getCacheStats();
 //        if (cachestats != null && cachestats.uniqueAccess > 0) {
 //            System.out.println(cachestats);
 //        }
@@ -75,11 +77,7 @@ public class NQueens {
             else
                 numberOfNodes = Integer.parseInt(numOfNodes);
             String cache = System.getProperty("bddcache");
-            int cacheSize;
-            if (cache == null)
-                cacheSize = 10000;
-            else
-                cacheSize = Integer.parseInt(cache);
+            int cacheSize = cache == null ? 10000 : Integer.parseInt(cache);
             numberOfNodes = Math.max(10000, numberOfNodes);
 //            B = BDDFactory.init(numberOfNodes, cacheSize);
             B = JavaBDDAdapterFactory.init(numberOfNodes, cacheSize);
@@ -137,10 +135,9 @@ public class NQueens {
     
     private static void build(int i, int j) {
         BDD a = B.one(), b = B.one(), c = B.one(), d = B.one();
-        int k, l;
 
         /* No one in the same column */
-        for (l = 0; l < N; l++) {
+        for (int l = 0; l < N; l++) {
             if (l != j) {
                 BDD u = X[i][l].apply(X[i][j], BDDFactory.nand);
                 a.andWith(u);
@@ -148,7 +145,7 @@ public class NQueens {
         }
 
         /* No one in the same row */
-        for (k = 0; k < N; k++) {
+        for (int k = 0; k < N; k++) {
             if (k != i) {
                 BDD u = X[i][j].apply(X[k][j], BDDFactory.nand);
                 b.andWith(u);
@@ -156,7 +153,7 @@ public class NQueens {
         }
 
         /* No one in the same up-right diagonal */
-        for (k = 0; k < N; k++) {
+        for (int k = 0; k < N; k++) {
             int ll = k - i + j;
             if (ll >= 0 && ll < N) {
                 if (k != i) {
@@ -167,7 +164,7 @@ public class NQueens {
         }
 
         /* No one in the same down-right diagonal */
-        for (k = 0; k < N; k++) {
+        for (int k = 0; k < N; k++) {
             int ll = i + j - k;
             if (ll >= 0 && ll < N) {
                 if (k != i) {

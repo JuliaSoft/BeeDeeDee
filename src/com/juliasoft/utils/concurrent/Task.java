@@ -18,10 +18,10 @@
 */
 package com.juliasoft.utils.concurrent;
 
-import static checkers.nullness.support.NullnessAssertions.assertNonNull;
+import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
-import java.util.concurrent.Future;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 /**
