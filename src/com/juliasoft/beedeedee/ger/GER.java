@@ -82,6 +82,23 @@ public class GER {
 		return squeezedBDD;
 	}
 
+	/**
+	 * Computes negation of this. It uses the equivalence !(L & n) = !L | !n =
+	 * !p1 | !p2 | ... | !pn | !n. The result is then normalized.
+	 * 
+	 * @return the negation
+	 */
+	public GER not() {
+		BDD not = n.not();
+		for (Pair pair : l.pairs()) {
+			BDD eq = not.getFactory().makeVar(pair.first);
+			eq.biimpWith(not.getFactory().makeVar(pair.second));
+			eq.notWith();
+			not.orWith(eq);
+		}
+		return new GER(not).normalize();
+	}
+
 	public E getEquiv() {
 		return l;
 	}
@@ -245,5 +262,4 @@ public class GER {
 		}
 		return full;
 	}
-
 }

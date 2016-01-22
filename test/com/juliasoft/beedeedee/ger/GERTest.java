@@ -275,6 +275,20 @@ public class GERTest {
 	}
 
 	@Test
+	public void testNot() {
+		// bdd for (x1 <-> x2) & x8
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.andWith(factory.makeVar(8));
+		GER ger = new GER(bdd).normalize();
+		GER notGer = ger.not();
+
+		BDD full = notGer.getFullBDD();
+		BDD expected = bdd.not();
+		assertTrue(expected.isEquivalentTo(full));
+	}
+
+	@Test
 	public void testVarsEntailed1() {
 		BDD one = factory.makeOne();
 		Set<Integer> varsEntailed = fakeGer.varsEntailed(one);
