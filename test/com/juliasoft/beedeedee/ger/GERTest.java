@@ -275,6 +275,34 @@ public class GERTest {
 	}
 
 	@Test
+	public void testXor() {
+		// bdd for x1 <-> x2
+		BDD bdd1 = factory.makeVar(1);
+		bdd1.biimpWith(factory.makeVar(2));
+		// bdd for (x1 <-> x3) & x4
+		BDD bdd2 = factory.makeVar(1);
+		bdd2.biimpWith(factory.makeVar(3));
+		bdd2.andWith(factory.makeVar(4));
+
+		E e1 = new E();
+		e1.addClass(1, 2);
+		GER ger1 = new GER(bdd1, e1);
+
+		E e2 = new E();
+		e2.addClass(1, 3);
+		GER ger2 = new GER(bdd2, e2);
+
+		GER xor = ger1.xor(ger2);
+
+		BDD n = xor.getN();
+		BDD expectedN = bdd1.xor(bdd2);
+		assertTrue(n.isEquivalentTo(expectedN));
+
+		E equiv = xor.getEquiv();
+		assertTrue(equiv.isEmpty());
+	}
+
+	@Test
 	public void testNot() {
 		// bdd for (x1 <-> x2) & x8
 		BDD bdd = factory.makeVar(1);

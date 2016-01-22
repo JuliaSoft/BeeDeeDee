@@ -82,9 +82,14 @@ public class GER {
 		return squeezedBDD;
 	}
 
+	/*
+	 * Identity-based operations
+	 */
+
 	/**
-	 * Computes negation of this GER. It uses the equivalence !(L & n) = !L | !n
-	 * = !p1 | !p2 | ... | !pn | !n. The result is then normalized.
+	 * Computes negation of this GER. It uses the identity !(L & n) = !L | !n =
+	 * !p1 | !p2 | ... | !pn | !n. The result is then normalized (TODO don't
+	 * normalize?).
 	 * 
 	 * @return the negation
 	 */
@@ -97,6 +102,22 @@ public class GER {
 			not.orWith(eq);
 		}
 		return new GER(not).normalize();
+	}
+
+	/**
+	 * Computes XOR of this GER with another. It uses the identity g1 x g2 = (g1
+	 * | g2) & !(g1 & g2). The result is then normalized (TODO don't
+	 * normalize?).
+	 * 
+	 * TODO use another identity?
+	 * 
+	 * @param other the other GER
+	 * @return the xor
+	 */
+	public GER xor(GER other) {
+		GER or = or(other);
+		GER notAnd = and(other).not();
+		return or.and(notAnd).normalize();
 	}
 
 	public E getEquiv() {
