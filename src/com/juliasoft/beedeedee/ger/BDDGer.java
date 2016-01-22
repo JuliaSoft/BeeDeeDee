@@ -280,6 +280,10 @@ public class BDDGer implements BDD {
 
 	@Override
 	public boolean isEquivalentTo(BDD other) {
+		if (other instanceof BDDGer) {
+			BDDGer bddGer = (BDDGer) other;
+			other = bddGer.ger.getFullBDD();
+		}
 		return ger.getFullBDD().isEquivalentTo(other);
 	}
 
