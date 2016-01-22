@@ -59,6 +59,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER orGer = ger.or(otherBddGer.ger);
 		free();
+		otherBddGer.ger.getN().free();
 		ger = orGer;
 
 		return this;
@@ -87,6 +88,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
 		free();
+		otherBddGer.ger.getN().free();
 		ger = andGer;
 
 		return this;
@@ -127,8 +129,11 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD notWith() {
-		// TODO Auto-generated method stub
-		return null;
+		GER notGer = ger.not();
+		free();
+		ger = notGer;
+
+		return this;
 	}
 
 	@Override
