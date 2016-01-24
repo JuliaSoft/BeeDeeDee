@@ -248,9 +248,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 							allBDDsCreatedSoFar.clear();
 
 							for (BDDImpl bdd : copy)
-								if (bdd.id >= NUM_OF_PREALLOCATED_NODES) {
-									allBDDsCreatedSoFar.add(bdd);
-								}
+								allBDDsCreatedSoFar.add(bdd);
 							
 							freedBDDsCounter = 0;
 						}
@@ -1497,11 +1495,12 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
 		allBDDsCreatedSoFar.clear();
 
-		for (BDDImpl bdd: copy)
-			if (bdd.id >= NUM_OF_PREALLOCATED_NODES) {
+		for (BDDImpl bdd: copy) {
+			allBDDsCreatedSoFar.add(bdd);
+
+			if (bdd.id >= NUM_OF_PREALLOCATED_NODES)
 				markAsAlive(bdd.id, aliveNodes);
-				allBDDsCreatedSoFar.add(bdd);
-			}
+		}
 	}
 
 	private void parallelMarkAliveNodes(final boolean[] aliveNodes) {
@@ -1520,9 +1519,10 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			public void run() {
 				for (BDDImpl bdd: copy) {
 					int id = bdd.id;
-					if (id >= NUM_OF_PREALLOCATED_NODES && id % total == num) {
-						markAsAlive(id, aliveNodes);
+					if (id % total == num) {
 						alive.add(bdd);
+						if (id >= NUM_OF_PREALLOCATED_NODES)
+							markAsAlive(id, aliveNodes);
 					}
 				}
 			}
