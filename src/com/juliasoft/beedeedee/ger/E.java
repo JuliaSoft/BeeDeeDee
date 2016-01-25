@@ -50,7 +50,7 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 * 
 	 * @param equivalenceClass the class to add
 	 */
-	private void add(SortedSet<Integer> equivalenceClass) {
+	void add(SortedSet<Integer> equivalenceClass) {
 		equivalenceClasses.add(equivalenceClass);
 	}
 

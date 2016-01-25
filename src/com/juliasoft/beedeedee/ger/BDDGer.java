@@ -196,8 +196,10 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD copy() {
-		// TODO Auto-generated method stub
-		return null;
+		BDDGer copy = new BDDGer(null);
+		copy.ger = ger.copy();
+
+		return copy;
 	}
 
 	@Override
