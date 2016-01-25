@@ -78,6 +78,17 @@ public class BDDGerTest {
 	}
 
 	@Test
+	public void testXor() {
+		BDD bddGer1 = new BDDGer(bddX1biX2);
+		BDD bddGer2 = new BDDGer(bddX3);
+
+		BDD xor = bddGer1.xor(bddGer2);
+		BDD originalXor = bddX1biX2.xor(bddX3);
+
+		assertTrue(xor.isEquivalentTo(originalXor));
+	}
+
+	@Test
 	public void testNot() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);

@@ -96,14 +96,31 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD xor(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER xorGer = ger.xor(otherBddGer.ger);
+		BDDGer xorBddGer = new BDDGer(null);
+		xorBddGer.ger = xorGer;
+
+		return xorBddGer;
 	}
 
 	@Override
 	public BDD xorWith(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER xorGer = ger.xor(otherBddGer.ger);
+		free();
+		otherBddGer.ger.getN().free();
+		ger = xorGer;
+
+		return this;
 	}
 
 	@Override
