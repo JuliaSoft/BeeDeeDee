@@ -21,6 +21,10 @@ public class BDDGer implements BDD {
 		}
 	}
 
+	private BDDGer(GER ger) {
+		this.ger = ger;
+	}
+
 	@Override
 	public void free() {
 		ger.getN().free();
@@ -44,10 +48,8 @@ public class BDDGer implements BDD {
 		}
 		BDDGer otherBddGer = (BDDGer) other;
 		GER orGer = ger.or(otherBddGer.ger);
-		BDDGer orBddGer = new BDDGer(null);
-		orBddGer.ger = orGer;
 
-		return orBddGer;
+		return new BDDGer(orGer);
 	}
 
 	@Override
@@ -73,10 +75,8 @@ public class BDDGer implements BDD {
 		}
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
-		BDDGer andBddGer = new BDDGer(null);
-		andBddGer.ger = andGer;
 
-		return andBddGer;
+		return new BDDGer(andGer);
 	}
 
 	@Override
@@ -102,10 +102,8 @@ public class BDDGer implements BDD {
 		}
 		BDDGer otherBddGer = (BDDGer) other;
 		GER xorGer = ger.xor(otherBddGer.ger);
-		BDDGer xorBddGer = new BDDGer(null);
-		xorBddGer.ger = xorGer;
 
-		return xorBddGer;
+		return new BDDGer(xorGer);
 	}
 
 	@Override
@@ -131,10 +129,8 @@ public class BDDGer implements BDD {
 		}
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
-		BDDGer nandBddGer = new BDDGer(null);
-		nandBddGer.ger = andGer.not();
 
-		return nandBddGer;
+		return new BDDGer(andGer.not());
 	}
 
 	@Override
@@ -154,11 +150,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD not() {
-		GER notGer = ger.not();
-		BDDGer notBddGer = new BDDGer(null);
-		notBddGer.ger = notGer;
-
-		return notBddGer;
+		return new BDDGer(ger.not());
 	}
 
 	@Override
@@ -196,10 +188,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD copy() {
-		BDDGer copy = new BDDGer(null);
-		copy.ger = ger.copy();
-
-		return copy;
+		return new BDDGer(ger.copy());
 	}
 
 	@Override
