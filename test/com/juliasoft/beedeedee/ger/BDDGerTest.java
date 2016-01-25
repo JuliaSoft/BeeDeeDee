@@ -11,10 +11,17 @@ import com.juliasoft.beedeedee.factories.Factory;
 public class BDDGerTest {
 
 	private Factory factory;
+	private BDD bddX1biX2;
+	private BDD bddX3;
 
 	@Before
 	public void setUp() {
 		factory = Factory.mkResizingAndGarbageCollected(10, 10);
+		// x1 <-> x2
+		bddX1biX2 = factory.makeVar(1);
+		bddX1biX2.biimpWith(factory.makeVar(2));
+		// x3
+		bddX3 = factory.makeVar(3);
 	}
 
 	@Test
@@ -43,42 +50,29 @@ public class BDDGerTest {
 
 	@Test
 	public void testOne2() {
-		// x1 <-> x2
-		BDD bdd = factory.makeVar(1);
-		bdd.biimpWith(factory.makeVar(2));
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDGer(bddX1biX2);
 		// the normalized BDD is ONE, but not the original one
 		assertFalse(bddGer.isOne());
 	}
 
 	@Test
 	public void testOr() {
-		// x1 <-> x2
-		BDD bdd1 = factory.makeVar(1);
-		bdd1.biimpWith(factory.makeVar(2));
-		BDD bddGer1 = new BDDGer(bdd1);
-		// x3
-		BDD bdd2 = factory.makeVar(3);
-		BDD bddGer2 = new BDDGer(bdd2);
+		BDD bddGer1 = new BDDGer(bddX1biX2);
+		BDD bddGer2 = new BDDGer(bddX3);
 
 		BDD or = bddGer1.or(bddGer2);
-		BDD originalOr = bdd1.or(bdd2);
+		BDD originalOr = bddX1biX2.or(bddX3);
 
 		assertTrue(or.isEquivalentTo(originalOr));
 	}
 
 	@Test
 	public void testAnd() {
-		// x1 <-> x2
-		BDD bdd1 = factory.makeVar(1);
-		bdd1.biimpWith(factory.makeVar(2));
-		BDD bddGer1 = new BDDGer(bdd1);
-		// x3
-		BDD bdd2 = factory.makeVar(3);
-		BDD bddGer2 = new BDDGer(bdd2);
+		BDD bddGer1 = new BDDGer(bddX1biX2);
+		BDD bddGer2 = new BDDGer(bddX3);
 
 		BDD and = bddGer1.and(bddGer2);
-		BDD originalAnd = bdd1.and(bdd2);
+		BDD originalAnd = bddX1biX2.and(bddX3);
 
 		assertTrue(and.isEquivalentTo(originalAnd));
 	}
@@ -86,9 +80,7 @@ public class BDDGerTest {
 	@Test
 	public void testNot() {
 		// (x1 <-> x2) | x3
-		BDD bdd = factory.makeVar(1);
-		bdd.biimpWith(factory.makeVar(2));
-		bdd.orWith(factory.makeVar(3));
+		BDD bdd = bddX1biX2.or(bddX3);
 		BDD bddGer = new BDDGer(bdd);
 
 		BDD not = bddGer.not();
