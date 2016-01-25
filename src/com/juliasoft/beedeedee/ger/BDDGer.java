@@ -271,8 +271,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public int nodeCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return ger.getN().nodeCount();
 	}
 
 	@Override
@@ -353,4 +352,8 @@ public class BDDGer implements BDD {
 		return null;
 	}
 
+	@Override
+	public String toString() {
+		return ger.getEquiv() + System.lineSeparator() + ger.getN();
+	}
 }

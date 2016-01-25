@@ -110,4 +110,23 @@ public class BDDGerTest {
 
 		assertTrue(not.isEquivalentTo(originalNot));
 	}
+
+	@Test
+	public void testNodeCount1() {
+		// (x1 <-> x2) & x3
+		BDD bdd = bddX1biX2.and(bddX3);
+		BDD bddGer = new BDDGer(bdd);
+
+		assertEquals(1, bddGer.nodeCount());
+	}
+
+	@Test
+	public void testNodeCount2() {
+		// (x1 <-> x2) | x3
+		BDD bdd = bddX1biX2.or(bddX3);
+		BDD bddGer = new BDDGer(bdd);
+
+		// the bdd is already normalized, same node count
+		assertEquals(bdd.nodeCount(), bddGer.nodeCount());
+	}
 }
