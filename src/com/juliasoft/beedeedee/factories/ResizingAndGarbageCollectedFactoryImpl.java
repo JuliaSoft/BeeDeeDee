@@ -1334,7 +1334,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			this.truthTable = new TreeMap<Integer, Boolean>();
 		}
 
-		private void put(int var, boolean value) {
+		@Override
+		public void put(int var, boolean value) {
 			truthTable.put(var, value);
 		}
 

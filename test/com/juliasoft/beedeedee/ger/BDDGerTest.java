@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
 
@@ -16,7 +17,7 @@ public class BDDGerTest {
 
 	@Before
 	public void setUp() {
-		factory = Factory.mkResizingAndGarbageCollected(10, 10);
+		factory = Factory.mkResizingAndGarbageCollected(10, 10, 0);
 		// x1 <-> x2
 		bddX1biX2 = factory.makeVar(1);
 		bddX1biX2.biimpWith(factory.makeVar(2));
@@ -129,4 +130,16 @@ public class BDDGerTest {
 		// the bdd is already normalized, same node count
 		assertEquals(bdd.nodeCount(), bddGer.nodeCount());
 	}
+
+	@Test
+	public void testAnySat1() {
+		// (x1 <-> x2) & x3
+		BDD bdd = bddX1biX2.and(bddX3);
+		BDD bddGer = new BDDGer(bdd);
+
+		Assignment anySat = bddGer.anySat();
+		assertTrue(anySat.holds(bddX3));
+		assertEquals(anySat.holds(factory.makeVar(1)), anySat.holds(factory.makeVar(2)));
+	}
+
 }
