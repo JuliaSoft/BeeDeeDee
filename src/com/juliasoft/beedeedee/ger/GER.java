@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 
@@ -289,7 +290,7 @@ public class GER {
 		BDD nCopy = n.copy();
 		E lCopy = new E();
 		for (SortedSet<Integer> sortedSet : l) {
-			lCopy.add(sortedSet);
+			lCopy.add(new TreeSet<>(sortedSet));
 		}
 		return new GER(nCopy, lCopy);
 	}
