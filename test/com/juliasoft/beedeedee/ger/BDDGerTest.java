@@ -89,6 +89,17 @@ public class BDDGerTest {
 	}
 
 	@Test
+	public void testNand() {
+		BDD bddGer1 = new BDDGer(bddX1biX2);
+		BDD bddGer2 = new BDDGer(bddX3);
+
+		BDD nand = bddGer1.nand(bddGer2);
+		BDD originalNand = bddX1biX2.nand(bddX3);
+
+		assertTrue(nand.isEquivalentTo(originalNand));
+	}
+
+	@Test
 	public void testNot() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);

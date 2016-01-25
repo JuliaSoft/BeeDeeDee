@@ -125,14 +125,31 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD nand(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER andGer = ger.and(otherBddGer.ger);
+		BDDGer nandBddGer = new BDDGer(null);
+		nandBddGer.ger = andGer.not();
+
+		return nandBddGer;
 	}
 
 	@Override
 	public BDD nandWith(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER andGer = ger.and(otherBddGer.ger);
+		free();
+		otherBddGer.ger.getN().free();
+		ger = andGer.not();
+
+		return this;
 	}
 
 	@Override
