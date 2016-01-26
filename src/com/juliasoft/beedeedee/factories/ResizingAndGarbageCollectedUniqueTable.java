@@ -141,6 +141,9 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		if (bin < 0) {	// empty bin, created node is first
 			int allocationPoint = nextPos(myLock);
 			setAt(allocationPoint, var, low, high);
+			// recompute hash, could have been changed by intervening resize
+			// triggered by current position request
+			pos = hash(var, low, high);
 			return H[pos] = allocationPoint;
 		}
 		else	// append to collision list

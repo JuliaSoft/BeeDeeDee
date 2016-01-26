@@ -23,7 +23,7 @@ public class GERTest {
 
 	@Before
 	public void setUp() throws Exception {
-		factory = Factory.mkResizingAndGarbageCollected(10000, 1000);
+		factory = Factory.mkResizingAndGarbageCollected(10, 10, 0);
 		fakeGer = new GER(null, null);
 	}
 

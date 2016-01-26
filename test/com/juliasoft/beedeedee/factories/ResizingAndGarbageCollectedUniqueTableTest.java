@@ -11,10 +11,11 @@ import org.junit.Test;
 public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	private ResizingAndGarbageCollectedUniqueTable ut;
+	private ResizingAndGarbageCollectedFactoryImpl factoryMock;
 
 	@Before
 	public void setUp() {
-		ResizingAndGarbageCollectedFactoryImpl factoryMock = mock(ResizingAndGarbageCollectedFactoryImpl.class);
+		factoryMock = mock(ResizingAndGarbageCollectedFactoryImpl.class);
 		ut = new ResizingAndGarbageCollectedUniqueTable(10, 10, factoryMock);
 	}
 
@@ -102,7 +103,7 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	@Test
 	public void testExpandTable() {
-		int pos = 3;
+		int pos = ut.hash(13, 20, 41);
 		int createdNode = ut.expandTable(13, 20, 41, null, pos );
 
 		// node is actually created by expandTable
@@ -114,11 +115,22 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	@Test
 	public void testExpandTableTwoNodesSameHash() {
-		int pos = 3;
+		int pos = ut.hash(13, 20, 41);
 		// hash(...) considers only low and high, so these should have the same hash (same chain)
 		int node1 = ut.expandTable(13, 20, 41, null, pos);
 		int node2 = ut.expandTable(1024, 20, 41, null, pos);
 
 		assertEquals(node2, ut.next(node1));
+	}
+
+	@Test
+	public void testExpandTableDebugging() {
+		ut = new ResizingAndGarbageCollectedUniqueTable(2, 10, factoryMock);
+		ut.get(1, 2, 3);
+		ut.get(2, 2, 3);
+		// this triggers resizing, hash changes in the middle of operation
+		int pos1 = ut.get(3, 3, 2);
+		int pos2 = ut.get(3, 3, 2);
+		assertEquals(pos1, pos2);
 	}
 }
