@@ -1344,14 +1344,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			assertNonNull(var);
 			int varNum;
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
-				varNum = ut.var(((BDDImpl) var).id);
-			}
-			finally {
-				lock.unlock();
-			}
+			varNum = var.var();
 
 			Boolean result = truthTable.get(varNum);
 			if (result != null)
