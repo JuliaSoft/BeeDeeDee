@@ -425,7 +425,7 @@ public class GERTest {
 	}
 
 	@Test
-	public void testSimpleNormalize() {
+	public void testNormalize1() {
 		// bdd for x1 <-> x2
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
@@ -433,8 +433,31 @@ public class GERTest {
 		GER ger = new GER(bdd);
 		GER normalized = ger.normalize();
 
+		List<Pair> pairs = normalized.getEquiv().pairs();
+		assertEquals(1, pairs.size());
+		assertEquals(new Pair(1, 2), pairs.get(0));
+
 		BDD n = normalized.getN();
 		BDD expected = factory.makeOne();
+		assertTrue(n.isEquivalentTo(expected));
+	}
+
+	@Test
+	public void testNormalize2() {
+		// bdd for (x1 <-> x2) & x3
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.andWith(factory.makeVar(3));
+
+		GER ger = new GER(bdd);
+		GER normalized = ger.normalize();
+
+		List<Pair> pairs = normalized.getEquiv().pairs();
+		assertEquals(1, pairs.size());
+		assertEquals(new Pair(1, 2), pairs.get(0));
+
+		BDD n = normalized.getN();
+		BDD expected = factory.makeVar(3);
 		assertTrue(n.isEquivalentTo(expected));
 	}
 

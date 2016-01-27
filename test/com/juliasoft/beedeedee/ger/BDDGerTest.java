@@ -141,5 +141,6 @@ public class BDDGerTest {
 		assertTrue(anySat.holds(bddX3));
 		assertEquals(anySat.holds(factory.makeVar(1)), anySat.holds(factory.makeVar(2)));
 	}
+	// TODO think of a bdd with a leader variable!
 
 }
