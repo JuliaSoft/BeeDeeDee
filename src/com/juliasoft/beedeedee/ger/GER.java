@@ -158,6 +158,26 @@ public class GER {
 	}
 
 	/**
+	 * Computes the set of variables disentailed by the given BDD.
+	 * 
+	 * @param f the BDD
+	 * @return the set of disentailed variables
+	 */
+	Set<Integer> varsDisentailed(BDD f) {
+		if (f.isOne()) {
+			return new HashSet<>();
+		}
+		if (f.isZero()) {
+			return universe(f);
+		}
+		Set<Integer> veLow = varsDisentailed(f.low());
+		veLow.add(f.var());
+		Set<Integer> veHigh = varsDisentailed(f.high());
+		veLow.retainAll(veHigh);
+		return veLow;
+	}
+
+	/**
 	 * Computes the set of all variable indexes up to max var index created so
 	 * far.
 	 * 
@@ -172,19 +192,6 @@ public class GER {
 				u.add(i);
 			}
 		}
-		return u;
-	}
-
-	/**
-	 * Computes the set of variables disentailed by the given BDD, as the
-	 * complement of entailed variables.
-	 * 
-	 * @param f the BDD
-	 * @return the set of disentailed variables
-	 */
-	Set<Integer> varsDisentailed(BDD f) {
-		Set<Integer> u = universe(f);
-		u.removeAll(varsEntailed(f));
 		return u;
 	}
 

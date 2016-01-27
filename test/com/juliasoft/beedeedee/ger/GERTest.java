@@ -351,11 +351,9 @@ public class GERTest {
 		f.notWith();
 		f.andWith(factory.makeVar(2));
 
-		// complement of entailed
-		// universe is computed as all variables from 0 to maxVar
+		// disentailed variables are those whose negation is entailed
 		Set<Integer> varsDisentailed = fakeGer.varsDisentailed(f);
 		Set<Integer> expected = new HashSet<>();
-		expected.add(0);
 		expected.add(1);
 		assertEquals(expected, varsDisentailed);
 	}
@@ -419,9 +417,10 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd.andWith(temp);
 		List<Pair> equivVars = fakeGer.equivVars(bdd);
-		assertEquals(2, equivVars.size());
+		assertEquals(3, equivVars.size());
 		assertTrue(equivVars.contains(new Pair(1, 2)));
 		assertTrue(equivVars.contains(new Pair(1, 3)));
+		assertTrue(equivVars.contains(new Pair(2, 3)));
 	}
 
 	@Test
