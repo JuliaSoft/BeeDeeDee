@@ -1576,7 +1576,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	@Override
 	public int bddCount() {
 		synchronized (allBDDsCreatedSoFar) {
-			return allBDDsCreatedSoFar.size();
+			return allBDDsCreatedSoFar.size() - freedBDDsCounter;
 		}
 	}
 }

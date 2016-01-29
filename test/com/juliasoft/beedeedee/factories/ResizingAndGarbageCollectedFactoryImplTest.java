@@ -81,4 +81,12 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		}
 	}
 
+	@Test
+	public void testBddCount() {
+		assertEquals(0, factory.bddCount());
+		BDD x2 = factory.makeVar(2);
+		assertEquals(1, factory.bddCount());
+		x2.free();
+		assertEquals(0, factory.bddCount());
+	}
 }
