@@ -104,5 +104,9 @@ public abstract class Factory {
 	 * @return the maximum variable index used so far
 	 */
 	public abstract int getMaxVar();
-}
 
+	/**
+	 * @return the number of non-freed BDD instances created so far
+	 */
+	public abstract int bddCount();
+}

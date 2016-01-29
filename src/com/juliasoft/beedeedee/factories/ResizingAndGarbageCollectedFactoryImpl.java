@@ -1572,4 +1572,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	ArrayList<BDDImpl> getAllBDDsCreatedSoFarCopy() {
 		return new ArrayList<>(allBDDsCreatedSoFar);
 	}
+
+	@Override
+	public int bddCount() {
+		synchronized (allBDDsCreatedSoFar) {
+			return allBDDsCreatedSoFar.size();
+		}
+	}
 }

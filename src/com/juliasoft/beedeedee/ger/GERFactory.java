@@ -67,4 +67,9 @@ public class GERFactory extends Factory {
 		return factory.getMaxVar();
 	}
 
+	@Override
+	public int bddCount() {
+		return factory.bddCount();
+	}
+
 }
