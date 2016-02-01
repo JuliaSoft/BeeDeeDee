@@ -23,6 +23,7 @@ public class BDDGerTest {
 		bddX1biX2.biimpWith(factory.makeVar(2));
 		// x3
 		bddX3 = factory.makeVar(3);
+		// here factory.bddCount() is 2
 	}
 
 	@Test
@@ -32,6 +33,8 @@ public class BDDGerTest {
 		assertEquals(2, bddGer.var());
 		assertTrue(bddGer.low().isZero());
 		assertTrue(bddGer.high().isOne());
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
@@ -40,6 +43,8 @@ public class BDDGerTest {
 		BDD bddGer = new BDDGer(bdd);
 		assertTrue(bddGer.isZero());
 		// TODO can l be non-empty?
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -47,6 +52,8 @@ public class BDDGerTest {
 		BDD bdd = factory.makeOne();
 		BDD bddGer = new BDDGer(bdd);
 		assertTrue(bddGer.isOne());
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -54,62 +61,74 @@ public class BDDGerTest {
 		BDD bddGer = new BDDGer(bddX1biX2);
 		// the normalized BDD is ONE, but not the original one
 		assertFalse(bddGer.isOne());
+
+		assertEquals(2, factory.bddCount());
 	}
 
 	@Test
 	public void testOr() {
-		BDD bddGer1 = new BDDGer(bddX1biX2);
-		BDD bddGer2 = new BDDGer(bddX3);
+		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
+		BDD bddGer2 = new BDDGer(bddX3.copy());
 
 		BDD or = bddGer1.or(bddGer2);
 		BDD originalOr = bddX1biX2.or(bddX3);
 
 		assertTrue(or.isEquivalentTo(originalOr));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
 	public void testAnd() {
-		BDD bddGer1 = new BDDGer(bddX1biX2);
-		BDD bddGer2 = new BDDGer(bddX3);
+		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
+		BDD bddGer2 = new BDDGer(bddX3.copy());
 
 		BDD and = bddGer1.and(bddGer2);
 		BDD originalAnd = bddX1biX2.and(bddX3);
 
 		assertTrue(and.isEquivalentTo(originalAnd));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
 	public void testXor() {
-		BDD bddGer1 = new BDDGer(bddX1biX2);
-		BDD bddGer2 = new BDDGer(bddX3);
+		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
+		BDD bddGer2 = new BDDGer(bddX3.copy());
 
 		BDD xor = bddGer1.xor(bddGer2);
 		BDD originalXor = bddX1biX2.xor(bddX3);
 
 		assertTrue(xor.isEquivalentTo(originalXor));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
 	public void testNand() {
-		BDD bddGer1 = new BDDGer(bddX1biX2);
-		BDD bddGer2 = new BDDGer(bddX3);
+		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
+		BDD bddGer2 = new BDDGer(bddX3.copy());
 
 		BDD nand = bddGer1.nand(bddGer2);
 		BDD originalNand = bddX1biX2.nand(bddX3);
 
 		assertTrue(nand.isEquivalentTo(originalNand));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
 	public void testNot() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDGer(bdd.copy());
 
 		BDD not = bddGer.not();
 		BDD originalNot = bdd.not();
 
 		assertTrue(not.isEquivalentTo(originalNot));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
@@ -119,16 +138,20 @@ public class BDDGerTest {
 		BDD bddGer = new BDDGer(bdd);
 
 		assertEquals(1, bddGer.nodeCount());
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
 	public void testNodeCount2() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDGer(bdd.copy());
 
 		// the bdd is already normalized, same node count
 		assertEquals(bdd.nodeCount(), bddGer.nodeCount());
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -140,6 +163,8 @@ public class BDDGerTest {
 		Assignment anySat = bddGer.anySat();
 		assertTrue(anySat.holds(bddX3));
 		assertEquals(anySat.holds(factory.makeVar(1)), anySat.holds(factory.makeVar(2)));
+
+		assertEquals(5, factory.bddCount());
 	}
 	// TODO think of a bdd with a leader variable!
 

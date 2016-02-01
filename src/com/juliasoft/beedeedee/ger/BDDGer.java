@@ -15,9 +15,19 @@ public class BDDGer implements BDD {
 
 	private GER ger;
 
-	public BDDGer(BDD bdd) {
+	/**
+	 * Constructs a BDDGer by normalizing the given bdd.
+	 * 
+	 * @param bdd the starting BDD, which is immediately freed if not equal to
+	 *            (same as) normalized
+	 */
+	BDDGer(BDD bdd) {
 		if (bdd != null) {
-			ger = new GER(bdd).normalize();
+			GER temp = new GER(bdd);
+			ger = temp.normalize();
+			if (!bdd.equals(ger.getN())) {
+				temp.free();
+			}
 		}
 	}
 
@@ -32,12 +42,18 @@ public class BDDGer implements BDD {
 
 	@Override
 	public boolean isZero() {
-		return ger.getFullBDD().isZero();
+		BDD fullBDD = ger.getFullBDD();
+		boolean zero = fullBDD.isZero();
+		fullBDD.free();
+		return zero;
 	}
 
 	@Override
 	public boolean isOne() {
-		return ger.getFullBDD().isOne();
+		BDD fullBDD = ger.getFullBDD();
+		boolean one = fullBDD.isOne();
+		fullBDD.free();
+		return one;
 	}
 
 	@Override
@@ -129,8 +145,10 @@ public class BDDGer implements BDD {
 		}
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
+		GER not = andGer.not();
+		andGer.free();
 
-		return new BDDGer(andGer.not());
+		return new BDDGer(not);
 	}
 
 	@Override
@@ -144,6 +162,7 @@ public class BDDGer implements BDD {
 		free();
 		otherBddGer.ger.free();
 		ger = andGer.not();
+		andGer.free();
 
 		return this;
 	}

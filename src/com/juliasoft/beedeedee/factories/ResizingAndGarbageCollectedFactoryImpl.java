@@ -226,6 +226,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public void free() {
+			if (id == -1) {
+				return;	// already freed, idempotent
+			}
 			if (id >= NUM_OF_PREALLOCATED_NODES) {
 				id = -1;
 				ut.scheduleGC();
