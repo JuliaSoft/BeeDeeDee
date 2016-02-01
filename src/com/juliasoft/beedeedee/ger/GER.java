@@ -20,7 +20,7 @@ public class GER {
 	 * Constructs a GER representation using (TODO copy bdd?) the given bdd and
 	 * set of equivalence classes.
 	 * 
-	 * @param n a bdd
+	 * @param n a bdd, saved by reference
 	 * @param l a set of equivalence classes
 	 */
 	public GER(BDD n, E l) {
@@ -33,8 +33,21 @@ public class GER {
 		this(n, new E());
 	}
 
-	public BDD getN() {
+	BDD getN() {
 		return n;
+	}
+
+	/**
+	 * Frees resources allocated to this GER. Call this method when the ger is
+	 * no more needed.
+	 * 
+	 * TODO the bdd is saved by reference, and calling this method can thus
+	 * invalidate a shared object
+	 */
+	public void free() {
+		n.free();
+		l = null;
+		leaderFunction = null;
 	}
 
 	/**
@@ -52,7 +65,7 @@ public class GER {
 		e.addPairs(other.l.pairs());
 		GER andGer = new GER(and, e);
 		GER result = andGer.normalize();
-		andGer.getN().free();
+		andGer.free();
 		return result;
 	}
 
@@ -110,7 +123,7 @@ public class GER {
 		}
 		GER notGer = new GER(not);
 		GER result = notGer.normalize();
-		notGer.getN().free();
+		notGer.free();
 		return result;
 	}
 
@@ -130,10 +143,10 @@ public class GER {
 		GER notAnd = and1.not();
 		GER and2 = or.and(notAnd);
 		GER result = and2.normalize();
-		or.getN().free();
-		and1.getN().free();
-		notAnd.getN().free();
-		and2.getN().free();
+		or.free();
+		and1.free();
+		notAnd.free();
+		and2.free();
 		return result;
 	}
 

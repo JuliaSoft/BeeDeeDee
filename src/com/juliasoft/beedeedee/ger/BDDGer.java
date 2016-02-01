@@ -27,7 +27,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public void free() {
-		ger.getN().free();
+		ger.free();
 	}
 
 	@Override
@@ -61,7 +61,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER orGer = ger.or(otherBddGer.ger);
 		free();
-		otherBddGer.ger.getN().free();
+		otherBddGer.ger.free();
 		ger = orGer;
 
 		return this;
@@ -88,7 +88,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
 		free();
-		otherBddGer.ger.getN().free();
+		otherBddGer.ger.free();
 		ger = andGer;
 
 		return this;
@@ -115,7 +115,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER xorGer = ger.xor(otherBddGer.ger);
 		free();
-		otherBddGer.ger.getN().free();
+		otherBddGer.ger.free();
 		ger = xorGer;
 
 		return this;
@@ -142,7 +142,7 @@ public class BDDGer implements BDD {
 		BDDGer otherBddGer = (BDDGer) other;
 		GER andGer = ger.and(otherBddGer.ger);
 		free();
-		otherBddGer.ger.getN().free();
+		otherBddGer.ger.free();
 		ger = andGer.not();
 
 		return this;
