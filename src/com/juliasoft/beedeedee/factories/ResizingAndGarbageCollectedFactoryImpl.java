@@ -250,9 +250,12 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
 							allBDDsCreatedSoFar.clear();
 
-							for (BDDImpl bdd : copy)
-								allBDDsCreatedSoFar.add(bdd);
-							
+							for (BDDImpl bdd : copy) {
+								if (bdd.id >= NUM_OF_PREALLOCATED_NODES) {
+									allBDDsCreatedSoFar.add(bdd);									
+								}
+							}
+
 							freedBDDsCounter = 0;
 						}
 					}

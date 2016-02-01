@@ -24,6 +24,7 @@ import java.util.Map;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.ger.GERFactory;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
 import com.juliasoft.utils.concurrent.Executors;
@@ -53,7 +54,8 @@ public class Queens {
 			cacheSize = Integer.parseInt(args[2]);
 		}
 
-		Factory factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
+//		Factory factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
+		Factory factory = new GERFactory(utSize, cacheSize);
 		BDD queen = factory.makeOne();
 
 		int i, j;
@@ -61,6 +63,8 @@ public class Queens {
 		/* Build variable array */
 		System.out.println("Creating variables...");
 		X = new BDD[N][N];
+		
+		
 		for (i = 0; i < N; i++) {
 			for (j = 0; j < N; j++) {
 				X[i][j] = factory.makeVar(i * N + j);
@@ -127,18 +131,18 @@ public class Queens {
 				a.andWith(b);
 				queen.andWith(a);
 			}
+System.out.println("\n\n" + factory.bddCount() + "\n\n");
 //System.out.println(factory.toDot());
 		System.out.println('\n');
-		System.out.println("\n" + queen + " " + factory.nodesCount());
+//		System.out.println("\n" + queen + " " + factory.nodesCount());
 		factory.printStatistics();
 		long count = queen.satCount();
 		System.out.println("There are " + count + " solutions.");
 //factory.printUT();
-		if (count > 0) {
+		if (count > -1234) {
 			System.out.println("Finding a satisfying assignment...\n");
 			printAssignment(queen.anySat());
 		}
-
 		/*
 		System.out.println("Finding all assignments...\n");
 		for (Assignment a : queen.allSat()) {
@@ -146,7 +150,7 @@ public class Queens {
 			System.out.println();
 		}
 		*/
-		
+		/*
 		System.out.println("Replacing, worst case...");
 		Map<Integer, Integer> renaming = new HashMap<>();
 		for (j = N*N, i = j - 1; i >= 0; i--, j++) {
@@ -165,7 +169,7 @@ public class Queens {
 		queen.exist(vars);
 		factory.done();
 		Executors.shutdown();
-		System.out.println("Done, ms: " + (System.currentTimeMillis() - start));
+		System.out.println("Done, ms: " + (System.currentTimeMillis() - start));*/
 	}
 
 	private static void printAssignment(Assignment assignment) {
