@@ -1242,6 +1242,20 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
+		@Override
+		public BDD squeezeEquivWith(LeaderFunction leaderFunction) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				setId(squeezeEquiv(id, leaderFunction));
+			}
+			finally {
+				lock.unlock();
+			}
+			
+			return this;
+		}
+
 		private int squeezeEquiv(int bdd, LeaderFunction leaderFunction) {
 			if (bdd < FIRST_NODE_NUM) {
 				return bdd;

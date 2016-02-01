@@ -50,7 +50,10 @@ public class GER {
 		E e = new E();
 		e.addPairs(l.pairs());
 		e.addPairs(other.l.pairs());
-		return new GER(and, e).normalize();
+		GER andGer = new GER(and, e);
+		GER result = andGer.normalize();
+		andGer.getN().free();
+		return result;
 	}
 
 	/**
@@ -68,6 +71,8 @@ public class GER {
 		BDD n2 = computeNforOr(other, this);
 
 		BDD or = n1.or(n2);
+		n1.free();
+		n2.free();
 		E equiv = l.intersect(other.l);
 
 		return new GER(or, equiv);
@@ -103,7 +108,10 @@ public class GER {
 			eq.notWith();
 			not.orWith(eq);
 		}
-		return new GER(not).normalize();
+		GER notGer = new GER(not);
+		GER result = notGer.normalize();
+		notGer.getN().free();
+		return result;
 	}
 
 	/**
@@ -118,8 +126,15 @@ public class GER {
 	 */
 	public GER xor(GER other) {
 		GER or = or(other);
-		GER notAnd = and(other).not();
-		return or.and(notAnd).normalize();
+		GER and1 = and(other);
+		GER notAnd = and1.not();
+		GER and2 = or.and(notAnd);
+		GER result = and2.normalize();
+		or.getN().free();
+		and1.getN().free();
+		notAnd.getN().free();
+		and2.getN().free();
+		return result;
 	}
 
 	public E getEquiv() {
@@ -150,9 +165,13 @@ public class GER {
 		if (f.isZero()) {
 			return universe(f);
 		}
-		Set<Integer> veHigh = varsEntailed(f.high());
+		BDD high = f.high();
+		Set<Integer> veHigh = varsEntailed(high);
+		high.free();
 		veHigh.add(f.var());
-		Set<Integer> veLow = varsEntailed(f.low());
+		BDD low = f.low();
+		Set<Integer> veLow = varsEntailed(low);
+		low.free();
 		veHigh.retainAll(veLow);
 		return veHigh;
 	}
@@ -170,9 +189,13 @@ public class GER {
 		if (f.isZero()) {
 			return universe(f);
 		}
-		Set<Integer> veLow = varsDisentailed(f.low());
+		BDD low = f.low();
+		Set<Integer> veLow = varsDisentailed(low);
+		low.free();
 		veLow.add(f.var());
-		Set<Integer> veHigh = varsDisentailed(f.high());
+		BDD high = f.high();
+		Set<Integer> veHigh = varsDisentailed(high);
+		high.free();
 		veLow.retainAll(veHigh);
 		return veLow;
 	}
@@ -215,14 +238,19 @@ public class GER {
 		}
 
 		List<Pair> pairs = new ArrayList<>();
-		Set<Integer> varsEntailedByHigh = varsEntailed(f.high());
-		varsEntailedByHigh.retainAll(varsDisentailed(f.low()));
+		BDD high = f.high();
+		BDD low = f.low();
+		Set<Integer> varsEntailedByHigh = varsEntailed(high);
+		varsEntailedByHigh.retainAll(varsDisentailed(low));
 		for (Integer v : varsEntailedByHigh) {
 			pairs.add(new Pair(f.var(), v));
 		}
 
-		List<Pair> equivVars = equivVars(f.high(), universePairs);
-		equivVars.retainAll(equivVars(f.low(), universePairs));
+		List<Pair> equivVars = equivVars(high, universePairs);
+		equivVars.retainAll(equivVars(low, universePairs));
+
+		high.free();
+		low.free();
 
 		pairs.addAll(equivVars);
 		return pairs;
@@ -254,8 +282,13 @@ public class GER {
 		if (f.isZero() || f.isOne()) {
 			return -1;
 		}
-		int maxVar = Math.max(f.var(), maxVar(f.low()));
-		return Math.max(maxVar, maxVar(f.high()));
+		BDD low = f.low();
+		int maxVar = Math.max(f.var(), maxVar(low));
+		low.free();
+		BDD high = f.high();
+		maxVar = Math.max(maxVar, maxVar(high));
+		high.free();
+		return maxVar;
 	}
 
 	/**
@@ -265,18 +298,21 @@ public class GER {
 	 */
 	public GER normalize() {
 		E eNew = l;
-		BDD nNew = n;
+		BDD nNew = n.copy();
 		E eOld;
-		BDD nOld;
+		BDD nOld = null;
 		do {
 			eOld = eNew.copy();
+			if (nOld != null) {
+				nOld.free();
+			}
 			nOld = nNew.copy();
 			List<Pair> equivVars = equivVars(nNew);
 			eNew.addPairs(equivVars);
 			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
-			nNew = nNew.squeezeEquiv(leaderFunctionNew);
+			nNew.squeezeEquivWith(leaderFunctionNew);
 		} while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
-
+		nOld.free();
 		return new GER(nNew, eNew);
 	}
 

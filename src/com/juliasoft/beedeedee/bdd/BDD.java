@@ -407,6 +407,15 @@ public interface BDD {
 	public BDD squeezeEquiv(LeaderFunction leaderFunction);
 
 	/**
+	 * Squeezes equivalent variables from the BDD, storing the result in this BDD. 
+	 * See paper by Bagnara & Schachte.
+	 * 
+	 * @param leaderFunction a function returning the leader (minimum) of the equivalence class of each variable
+	 * @return this
+	 */
+	public BDD squeezeEquivWith(LeaderFunction leaderFunctionNew);
+
+	/**
 	 * @return the factory which created this BDD
 	 */
 	public Factory getFactory();

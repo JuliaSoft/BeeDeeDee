@@ -42,6 +42,8 @@ public class GERTest {
 
 		BDD expected = factory.makeOne();
 		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -59,6 +61,8 @@ public class GERTest {
 
 		BDD expected = factory.makeVar(3);
 		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -89,6 +93,8 @@ public class GERTest {
 		assertTrue(next.contains(2));
 		assertTrue(next.contains(3));
 		assertEquals(3, next.size());
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -122,6 +128,8 @@ public class GERTest {
 		BDD n = and.getN();
 		BDD expectedN = factory.makeOne();
 		assertTrue(n.isEquivalentTo(expectedN));
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -165,6 +173,8 @@ public class GERTest {
 		BDD n = and.getN();
 		BDD expectedN = factory.makeVar(8);
 		assertTrue(n.isEquivalentTo(expectedN));
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -193,6 +203,8 @@ public class GERTest {
 
 		E equiv = or.getEquiv();
 		assertTrue(equiv.isEmpty());
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -230,6 +242,8 @@ public class GERTest {
 		// constant 1
 		BDD expectedN = factory.makeOne();
 		assertTrue(n.isEquivalentTo(expectedN));
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -272,6 +286,8 @@ public class GERTest {
 		expectedN.andWith(temp);
 		expectedN.orWith(factory.makeVar(8));
 		assertTrue(n.isEquivalentTo(expectedN));
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -300,6 +316,8 @@ public class GERTest {
 
 		E equiv = xor.getEquiv();
 		assertTrue(equiv.isEmpty());
+
+		assertEquals(4, factory.bddCount());
 	}
 
 	@Test
@@ -314,6 +332,8 @@ public class GERTest {
 		BDD full = notGer.getFullBDD();
 		BDD expected = bdd.not();
 		assertTrue(expected.isEquivalentTo(full));
+
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
@@ -321,6 +341,8 @@ public class GERTest {
 		BDD one = factory.makeOne();
 		Set<Integer> varsEntailed = fakeGer.varsEntailed(one);
 		assertTrue(varsEntailed.isEmpty());
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -331,6 +353,8 @@ public class GERTest {
 		// expect a set containing all possible variables up to maxVar
 		Set<Integer> expected = new HashSet<>(Arrays.asList(0, 1, 2, 3, 4));
 		assertEquals(expected, varsEntailed);
+
+		assertEquals(2, factory.bddCount());
 	}
 
 	@Test
@@ -343,6 +367,8 @@ public class GERTest {
 		expected.add(3);
 		expected.add(4);
 		assertEquals(expected, varsEntailed);
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -356,6 +382,8 @@ public class GERTest {
 		Set<Integer> expected = new HashSet<>();
 		expected.add(1);
 		assertEquals(expected, varsDisentailed);
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -369,6 +397,8 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
 		assertEquals(8, fakeGer.maxVar(bdd));
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -388,6 +418,8 @@ public class GERTest {
 		BDD one = factory.makeOne();
 		List<Pair> equivVars = fakeGer.equivVars(one);
 		assertTrue(equivVars.isEmpty());
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -395,6 +427,8 @@ public class GERTest {
 		BDD zero = factory.makeZero();
 		List<Pair> equivVars = fakeGer.equivVars(zero);
 		assertTrue(equivVars.isEmpty());
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -406,6 +440,8 @@ public class GERTest {
 		List<Pair> equivVars = fakeGer.equivVars(bdd);
 		assertEquals(1, equivVars.size());
 		assertTrue(equivVars.contains(new Pair(1, 2)));
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -421,6 +457,8 @@ public class GERTest {
 		assertTrue(equivVars.contains(new Pair(1, 2)));
 		assertTrue(equivVars.contains(new Pair(1, 3)));
 		assertTrue(equivVars.contains(new Pair(2, 3)));
+
+		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -439,6 +477,8 @@ public class GERTest {
 		BDD n = normalized.getN();
 		BDD expected = factory.makeOne();
 		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -458,6 +498,8 @@ public class GERTest {
 		BDD n = normalized.getN();
 		BDD expected = factory.makeVar(3);
 		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -469,5 +511,7 @@ public class GERTest {
 		GER ger = new GER(bdd).normalize();
 		BDD full = ger.getFullBDD();
 		assertTrue(full.isEquivalentTo(bdd));
+
+		assertEquals(3, factory.bddCount());
 	}
 }

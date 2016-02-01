@@ -321,7 +321,11 @@ public class BDDGer implements BDD {
 			BDDGer bddGer = (BDDGer) other;
 			other = bddGer.ger.getFullBDD();
 		}
-		return ger.getFullBDD().isEquivalentTo(other);
+		BDD fullBDD = ger.getFullBDD();
+		boolean equivalentTo = fullBDD.isEquivalentTo(other);
+		fullBDD.free();
+		other.free();
+		return equivalentTo;
 	}
 
 	@Override
@@ -332,21 +336,36 @@ public class BDDGer implements BDD {
 
 	@Override
 	public int var() {
-		return ger.getFullBDD().var();
+		BDD fullBDD = ger.getFullBDD();
+		int var = fullBDD.var();
+		fullBDD.free();
+		return var;
 	}
 
 	@Override
 	public BDD high() {
-		return ger.getFullBDD().high();
+		BDD fullBDD = ger.getFullBDD();
+		BDD high = fullBDD.high();
+		fullBDD.free();
+		return high;
 	}
 
 	@Override
 	public BDD low() {
-		return ger.getFullBDD().low();
+		BDD fullBDD = ger.getFullBDD();
+		BDD low = fullBDD.low();
+		fullBDD.free();
+		return low;
 	}
 
 	@Override
 	public BDD squeezeEquiv(LeaderFunction leaderFunction) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public BDD squeezeEquivWith(LeaderFunction leaderFunction) {
 		// TODO Auto-generated method stub
 		return null;
 	}
