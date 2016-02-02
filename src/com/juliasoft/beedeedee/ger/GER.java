@@ -171,20 +171,20 @@ public class GER {
 	 * @return the set of entailed variables
 	 */
 	Set<Integer> varsEntailed(BDD f) {
-		return varsEntailedAux(f, new HashSet<Integer>(), universe(f));
+		return varsEntailedAux(f, new HashSet<Integer>(), universe(f), true);
 	}
 
-	private Set<Integer> varsEntailedAux(BDD f, HashSet<Integer> s, Set<Integer> i) {
+	private Set<Integer> varsEntailedAux(BDD f, HashSet<Integer> s, Set<Integer> i, boolean entailed) {
 		BDD orig = f;
 		BDD oldf = f;
 		while (!(f.isZero() || f.isOne())) {
 			s.add(f.var());
-			BDD high = f.high();
-			varsEntailedAux(high, s, i);
-			high.free();
+			BDD child = entailed ? f.high() : f.low();
+			varsEntailedAux(child, s, i, entailed);
+			child.free();
 			s.remove(f.var());
 			oldf = f;
-			f = f.low();
+			f = entailed ? f.low() : f.high();
 			if (oldf != orig) {
 				oldf.free();
 			}
@@ -205,31 +205,7 @@ public class GER {
 	 * @return the set of disentailed variables
 	 */
 	Set<Integer> varsDisentailed(BDD f) {
-		return varsDisentailedAux(f, new HashSet<Integer>(), universe(f));
-	}
-
-	private Set<Integer> varsDisentailedAux(BDD f, HashSet<Integer> s, Set<Integer> i) {
-		BDD orig = f;
-		BDD oldf = f;
-		while (!(f.isZero() || f.isOne())) {
-			s.add(f.var());
-			BDD high = f.low();
-			varsDisentailedAux(high, s, i);
-			high.free();
-			s.remove(f.var());
-			oldf = f;
-			f = f.high();
-			if (oldf != orig) {
-				oldf.free();
-			}
-		}
-		if (f.isOne()) {
-			i.retainAll(s);
-		}
-		if (f != orig) {
-			f.free();
-		}
-		return i;
+		return varsEntailedAux(f, new HashSet<Integer>(), universe(f), false);
 	}
 
 	/**
