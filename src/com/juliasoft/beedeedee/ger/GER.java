@@ -170,23 +170,32 @@ public class GER {
 	 * @param f the BDD
 	 * @return the set of entailed variables
 	 */
-	// TODO implement the more efficient iterative version
 	Set<Integer> varsEntailed(BDD f) {
+		return varsEntailedAux(f, new HashSet<Integer>(), universe(f));
+	}
+
+	private Set<Integer> varsEntailedAux(BDD f, HashSet<Integer> s, Set<Integer> i) {
+		BDD orig = f;
+		BDD oldf = f;
+		while (!(f.isZero() || f.isOne())) {
+			s.add(f.var());
+			BDD high = f.high();
+			varsEntailedAux(high, s, i);
+			high.free();
+			s.remove(f.var());
+			oldf = f;
+			f = f.low();
+			if (oldf != orig) {
+				oldf.free();
+			}
+		}
 		if (f.isOne()) {
-			return new HashSet<>();
+			i.retainAll(s);
 		}
-		if (f.isZero()) {
-			return universe(f);
+		if (f != orig) {
+			f.free();
 		}
-		BDD high = f.high();
-		Set<Integer> veHigh = varsEntailed(high);
-		high.free();
-		veHigh.add(f.var());
-		BDD low = f.low();
-		Set<Integer> veLow = varsEntailed(low);
-		low.free();
-		veHigh.retainAll(veLow);
-		return veHigh;
+		return i;
 	}
 
 	/**
@@ -195,6 +204,7 @@ public class GER {
 	 * @param f the BDD
 	 * @return the set of disentailed variables
 	 */
+	// TODO implement the more efficient iterative version
 	Set<Integer> varsDisentailed(BDD f) {
 		if (f.isOne()) {
 			return new HashSet<>();
