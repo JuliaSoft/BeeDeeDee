@@ -251,7 +251,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 							allBDDsCreatedSoFar.clear();
 
 							for (BDDImpl bdd : copy) {
-								if (bdd.id >= NUM_OF_PREALLOCATED_NODES) {
+								if (bdd.id >= 0) {
 									allBDDsCreatedSoFar.add(bdd);									
 								}
 							}
