@@ -1,6 +1,6 @@
 package com.juliasoft.beedeedee.ger;
 
-import java.util.SortedSet;
+import java.util.BitSet;
 
 /**
  * A function mapping each integer value to the least value of its equivalence
@@ -15,9 +15,9 @@ public class LeaderFunction {
 	}
 
 	public int get(int var) {
-		for (SortedSet<Integer> eqClass : equivalenceClasses) {
-			if (eqClass.contains(var)) {
-				return eqClass.first();
+		for (BitSet eqClass : equivalenceClasses) {
+			if (eqClass.get(var)) {
+				return eqClass.nextSetBit(0);
 			}
 		}
 		return var;

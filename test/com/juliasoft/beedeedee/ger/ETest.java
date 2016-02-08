@@ -2,11 +2,9 @@ package com.juliasoft.beedeedee.ger;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.junit.Test;
 
@@ -41,9 +39,9 @@ public class ETest {
 
 		// one common pair, (1, 2)
 		assertEquals(1, intersection.size());
-		SortedSet<Integer> next = intersection.iterator().next();
-		assertEquals(1, (int) next.first());
-		assertEquals(2, (int) next.last());
+		BitSet next = intersection.iterator().next();
+		assertEquals(1, (int) next.nextSetBit(0));
+		assertEquals(2, (int) next.nextSetBit(2));
 	}
 
 	@Test
@@ -62,13 +60,13 @@ public class ETest {
 
 		// two common pairs, (1, 2), (4, 6)
 		assertEquals(2, intersection.size());
-		Iterator<SortedSet<Integer>> it = intersection.iterator();
-		SortedSet<Integer> class1 = it.next();
-		SortedSet<Integer> class2 = it.next();
-		assertEquals(1, (int) class1.first());
-		assertEquals(2, (int) class1.last());
-		assertEquals(4, (int) class2.first());
-		assertEquals(6, (int) class2.last());
+		Iterator<BitSet> it = intersection.iterator();
+		BitSet class1 = it.next();
+		BitSet class2 = it.next();
+		assertEquals(1, (int) class1.nextSetBit(0));
+		assertEquals(2, (int) class1.nextSetBit(2));
+		assertEquals(4, (int) class2.nextSetBit(0));
+		assertEquals(6, (int) class2.nextSetBit(5));
 	}
 
 	@Test
@@ -153,9 +151,15 @@ public class ETest {
 
 		// 5 was added to 4's class
 		assertEquals(2, e.size());
-		for (SortedSet<Integer> eqClass : e) {
-			assertTrue(eqClass.equals(new TreeSet<>(Arrays.asList(1, 2)))
-					|| eqClass.equals(new TreeSet<>(Arrays.asList(3, 4, 5))));
+		BitSet expected1 = new BitSet();
+		expected1.set(1);
+		expected1.set(2);
+		BitSet expected2 = new BitSet();
+		expected2.set(3);
+		expected2.set(4);
+		expected2.set(5);
+		for (BitSet eqClass : e) {
+			assertTrue(eqClass.equals(expected1) || eqClass.equals(expected2));
 		}
 	}
 
@@ -170,6 +174,8 @@ public class ETest {
 
 		// eq. classes were joined
 		assertEquals(1, e.size());
-		assertEquals(new TreeSet<>(Arrays.asList(1, 2, 3, 4)), e.iterator().next());
+		BitSet expected = new BitSet();
+		expected.set(1, 5);
+		assertEquals(expected, e.iterator().next());
 	}
 }

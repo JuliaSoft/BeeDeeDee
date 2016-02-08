@@ -1,31 +1,31 @@
 package com.juliasoft.beedeedee.ger;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * A set of equivalence classes.
  */
-public class E implements Iterable<SortedSet<Integer>> {
+public class E implements Iterable<BitSet> {
 
-	private Set<SortedSet<Integer>> equivalenceClasses;
+	private Set<BitSet> equivalenceClasses;
 
 	public E() {
 		equivalenceClasses = new HashSet<>();
 	}
 
-	private Set<SortedSet<Integer>> intersect(Set<SortedSet<Integer>> equiv1, Set<SortedSet<Integer>> equiv2) {
-		Set<SortedSet<Integer>> intersection = new HashSet<>();
-		for (SortedSet<Integer> set1 : equiv1) {
-			for (SortedSet<Integer> set2 : equiv2) {
-				SortedSet<Integer> partialIntersection = new TreeSet<>(set1);
-				partialIntersection.retainAll(set2);
-				if (partialIntersection.size() > 1) {
+	private Set<BitSet> intersect(Set<BitSet> equiv1, Set<BitSet> equiv2) {
+		Set<BitSet> intersection = new HashSet<>();
+		for (BitSet set1 : equiv1) {
+			for (BitSet set2 : equiv2) {
+				BitSet partialIntersection = new BitSet();
+				partialIntersection.or(set1);
+				partialIntersection.and(set2);
+				if (partialIntersection.cardinality() > 1) {
 					intersection.add(partialIntersection);
 				}
 			}
@@ -50,7 +50,7 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 * 
 	 * @param equivalenceClass the class to add
 	 */
-	void add(SortedSet<Integer> equivalenceClass) {
+	void add(BitSet equivalenceClass) {
 		equivalenceClasses.add(equivalenceClass);
 	}
 
@@ -62,7 +62,7 @@ public class E implements Iterable<SortedSet<Integer>> {
 		return equivalenceClasses.size();
 	}
 
-	public Iterator<SortedSet<Integer>> iterator() {
+	public Iterator<BitSet> iterator() {
 		return equivalenceClasses.iterator();
 	}
 
@@ -73,10 +73,10 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 */
 	public List<Pair> pairs() {
 		ArrayList<Pair> pairs = new ArrayList<>();
-		for (SortedSet<Integer> sortedSet : equivalenceClasses) {
-			for (Integer second : sortedSet) {
-				for (Integer first : sortedSet.headSet(second)) {
-					pairs.add(new Pair(first, second));
+		for (BitSet bs : equivalenceClasses) {
+			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
+				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1)) {
+					pairs.add(new Pair(i, j));
 				}
 			}
 		}
@@ -107,9 +107,9 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 * @param integers the integers forming the equivalence class
 	 */
 	public void addClass(int... integers) {
-		SortedSet<Integer> class1 = new TreeSet<>();
+		BitSet class1 = new BitSet();
 		for (int i : integers) {
-			class1.add(i);
+			class1.set(i);
 		}
 		add(class1);
 	}
@@ -132,31 +132,31 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 */
 	// TODO ugly code! use union-find data structure?
 	public void addPair(Pair pair) {
-		SortedSet<Integer> c1 = find(pair.first);
-		SortedSet<Integer> c2 = find(pair.second);
+		BitSet c1 = find(pair.first);
+		BitSet c2 = find(pair.second);
 
 		if (c1 != null) {
 			if (c2 != null) {
 				if (!c1.equals(c2)) {
 					// join classes
-					c1.addAll(c2);
+					c1.or(c2);
 					equivalenceClasses.remove(c2);
 				}
 			} else {
-				c1.add(pair.second);
+				c1.set(pair.second);
 			}
 		} else {
 			if (c2 != null) {
-				c2.add(pair.first);
+				c2.set(pair.first);
 			} else {
 				addClass(pair.first, pair.second);
 			}
 		}
 	}
 
-	private SortedSet<Integer> find(int n) {
-		for (SortedSet<Integer> eqClass : equivalenceClasses) {
-			if (eqClass.contains(n)) {
+	private BitSet find(int n) {
+		for (BitSet eqClass : equivalenceClasses) {
+			if (eqClass.get(n)) {
 				return eqClass;
 			}
 		}
@@ -167,7 +167,7 @@ public class E implements Iterable<SortedSet<Integer>> {
 	@Override
 	public boolean equals(Object obj) {
 		E other = (E) obj;
-		Set<SortedSet<Integer>> e = new HashSet<>(equivalenceClasses);
+		Set<BitSet> e = new HashSet<>(equivalenceClasses);
 		e.removeAll(other.equivalenceClasses);
 		return e.isEmpty();
 	}
@@ -177,8 +177,10 @@ public class E implements Iterable<SortedSet<Integer>> {
 	 */
 	public E copy() {
 		E e = new E();
-		for (SortedSet<Integer> eqClass : equivalenceClasses) {
-			e.add(new TreeSet<>(eqClass));
+		for (BitSet eqClass : equivalenceClasses) {
+			BitSet eqClassCopy = new BitSet();
+			eqClassCopy.or(eqClass);
+			e.add(eqClassCopy);
 		}
 		return e;
 	}

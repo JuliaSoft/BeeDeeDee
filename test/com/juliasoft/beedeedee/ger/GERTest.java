@@ -3,11 +3,11 @@ package com.juliasoft.beedeedee.ger;
 import static org.junit.Assert.*;
 
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.SortedSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -88,11 +88,10 @@ public class GERTest {
 		E equiv = and.getEquiv();
 		// {{1, 2, 3}}
 		assertEquals(1, equiv.size());
-		SortedSet<Integer> next = equiv.iterator().next();
-		assertTrue(next.contains(1));
-		assertTrue(next.contains(2));
-		assertTrue(next.contains(3));
-		assertEquals(3, next.size());
+		BitSet next = equiv.iterator().next();
+		BitSet expected = new BitSet();
+		expected.set(1, 4);
+		assertEquals(expected, next);
 
 		assertEquals(4, factory.bddCount());
 	}
@@ -118,12 +117,10 @@ public class GERTest {
 		E equiv = and.getEquiv();
 		// {{1, 2, 3, 4}}
 		assertEquals(1, equiv.size());
-		SortedSet<Integer> next = equiv.iterator().next();
-		assertTrue(next.contains(1));
-		assertTrue(next.contains(2));
-		assertTrue(next.contains(3));
-		assertTrue(next.contains(4));
-		assertEquals(4, next.size());
+		BitSet next = equiv.iterator().next();
+		BitSet expected = new BitSet();
+		expected.set(1, 5);
+		assertEquals(expected, next);
 
 		BDD n = and.getN();
 		BDD expectedN = factory.makeOne();
@@ -159,16 +156,15 @@ public class GERTest {
 		// {{1, 2, 3}, {6, 7}}
 		assertEquals(2, equiv.size());
 		// FIXME order dependent
-		Iterator<SortedSet<Integer>> it = equiv.iterator();
-		SortedSet<Integer> next = it.next();
-		assertTrue(next.contains(1));
-		assertTrue(next.contains(2));
-		assertTrue(next.contains(3));
-		assertEquals(3, next.size());
+		Iterator<BitSet> it = equiv.iterator();
+		BitSet next = it.next();
+		BitSet expected = new BitSet();
+		expected.set(1, 4);
+		assertEquals(expected, next);
 		next = it.next();
-		assertTrue(next.contains(6));
-		assertTrue(next.contains(7));
-		assertEquals(2, next.size());
+		expected.clear();
+		expected.set(6, 8);
+		assertEquals(expected, next);
 
 		BDD n = and.getN();
 		BDD expectedN = factory.makeVar(8);
@@ -232,10 +228,10 @@ public class GERTest {
 		E equiv = or.getEquiv();
 		// (1, 2)
 		assertEquals(1, equiv.size());
-		SortedSet<Integer> next = equiv.iterator().next();
-		assertTrue(next.contains(1));
-		assertTrue(next.contains(2));
-		assertEquals(2, next.size());
+		BitSet next = equiv.iterator().next();
+		BitSet expected = new BitSet();
+		expected.set(1, 3);
+		assertEquals(expected, next);
 
 		BDD n = or.getN();
 		// we expect (1 or (1 & (x2 <-> x3) & (x1 <-> x3))), that is the
@@ -272,10 +268,10 @@ public class GERTest {
 		E equiv = or.getEquiv();
 		// (1, 2)
 		assertEquals(1, equiv.size());
-		SortedSet<Integer> next = equiv.iterator().next();
-		assertTrue(next.contains(1));
-		assertTrue(next.contains(2));
-		assertEquals(2, next.size());
+		BitSet next = equiv.iterator().next();
+		BitSet expected = new BitSet();
+		expected.set(1, 3);
+		assertEquals(expected, next);
 
 		BDD n = or.getN();
 		// we expect (x8 or (1 & (x2 <-> x3) & (x1 <-> x3)))
