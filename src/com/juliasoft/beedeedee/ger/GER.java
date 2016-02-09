@@ -1,9 +1,8 @@
 package com.juliasoft.beedeedee.ger;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.BitSet;
 import java.util.List;
-import java.util.Set;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 
@@ -168,19 +167,19 @@ public class GER {
 	 * @param f the BDD
 	 * @return the set of entailed variables
 	 */
-	Set<Integer> varsEntailed(BDD f) {
-		return varsEntailedAux(f, new HashSet<Integer>(), universe(f), true);
+	BitSet varsEntailed(BDD f) {
+		return varsEntailedAux(f, new BitSet(), universe(f), true);
 	}
 
-	private Set<Integer> varsEntailedAux(BDD f, HashSet<Integer> s, Set<Integer> i, boolean entailed) {
+	private BitSet varsEntailedAux(BDD f, BitSet s, BitSet i, boolean entailed) {
 		BDD orig = f;
 		BDD oldf = f;
 		while (!(f.isZero() || f.isOne())) {
-			s.add(f.var());
+			s.set(f.var());
 			BDD child = entailed ? f.high() : f.low();
 			varsEntailedAux(child, s, i, entailed);
 			child.free();
-			s.remove(f.var());
+			s.clear(f.var());
 			oldf = f;
 			f = entailed ? f.low() : f.high();
 			if (oldf != orig) {
@@ -188,7 +187,7 @@ public class GER {
 			}
 		}
 		if (f.isOne()) {
-			i.retainAll(s);
+			i.and(s);
 		}
 		if (f != orig) {
 			f.free();
@@ -202,8 +201,8 @@ public class GER {
 	 * @param f the BDD
 	 * @return the set of disentailed variables
 	 */
-	Set<Integer> varsDisentailed(BDD f) {
-		return varsEntailedAux(f, new HashSet<Integer>(), universe(f), false);
+	BitSet varsDisentailed(BDD f) {
+		return varsEntailedAux(f, new BitSet(), universe(f), false);
 	}
 
 	/**
@@ -213,12 +212,12 @@ public class GER {
 	 * @param f the BDD from which to compute maxVar
 	 * @return the set of all variable indexes
 	 */
-	private Set<Integer> universe(BDD f) {
-		Set<Integer> u = new HashSet<>();
+	private BitSet universe(BDD f) {
+		BitSet u = new BitSet();
 		int maxVar = f.getFactory().getMaxVar();
 		if (maxVar > 0) {
 			for (int i = 0; i <= maxVar; i++) {
-				u.add(i);
+				u.set(i);
 			}
 		}
 		return u;
@@ -246,10 +245,10 @@ public class GER {
 		List<Pair> pairs = new ArrayList<>();
 		BDD high = f.high();
 		BDD low = f.low();
-		Set<Integer> varsEntailedByHigh = varsEntailed(high);
-		varsEntailedByHigh.retainAll(varsDisentailed(low));
-		for (Integer v : varsEntailedByHigh) {
-			pairs.add(new Pair(f.var(), v));
+		BitSet varsEntailedByHigh = varsEntailed(high);
+		varsEntailedByHigh.and(varsDisentailed(low));
+		for (int i = varsEntailedByHigh.nextSetBit(0); i >= 0; i = varsEntailedByHigh.nextSetBit(i + 1)) {
+			pairs.add(new Pair(f.var(), i));
 		}
 
 		List<Pair> equivVars = equivVars(high, universePairs);
