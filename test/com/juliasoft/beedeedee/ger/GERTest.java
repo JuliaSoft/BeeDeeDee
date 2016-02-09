@@ -2,12 +2,9 @@ package com.juliasoft.beedeedee.ger;
 
 import static org.junit.Assert.*;
 
-import java.util.Arrays;
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -335,7 +332,7 @@ public class GERTest {
 	@Test
 	public void testVarsEntailed1() {
 		BDD one = factory.makeOne();
-		Set<Integer> varsEntailed = fakeGer.varsEntailed(one);
+		BitSet varsEntailed = fakeGer.varsEntailed(one);
 		assertTrue(varsEntailed.isEmpty());
 
 		assertEquals(1, factory.bddCount());
@@ -345,9 +342,10 @@ public class GERTest {
 	public void testVarsEntailed2() {
 		BDD zero = factory.makeZero();
 		factory.makeVar(4); // set maxVar to 4 for the current factory
-		Set<Integer> varsEntailed = fakeGer.varsEntailed(zero);
+		BitSet varsEntailed = fakeGer.varsEntailed(zero);
 		// expect a set containing all possible variables up to maxVar
-		Set<Integer> expected = new HashSet<>(Arrays.asList(0, 1, 2, 3, 4));
+		BitSet expected = new BitSet();
+		expected.set(0, 5);
 		assertEquals(expected, varsEntailed);
 
 		assertEquals(2, factory.bddCount());
@@ -358,10 +356,9 @@ public class GERTest {
 		BDD f = factory.makeVar(3);
 		f.andWith(factory.makeVar(4));
 
-		Set<Integer> varsEntailed = fakeGer.varsEntailed(f);
-		Set<Integer> expected = new HashSet<>();
-		expected.add(3);
-		expected.add(4);
+		BitSet varsEntailed = fakeGer.varsEntailed(f);
+		BitSet expected = new BitSet();
+		expected.set(3, 5);
 		assertEquals(expected, varsEntailed);
 
 		assertEquals(1, factory.bddCount());
@@ -374,9 +371,9 @@ public class GERTest {
 		f.andWith(factory.makeVar(2));
 
 		// disentailed variables are those whose negation is entailed
-		Set<Integer> varsDisentailed = fakeGer.varsDisentailed(f);
-		Set<Integer> expected = new HashSet<>();
-		expected.add(1);
+		BitSet varsDisentailed = fakeGer.varsDisentailed(f);
+		BitSet expected = new BitSet();
+		expected.set(1);
 		assertEquals(expected, varsDisentailed);
 
 		assertEquals(1, factory.bddCount());
