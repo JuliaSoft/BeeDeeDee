@@ -496,6 +496,86 @@ public class GERTest {
 	}
 
 	@Test
+	public void testRenameWithLeader1() {
+		// bdd for x2 & x3
+		BDD bdd = factory.makeVar(2);
+		bdd.andWith(factory.makeVar(3));
+
+		E l = new E();
+		l.addClass(1, 2);
+		BDD n = fakeGer.renameWithLeader(bdd, l);
+
+		BDD expected = factory.makeVar(1);
+		expected.andWith(factory.makeVar(3));
+		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
+	}
+
+	@Test
+	public void testRenameWithLeader2() {
+		BDD bdd = factory.makeVar(2);
+
+		E l = new E();
+		l.addClass(1, 2);
+		BDD n = fakeGer.renameWithLeader(bdd, l);
+
+		BDD expected = factory.makeVar(1);
+		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
+	}
+
+	@Test
+	public void testRenameWithLeader3() {
+		BDD bdd = factory.makeVar(1);
+
+		E l = new E();
+		l.addClass(2, 3);
+		BDD n = fakeGer.renameWithLeader(bdd, l);
+
+		BDD expected = factory.makeVar(1);
+		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
+	}
+
+	@Test
+	public void testRenameWithLeader4() {
+		BDD bdd = factory.makeVar(1);
+
+		E l = new E();
+		l.addClass(2, 3);
+		BDD n = fakeGer.renameWithLeader(bdd, l);
+
+		BDD expected = factory.makeVar(1);
+		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
+	}
+
+	@Test
+	public void testRenameWithLeader5() {
+		// bdd for (x6 <-> x7) & (x2 <-> x3)
+		BDD bdd = factory.makeVar(6);
+		bdd.biimpWith(factory.makeVar(7));
+		BDD temp = factory.makeVar(2);
+		temp.biimpWith(factory.makeVar(3));
+		bdd.andWith(temp);
+
+		E l = new E();
+		l.addClass(1, 2);
+		l.addClass(6, 7);
+		BDD n = fakeGer.renameWithLeader(bdd, l);
+
+		BDD expected = factory.makeVar(1);
+		expected.biimpWith(factory.makeVar(3));
+		assertTrue(n.isEquivalentTo(expected));
+
+		assertEquals(3, factory.bddCount());
+	}
+
+	@Test
 	public void testFullBDD() {
 		// bdd for (x1 <-> x2) & x8
 		BDD bdd = factory.makeVar(1);

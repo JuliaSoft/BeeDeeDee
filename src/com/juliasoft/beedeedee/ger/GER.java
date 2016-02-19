@@ -5,6 +5,7 @@ import java.util.BitSet;
 import java.util.List;
 
 import com.juliasoft.beedeedee.bdd.BDD;
+import com.juliasoft.beedeedee.factories.Factory;
 
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class GER {
@@ -314,8 +315,9 @@ public class GER {
 			nOld = nNew.copy();
 			List<Pair> equivVars = equivVars(nNew);
 			eNew.addPairs(equivVars);
-			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
-			nNew.squeezeEquivWith(leaderFunctionNew);
+//			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
+//			nNew.squeezeEquivWith(leaderFunctionNew);
+			nNew = renameWithLeader(nNew, eNew);
 		} while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
 		nOld.free();
 		return new GER(nNew, eNew);
@@ -336,5 +338,51 @@ public class GER {
 
 	public GER copy() {
 		return new GER(n.copy(), l.copy());
+	}
+
+	// TODO move in factory
+	BDD renameWithLeader(BDD f, E r) {
+		BitSet t = new BitSet();
+		return renameWithLeader(f, r, 1, t);
+	}
+
+	private BDD renameWithLeader(BDD f, E r, int c, BitSet t) {
+		int var = f.var();
+		LeaderFunction lf = new LeaderFunction(r);
+		int maxVar = r.maxVar();
+		BitSet leaders = lf.getLeaders(); // TODO move outside - pass as param
+		if (maxVar < var || f.isOne() || f.isZero()) {
+			return f;
+		}
+		BitSet augmented = new BitSet();
+		augmented.or(t);
+		int minLeader = leaders.nextSetBit(c);
+		if (minLeader > 0 && minLeader < var) {
+			augmented.set(minLeader);
+			c = minLeader;
+			return mkNode(minLeader, renameWithLeader(f, r, c + 1, augmented), renameWithLeader(f, r, c + 1, t));
+		}
+		c = var;
+		if (!r.containsVar(var)) {
+			return mkNode(var, renameWithLeader(f.high(), r, c + 1, t), renameWithLeader(f.low(), r, c + 1, t));
+		}
+		int l = lf.get(var);
+		if (l == var) {
+			augmented.set(c);
+			return mkNode(var, renameWithLeader(f.high(), r, c + 1, augmented), renameWithLeader(f.low(), r, c + 1, t));
+		}
+		if (t.get(l)) {
+			return renameWithLeader(f.high(), r, c + 1, t);
+		}
+		return renameWithLeader(f.low(), r, c + 1, t);
+	}
+
+	// FIXME use MK in Factory
+	private BDD mkNode(int var, BDD high, BDD low) {
+		Factory factory = low.getFactory();
+		BDD makeVar = factory.makeVar(var);
+		BDD makeNotVar = factory.makeNotVar(var);
+		BDD bdd = makeVar.andWith(high).orWith(makeNotVar.andWith(low));
+		return bdd;
 	}
 }

@@ -413,7 +413,7 @@ public interface BDD {
 	 * @param leaderFunction a function returning the leader (minimum) of the equivalence class of each variable
 	 * @return this
 	 */
-	public BDD squeezeEquivWith(LeaderFunction leaderFunctionNew);
+	public BDD squeezeEquivWith(LeaderFunction leaderFunction);
 
 	/**
 	 * @return the factory which created this BDD

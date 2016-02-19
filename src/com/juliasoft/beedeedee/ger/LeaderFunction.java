@@ -23,4 +23,12 @@ public class LeaderFunction {
 		return var;
 	}
 
+	BitSet getLeaders() {
+		BitSet leaders = new BitSet();
+		for (BitSet eqClass : equivalenceClasses) {
+			leaders.set(eqClass.nextSetBit(0));
+		}
+		return leaders;
+	}
+
 }

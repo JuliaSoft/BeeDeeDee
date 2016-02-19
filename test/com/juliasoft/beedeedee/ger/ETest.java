@@ -178,4 +178,25 @@ public class ETest {
 		expected.set(1, 5);
 		assertEquals(expected, e.iterator().next());
 	}
+
+	@Test
+	public void testMaxVar() {
+		// {(1, 2)}, {(3, 4)}
+		E e = new E();
+		e.addClass(1, 2);
+		e.addClass(3, 4);
+
+		assertEquals(4, e.maxVar());
+	}
+
+	@Test
+	public void testContainsVar() {
+		// {(1, 2)}, {(3, 4)}
+		E e = new E();
+		e.addClass(1, 2);
+		e.addClass(3, 4);
+
+		assertTrue(e.containsVar(3));
+		assertFalse(e.containsVar(7));
+	}
 }
