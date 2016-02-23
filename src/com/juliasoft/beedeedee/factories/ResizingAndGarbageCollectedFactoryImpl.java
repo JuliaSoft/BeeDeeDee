@@ -1362,15 +1362,17 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		@Override
 		public boolean holds(BDD var) throws IndexOutOfBoundsException {
 			assertNonNull(var);
-			int varNum;
+			return holds(var.var());
+		}
 
-			varNum = var.var();
-
-			Boolean result = truthTable.get(varNum);
+		@Override
+		public boolean holds(int i) {
+			// TODO Auto-generated method stub
+			Boolean result = truthTable.get(i);
 			if (result != null)
 				return result;
-
-			throw new IndexOutOfBoundsException("unknown variable " + varNum);
+			
+			throw new IndexOutOfBoundsException("unknown variable " + i);
 		}
 
 		@Override

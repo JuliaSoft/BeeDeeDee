@@ -1,12 +1,15 @@
 package com.juliasoft.beedeedee.ger;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.*;
 
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
 
 import org.junit.Test;
+
+import com.juliasoft.beedeedee.bdd.Assignment;
 
 public class ETest {
 
@@ -198,5 +201,18 @@ public class ETest {
 
 		assertTrue(e.containsVar(3));
 		assertFalse(e.containsVar(7));
+	}
+
+	@Test
+	public void testUpdateAssignment() {
+		Assignment a = mock(Assignment.class);
+		when(a.holds(2)).thenReturn(true);
+
+		E e = new E();
+		e.addClass(1, 2);
+		e.addClass(3, 4);
+		e.updateAssignment(a);
+
+		verify(a).put(1, true);
 	}
 }

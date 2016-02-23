@@ -213,11 +213,8 @@ public class BDDGer implements BDD {
 	@Override
 	public Assignment anySat() throws UnsatException {
 		Assignment anySat = ger.getN().anySat();
-		List<Pair> pairs = ger.getEquiv().pairs();
-		for (Pair pair : pairs) {
-			anySat.put(pair.first, false);
-			anySat.put(pair.second, false);
-		}
+		E equiv = ger.getEquiv();
+		equiv.updateAssignment(anySat);
 		return anySat;
 	}
 

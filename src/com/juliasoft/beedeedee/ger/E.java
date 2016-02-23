@@ -7,6 +7,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import com.juliasoft.beedeedee.bdd.Assignment;
+
 /**
  * A set of equivalence classes.
  */
@@ -205,5 +207,34 @@ public class E implements Iterable<BitSet> {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Updates the given assignment with information on equivalent variables.
+	 * 
+	 * @param a the assignment to update
+	 */
+	void updateAssignment(Assignment a) {
+		classIteration: for (BitSet eqClass : equivalenceClasses) {
+			for (int i = eqClass.nextSetBit(0); i >= 0; i = eqClass.nextSetBit(i + 1)) {
+				boolean holds = false;
+				try {
+					holds = a.holds(i);
+				} catch (Exception e) {
+					// ignore exception if variable not in assignment
+				}
+				if (holds) {
+					setAll(a, eqClass, true);
+					continue classIteration;
+				}
+			}
+			setAll(a, eqClass, false);
+		}
+	}
+
+	private void setAll(Assignment a, BitSet eqClass, boolean value) {
+		for (int i = eqClass.nextSetBit(0); i >= 0; i = eqClass.nextSetBit(i + 1)) {
+			a.put(i, value);
+		}
 	}
 }
