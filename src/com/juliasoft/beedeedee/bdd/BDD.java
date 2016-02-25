@@ -18,6 +18,7 @@
 */
 package com.juliasoft.beedeedee.bdd;
 
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -419,4 +420,9 @@ public interface BDD {
 	 * @return the factory which created this BDD
 	 */
 	public Factory getFactory();
+
+	/**
+	 * @return the set of variable indexes occurring in the BDD
+	 */
+	public BitSet vars();
 }

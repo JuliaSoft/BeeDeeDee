@@ -1,5 +1,6 @@
 package com.juliasoft.beedeedee.ger;
 
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -395,5 +396,11 @@ public class BDDGer implements BDD {
 	@Override
 	public String toString() {
 		return ger.getEquiv() + System.lineSeparator() + ger.getN();
+	}
+
+	@Override
+	public BitSet vars() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 }

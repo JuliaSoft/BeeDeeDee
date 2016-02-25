@@ -3,6 +3,7 @@ package com.juliasoft.beedeedee.factories;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -88,5 +89,24 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		assertEquals(1, factory.bddCount());
 		x2.free();
 		assertEquals(0, factory.bddCount());
+	}
+
+	@Test
+	public void testBddVars1() {
+		BDD x2 = factory.makeVar(2);
+		BitSet vars = x2.vars();
+		assertEquals(1, vars.cardinality());
+		assertTrue(vars.get(2));
+	}
+
+	@Test
+	public void testBddVars2() {
+		BDD bdd = factory.makeVar(2);
+		bdd.xorWith(factory.makeVar(3));
+
+		BitSet vars = bdd.vars();
+		assertEquals(2, vars.cardinality());
+		assertTrue(vars.get(2));
+		assertTrue(vars.get(3));
 	}
 }

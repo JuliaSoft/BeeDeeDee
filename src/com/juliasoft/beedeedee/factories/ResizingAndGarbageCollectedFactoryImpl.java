@@ -22,6 +22,7 @@ import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertion
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -1338,6 +1339,29 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		@Override
 		public Factory getFactory() {
 			return ResizingAndGarbageCollectedFactoryImpl.this;
+		}
+
+		@Override
+		public BitSet vars() {
+			BitSet vars = new BitSet();
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				updateVars(id, vars);
+			}
+			finally {
+				lock.unlock();
+			}
+			return vars;
+		}
+
+		private void updateVars(int id, BitSet vars) {
+			if (id < FIRST_NODE_NUM) {
+				return;
+			}
+			vars.set(ut.var(id));
+			updateVars(ut.low(id), vars);
+			updateVars(ut.high(id), vars);
 		}
 	}
 

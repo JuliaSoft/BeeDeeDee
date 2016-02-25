@@ -587,4 +587,39 @@ public class GERTest {
 
 //		assertEquals(3, factory.bddCount());
 	}
+
+	@Test
+	public void testSatCount1() {
+		// x1 XOR x2 - satCount = 2
+		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
+		E l = new E();
+		l.addClass(1, 2); // 1 value - bound to leader's value in bdd (var 1)
+		GER ger = new GER(bdd, l);
+
+		assertEquals(2, ger.satCount(1));
+	}
+
+	@Test
+	public void testSatCount2() {
+		// x1 XOR x2 - satCount = 2
+		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
+		E l = new E();
+		l.addClass(1, 2);
+		l.addClass(3, 4); // 2 values for this - no constraints
+		GER ger = new GER(bdd, l);
+
+		assertEquals(4, ger.satCount(1));
+	}
+
+	@Test
+	public void testSatCount3() {
+		// x1 XOR x2 - satCount = 2
+		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
+		E l = new E();
+		l.addClass(2, 3); // 2 values for this...
+		l.addClass(4, 5, 6, 7); // times 2 values for this
+		GER ger = new GER(bdd, l);
+
+		assertEquals(8, ger.satCount(1));
+	}
 }

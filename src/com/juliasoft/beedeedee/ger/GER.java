@@ -385,4 +385,17 @@ public class GER {
 		BDD bdd = makeVar.andWith(high).orWith(makeNotVar.andWith(low));
 		return bdd;
 	}
+
+	public long satCount(int maxVar) {
+		BitSet vars = n.vars();
+		int c = 1;
+		for (BitSet eqClass : l) {
+			int leader = eqClass.nextSetBit(0);
+			if (vars.get(leader)) {
+				continue;
+			}
+			c *= 2;
+		}
+		return c * n.satCount(maxVar);
+	}
 }
