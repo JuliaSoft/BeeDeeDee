@@ -596,7 +596,7 @@ public class GERTest {
 		l.addClass(1, 2); // 1 value - bound to leader's value in bdd (var 1)
 		GER ger = new GER(bdd, l);
 
-		assertEquals(2, ger.satCount(1));
+		assertEquals(2, ger.satCount());
 	}
 
 	@Test
@@ -608,7 +608,7 @@ public class GERTest {
 		l.addClass(3, 4); // 2 values for this - no constraints
 		GER ger = new GER(bdd, l);
 
-		assertEquals(4, ger.satCount(1));
+		assertEquals(4, ger.satCount());
 	}
 
 	@Test
@@ -620,6 +620,6 @@ public class GERTest {
 		l.addClass(4, 5, 6, 7); // times 2 values for this
 		GER ger = new GER(bdd, l);
 
-		assertEquals(8, ger.satCount(1));
+		assertEquals(8, ger.satCount());
 	}
 }

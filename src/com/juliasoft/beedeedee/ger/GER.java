@@ -386,7 +386,7 @@ public class GER {
 		return bdd;
 	}
 
-	public long satCount(int maxVar) {
+	public long satCount() {
 		BitSet vars = n.vars();
 		int c = 1;
 		for (BitSet eqClass : l) {
@@ -396,6 +396,6 @@ public class GER {
 			}
 			c *= 2;
 		}
-		return c * n.satCount(maxVar);
+		return c * n.satCount(vars.cardinality() - 1);
 	}
 }

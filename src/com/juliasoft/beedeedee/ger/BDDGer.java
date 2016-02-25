@@ -227,8 +227,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public long satCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return ger.satCount();
 	}
 
 	@Override
