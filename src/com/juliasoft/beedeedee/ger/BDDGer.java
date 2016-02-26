@@ -184,26 +184,22 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD imp(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD impWith(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD biimp(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD biimpWith(BDD other) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -221,8 +217,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public List<Assignment> allSat() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -232,62 +227,63 @@ public class BDDGer implements BDD {
 
 	@Override
 	public long satCount(int maxVar) {
-		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD restrict(int var, boolean value) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD restrict(BDD var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD restrictWith(BDD var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD exist(int var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD exist(BDD var) {
-		// TODO Auto-generated method stub
-		return null;
+		BitSet vars = var.vars();
+		// TODO try not to use full bdd
+		BDD res = ger.getFullBDD();
+		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
+			BDD temp = res;
+			res = res.exist(i);
+			if (temp != res) {
+				temp.free();
+			}
+		}
+		
+		return new BDDGer(res);
 	}
 
 	@Override
 	public BDD forAll(int var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD forAll(BDD var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD simplify(BDD d) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public int[] varProfile() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -297,38 +293,40 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD replace(Map<Integer, Integer> renaming) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD replaceWith(Map<Integer, Integer> renaming) {
-		// TODO Auto-generated method stub
-		return null;
+		// TODO try not to use full bdd
+		BDD fullBDD = ger.getFullBDD();
+		BDD replace = fullBDD.replace(renaming);
+		fullBDD.free();
+		GER replaceGer = new GER(replace);
+		free();
+		ger = replaceGer;
+
+		return this;
 	}
 
 	@Override
 	public long pathCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD ite(BDD thenBDD, BDD elseBDD) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD relProd(BDD other, BDD var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD compose(BDD other, int var) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -346,8 +344,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public int hashCodeAux() {
-		// TODO Auto-generated method stub
-		return 0;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -376,20 +373,17 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD squeezeEquiv(LeaderFunction leaderFunction) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public BDD squeezeEquivWith(LeaderFunction leaderFunction) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public Factory getFactory() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	@Override
@@ -399,7 +393,6 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BitSet vars() {
-		// TODO Auto-generated method stub
-		return null;
+		return ger.vars();
 	}
 }

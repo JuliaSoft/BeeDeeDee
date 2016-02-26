@@ -398,4 +398,13 @@ public class GER {
 		}
 		return c * n.satCount(vars.cardinality() - 1);
 	}
+
+	public BitSet vars() {
+		BitSet res = new BitSet();
+		for (BitSet eqClass : l) {
+			res.or(eqClass);
+		}
+		res.or(n.vars());
+		return res;
+	}
 }

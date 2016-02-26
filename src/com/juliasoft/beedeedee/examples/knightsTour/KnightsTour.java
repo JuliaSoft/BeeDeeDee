@@ -26,6 +26,7 @@ import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.beedeedee.ger.GERFactory;
 import com.juliasoft.julia.checkers.nullness.NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
@@ -37,7 +38,7 @@ public class KnightsTour {
 	private static int utSize = 10;//00 * 1000;
 	private static int cacheSize = 100000;
 	private static boolean parallel = false; // does each single tour problem must be solved in parallel
-	private static @NonNull ResizingAndGarbageCollectedFactory factory;
+	private static @NonNull Factory factory;
 
 	public static void main(String[] args) throws InterruptedException {
 		ArrayList<Integer> ens = processArgs(args);
@@ -88,8 +89,9 @@ public class KnightsTour {
 	}
 
 	private static void initFactory() {
-		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize, 0);
-		
+//		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize, 0);
+		factory = new GERFactory(utSize, cacheSize);
+/*		
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 			@Override
 			public void onStart(int num, int size, int free, long totalTime) {
@@ -116,6 +118,7 @@ public class KnightsTour {
 		
 		factory.setCacheRatio(0);
 		factory.setMaxIncrease(10000000);
+		*/
 	}
 
 	private static void cleanFactory() {

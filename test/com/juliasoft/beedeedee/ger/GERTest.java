@@ -622,4 +622,19 @@ public class GERTest {
 
 		assertEquals(8, ger.satCount());
 	}
+
+	@Test
+	public void testVars() {
+		// bdd for (x1 <-> x2) & x8
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.andWith(factory.makeVar(8));
+		GER ger = new GER(bdd).normalize();
+
+		BitSet vars = ger.vars();
+		assertEquals(3, vars.cardinality());
+		assertTrue(vars.get(1));
+		assertTrue(vars.get(2));
+		assertTrue(vars.get(8));
+	}
 }

@@ -184,8 +184,8 @@ public class BDDGerTest {
 	@Test
 	public void testAnySat3() {
 		// (x1 <-> x2) & (x1 & x3)
-		BDD biimp = bddX3.and(factory.makeVar(1));
-		BDD bdd = bddX1biX2.andWith(biimp);
+		BDD and = bddX3.and(factory.makeVar(1));
+		BDD bdd = bddX1biX2.andWith(and);
 		// {1, 2, 3}, x1
 		BDD bddGer = new BDDGer(bdd);
 
