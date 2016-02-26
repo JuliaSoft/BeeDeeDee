@@ -407,4 +407,29 @@ public class GER {
 		res.or(n.vars());
 		return res;
 	}
+
+	/**
+	 * Computes the biimplication of this GER with another. It uses the identity
+	 * g1 <-> g2 = (!g1 | g2) & (!g2 | g1).
+	 * 
+	 * TODO use another identity?
+	 * 
+	 * @param other the other GER
+	 * @return the biimplication
+	 */
+	public GER biimp(GER other) {
+		GER notG1 = not();
+		GER notG2 = other.not();
+
+		GER or1 = notG1.or(other);
+		GER or2 = notG2.or(this);
+
+		GER and = or1.and(or2);
+
+		notG1.free();
+		notG2.free();
+		or1.free();
+		or2.free();
+		return and;
+	}
 }

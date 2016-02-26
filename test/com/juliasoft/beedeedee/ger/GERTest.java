@@ -637,4 +637,25 @@ public class GERTest {
 		assertTrue(vars.get(2));
 		assertTrue(vars.get(8));
 	}
+
+	@Test
+	public void testBiimp() {
+		BDD x1 = factory.makeVar(1);
+		BDD x2 = factory.makeVar(2);
+
+		GER ger1 = new GER(x1);
+		GER ger2 = new GER(x2);
+
+		GER biimp = ger1.biimp(ger2);
+
+		BDD n = biimp.getN();
+		E equiv = biimp.getEquiv();
+
+		assertTrue(n.isEquivalentTo(factory.makeOne()));
+		E expectedEquiv = new E();
+		expectedEquiv.addClass(1, 2);
+		assertEquals(expectedEquiv, equiv);
+
+		// assertEquals(4, factory.bddCount());
+	}
 }

@@ -194,12 +194,29 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD biimp(BDD other) {
-		throw new UnsupportedOperationException();
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER biimpGer = ger.biimp(otherBddGer.ger);
+
+		return new BDDGer(biimpGer);
 	}
 
 	@Override
 	public BDD biimpWith(BDD other) {
-		throw new UnsupportedOperationException();
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER biimpGer = ger.biimp(otherBddGer.ger);
+		free();
+		otherBddGer.ger.free();
+		ger = biimpGer;
+
+		return this;
 	}
 
 	@Override
@@ -227,7 +244,8 @@ public class BDDGer implements BDD {
 
 	@Override
 	public long satCount(int maxVar) {
-		throw new UnsupportedOperationException();
+		// TODO FIXME check this
+		return ger.satCount();
 	}
 
 	@Override
