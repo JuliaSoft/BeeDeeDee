@@ -52,6 +52,7 @@ public class GER {
 	 * Computes conjunction of this GER with another. The resulting GER is the
 	 * normalized version of that having as E the union of the two E's, and as n
 	 * the conjunction of the two bdds.
+	 * The result is normalized.
 	 * 
 	 * @param other the other GER
 	 * @return the conjunction
@@ -106,8 +107,7 @@ public class GER {
 
 	/**
 	 * Computes negation of this GER. It uses the identity !(L & n) = !L | !n =
-	 * !p1 | !p2 | ... | !pn | !n. The result is then normalized (TODO don't
-	 * normalize?).
+	 * !p1 | !p2 | ... | !pn | !n. The result is normalized.
 	 * 
 	 * @return the negation
 	 */
@@ -127,8 +127,7 @@ public class GER {
 
 	/**
 	 * Computes XOR of this GER with another. It uses the identity g1 x g2 = (g1
-	 * | g2) & !(g1 & g2). The result is then normalized (TODO don't
-	 * normalize?).
+	 * | g2) & !(g1 & g2). The result is normalized.
 	 * 
 	 * TODO use another identity?
 	 * 
@@ -137,14 +136,12 @@ public class GER {
 	 */
 	public GER xor(GER other) {
 		GER or = or(other);
-		GER and1 = and(other);
-		GER notAnd = and1.not();
-		GER and2 = or.and(notAnd);
-		GER result = and2.normalize();
+		GER and = and(other);
+		GER notAnd = and.not();
+		GER result = or.and(notAnd);
 		or.free();
-		and1.free();
+		and.free();
 		notAnd.free();
-		and2.free();
 		return result;
 	}
 
