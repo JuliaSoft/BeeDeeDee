@@ -184,12 +184,29 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD imp(BDD other) {
-		throw new UnsupportedOperationException();
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER impGer = ger.imp(otherBddGer.ger);
+
+		return new BDDGer(impGer);
 	}
 
 	@Override
 	public BDD impWith(BDD other) {
-		throw new UnsupportedOperationException();
+		if (!(other instanceof BDDGer)) {
+			// TODO or convert transparently to BDDGer?
+			throw new NotBDDGerException();
+		}
+		BDDGer otherBddGer = (BDDGer) other;
+		GER impGer = ger.imp(otherBddGer.ger);
+		free();
+		otherBddGer.ger.free();
+		ger = impGer;
+
+		return this;
 	}
 
 	@Override

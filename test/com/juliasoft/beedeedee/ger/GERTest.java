@@ -658,4 +658,22 @@ public class GERTest {
 
 		// assertEquals(4, factory.bddCount());
 	}
+
+	@Test
+	public void testImp() {
+		BDD x1 = factory.makeVar(1);
+		BDD x2 = factory.makeVar(2);
+
+		GER ger1 = new GER(x1);
+		GER ger2 = new GER(x2);
+
+		GER imp = ger1.imp(ger2);
+
+		BDD fullBDD = imp.getFullBDD();
+		BDD expected = x1.imp(x2);
+
+		assertTrue(fullBDD.isEquivalentTo(expected));
+
+		// assertEquals(4, factory.bddCount());
+	}
 }

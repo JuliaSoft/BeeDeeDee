@@ -429,4 +429,18 @@ public class GER {
 		or2.free();
 		return and;
 	}
+
+	/**
+	 * Computes the implication of this GER with another. It uses the identity
+	 * g1 -> g2 = !g1 | g2.
+	 * 
+	 * @param other the other GER
+	 * @return the implication
+	 */
+	public GER imp(GER other) {
+		GER notG1 = not();
+		GER or = notG1.or(other);
+		notG1.free();
+		return or;
+	}
 }
