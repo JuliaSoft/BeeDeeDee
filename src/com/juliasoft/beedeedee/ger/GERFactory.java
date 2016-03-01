@@ -4,13 +4,16 @@ import java.util.Collection;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
 
 /**
  * A BDD factory using the GER representation.
  */
 public class GERFactory extends Factory {
 
-	private Factory factory;
+	private ResizingAndGarbageCollectedFactory factory;
 
 	public GERFactory(int utSize, int cacheSize) {
 		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
@@ -70,6 +73,30 @@ public class GERFactory extends Factory {
 	@Override
 	public int bddCount() {
 		return factory.bddCount();
+	}
+
+	public double setMinFreeNodes(double minFreeNodes) {
+		return factory.setMinFreeNodes(minFreeNodes);
+	}
+
+	public int setMaxIncrease(int maxIncrease) {
+		return factory.setMaxIncrease(maxIncrease);
+	}
+
+	public double setIncreaseFactor(double increaseFactor) {
+		return factory.setIncreaseFactor(increaseFactor);
+	}
+
+	public double setCacheRatio(double cacheRatio) {
+		return factory.setCacheRatio(cacheRatio);
+	}
+
+	public void setGarbageCollectionListener(GarbageCollectionListener listener) {
+		factory.setGarbageCollectionListener(listener);
+	}
+
+	public void setResizeListener(ResizeListener listener) {
+		factory.setResizeListener(listener);
 	}
 
 }
