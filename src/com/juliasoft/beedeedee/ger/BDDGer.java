@@ -362,7 +362,7 @@ public class BDDGer implements BDD {
 
 	@Override
 	public int hashCodeAux() {
-		throw new UnsupportedOperationException();
+		return hashCode();
 	}
 
 	@Override
