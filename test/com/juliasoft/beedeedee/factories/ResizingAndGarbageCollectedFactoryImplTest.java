@@ -109,4 +109,17 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		assertTrue(vars.get(2));
 		assertTrue(vars.get(3));
 	}
+
+	@Test
+	public void testMaxVar() {
+		BDD one = factory.makeOne();
+		assertEquals(-1, one.maxVar());
+		BDD zero = factory.makeZero();
+		assertEquals(-1, zero.maxVar());
+		// bdd for (x1 <-> x2) & x8
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.andWith(factory.makeVar(8));
+		assertEquals(8, bdd.maxVar());
+	}
 }

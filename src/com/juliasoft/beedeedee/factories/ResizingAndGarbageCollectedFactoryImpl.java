@@ -1363,6 +1363,29 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			updateVars(ut.low(id), vars);
 			updateVars(ut.high(id), vars);
 		}
+
+		@Override
+		public int maxVar() {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return maxVar(id);
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+
+		private int maxVar(int bdd) {
+			if (bdd < FIRST_NODE_NUM) {
+				return -1;
+			}
+			int low = ut.low(bdd);
+			int maxVar = Math.max(ut.var(bdd), maxVar(low));
+			int high = ut.high(bdd);
+			maxVar = Math.max(maxVar, maxVar(high));
+			return maxVar;
+		}
 	}
 
 	@Override

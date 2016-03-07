@@ -228,7 +228,7 @@ public class GER {
 	 * @return a list of pairs
 	 */
 	public List<Pair> equivVars(BDD f) {
-		int maxVar = maxVar(f);
+		int maxVar = f.maxVar();
 		return equivVars(f, generatePairs(maxVar));
 	}
 
@@ -276,22 +276,12 @@ public class GER {
 	}
 
 	/**
-	 * Finds the maximum variable index in the given BDD.
+	 * Finds the maximum variable index in this GER.
 	 * 
-	 * @param f the BDD
 	 * @return the maximum variable index, -1 for terminal nodes
 	 */
-	int maxVar(BDD f) {
-		if (f.isZero() || f.isOne()) {
-			return -1;
-		}
-		BDD low = f.low();
-		int maxVar = Math.max(f.var(), maxVar(low));
-		low.free();
-		BDD high = f.high();
-		maxVar = Math.max(maxVar, maxVar(high));
-		high.free();
-		return maxVar;
+	public int maxVar() {
+		return Math.max(l.maxVar(), n.maxVar());
 	}
 
 	/**
@@ -442,5 +432,10 @@ public class GER {
 		GER or = notG1.or(other);
 		notG1.free();
 		return or;
+	}
+
+	@Override
+	public String toString() {
+		return l + System.lineSeparator() + n;
 	}
 }

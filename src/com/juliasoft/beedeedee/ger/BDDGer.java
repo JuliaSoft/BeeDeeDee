@@ -427,11 +427,16 @@ public class BDDGer implements BDD {
 
 	@Override
 	public String toString() {
-		return ger.getEquiv() + System.lineSeparator() + ger.getN();
+		return ger.toString();
 	}
 
 	@Override
 	public BitSet vars() {
 		return ger.vars();
+	}
+
+	@Override
+	public int maxVar() {
+		return ger.maxVar();
 	}
 }

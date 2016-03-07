@@ -425,4 +425,11 @@ public interface BDD {
 	 * @return the set of variable indexes occurring in the BDD
 	 */
 	public BitSet vars();
+
+	/**
+	 * Finds the maximum variable index in this BDD.
+	 * 
+	 * @return the maximum variable index, -1 for terminal nodes
+	 */
+	public int maxVar();
 }

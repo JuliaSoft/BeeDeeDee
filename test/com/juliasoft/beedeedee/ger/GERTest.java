@@ -380,18 +380,29 @@ public class GERTest {
 	}
 
 	@Test
-	public void testMaxVar() {
-		BDD one = factory.makeOne();
-		assertEquals(-1, fakeGer.maxVar(one));
-		BDD zero = factory.makeZero();
-		assertEquals(-1, fakeGer.maxVar(zero));
-		// bdd for (x1 <-> x2) & x8
+	public void testMaxVar1() {
+		// bdd for (x1 <-> x2) & x3
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
-		bdd.andWith(factory.makeVar(8));
-		assertEquals(8, fakeGer.maxVar(bdd));
+		bdd.andWith(factory.makeVar(3));
 
-//		assertEquals(3, factory.bddCount());
+		GER ger = new GER(bdd);
+		ger = ger.normalize();
+
+		assertEquals(3, ger.maxVar());
+	}
+
+	@Test
+	public void testMaxVar2() {
+		// bdd for (x1 <-> x6) & x3
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(6));
+		bdd.andWith(factory.makeVar(3));
+
+		GER ger = new GER(bdd);
+		ger = ger.normalize();
+
+		assertEquals(6, ger.maxVar());
 	}
 
 	@Test
