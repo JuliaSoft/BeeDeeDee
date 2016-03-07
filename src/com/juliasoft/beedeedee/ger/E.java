@@ -192,7 +192,7 @@ public class E implements Iterable<BitSet> {
 		return equivalenceClasses.toString();
 	}
 
-	int maxVar() {
+	public int maxVar() {
 		int max = 0;
 		for (BitSet eqClass : equivalenceClasses) {
 			max = Math.max(max, eqClass.length() - 1);
@@ -200,7 +200,7 @@ public class E implements Iterable<BitSet> {
 		return max;
 	}
 
-	boolean containsVar(int i) {
+	public boolean containsVar(int i) {
 		for (BitSet eqClass : equivalenceClasses) {
 			if (eqClass.get(i)) {
 				return true;

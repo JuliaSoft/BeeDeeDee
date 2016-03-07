@@ -297,7 +297,7 @@ public class BDDGer implements BDD {
 				temp.free();
 			}
 		}
-		
+
 		return new BDDGer(res);
 	}
 
@@ -399,7 +399,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD high = fullBDD.high();
 		fullBDD.free();
-		return high;
+		return new BDDGer(high);
 	}
 
 	@Override
@@ -407,7 +407,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD low = fullBDD.low();
 		fullBDD.free();
-		return low;
+		return new BDDGer(low);
 	}
 
 	@Override
@@ -438,5 +438,10 @@ public class BDDGer implements BDD {
 	@Override
 	public int maxVar() {
 		return ger.maxVar();
+	}
+
+	@Override
+	public BDD renameWithLeader(E r) {
+		return new BDDGer(ger.getFullBDD().renameWithLeader(r));
 	}
 }

@@ -35,6 +35,7 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
+import com.juliasoft.beedeedee.ger.E;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
@@ -1385,6 +1386,49 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			int high = ut.high(bdd);
 			maxVar = Math.max(maxVar, maxVar(high));
 			return maxVar;
+		}
+
+		@Override
+		public BDD renameWithLeader(E r) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return new BDDImpl(renameWithLeader(id, r, 1, new BitSet()));
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+
+		private int renameWithLeader(int f, E r, int c, BitSet t) {
+			int var = ut.var(f);
+			LeaderFunction lf = new LeaderFunction(r);
+			int maxVar = r.maxVar();
+			BitSet leaders = lf.getLeaders();
+			if (maxVar < var || f < FIRST_NODE_NUM) {
+				return f;
+			}
+			BitSet augmented = new BitSet();
+			augmented.or(t);
+			int minLeader = leaders.nextSetBit(c);
+			if (minLeader > 0 && minLeader < var) {
+				augmented.set(minLeader);
+				c = minLeader;
+				return MK(minLeader, renameWithLeader(f, r, c + 1, t), renameWithLeader(f, r, c + 1, augmented));
+			}
+			c = var;
+			if (!r.containsVar(var)) {
+				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t), renameWithLeader(ut.high(f), r, c + 1, t));
+			}
+			int l = lf.get(var);
+			if (l == var) {
+				augmented.set(c);
+				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t), renameWithLeader(ut.high(f), r, c + 1, augmented));
+			}
+			if (t.get(l)) {
+				return renameWithLeader(ut.high(f), r, c + 1, t);
+			}
+			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 	}
 

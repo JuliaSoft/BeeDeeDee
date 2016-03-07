@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.ger.E;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
 
 /**
@@ -432,4 +433,13 @@ public interface BDD {
 	 * @return the maximum variable index, -1 for terminal nodes
 	 */
 	public int maxVar();
+
+	/**
+	 * Renames each variable in this BDD with its leader (least member of
+	 * equivalence class) according to the given equivalence relation.
+	 * 
+	 * @param r the equivalence relation
+	 * @return the modified BDD
+	 */
+	public BDD renameWithLeader(E r);
 }
