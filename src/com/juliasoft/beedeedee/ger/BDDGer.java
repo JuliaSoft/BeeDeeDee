@@ -15,16 +15,19 @@ import com.juliasoft.beedeedee.factories.Factory;
 public class BDDGer implements BDD {
 
 	private GER ger;
+	private VarsCache varsCache;
 
 	/**
 	 * Constructs a BDDGer by normalizing the given bdd.
 	 * 
 	 * @param bdd the starting BDD, which is immediately freed if not equal to
 	 *            (same as) normalized
+	 * @param varsCache a cache for varsEntailed/varsDisentailed
 	 */
-	BDDGer(BDD bdd) {
+	BDDGer(BDD bdd, VarsCache varsCache) {
+		this.varsCache = varsCache;
 		if (bdd != null) {
-			GER temp = new GER(bdd);
+			GER temp = new GER(bdd, varsCache);
 			ger = temp.normalize();
 			if (!bdd.equals(ger.getN())) {
 				temp.free();
@@ -34,6 +37,10 @@ public class BDDGer implements BDD {
 
 	private BDDGer(GER ger) {
 		this.ger = ger;
+	}
+
+	public BDDGer(BDD bdd) {
+		this(bdd, null);
 	}
 
 	@Override
@@ -298,7 +305,7 @@ public class BDDGer implements BDD {
 			}
 		}
 
-		return new BDDGer(res);
+		return new BDDGer(res, varsCache);
 	}
 
 	@Override
@@ -332,7 +339,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD replace = fullBDD.replaceWith(renaming);
 
-		return new BDDGer(replace);
+		return new BDDGer(replace, varsCache);
 	}
 
 	@Override
@@ -340,7 +347,7 @@ public class BDDGer implements BDD {
 		// TODO try not to use full bdd
 		BDD fullBDD = ger.getFullBDD();
 		BDD replace = fullBDD.replaceWith(renaming);
-		GER replaceGer = new GER(replace);
+		GER replaceGer = new GER(replace, varsCache);
 		free();
 		ger = replaceGer.normalize();
 		replaceGer.free();
@@ -399,7 +406,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD high = fullBDD.high();
 		fullBDD.free();
-		return new BDDGer(high);
+		return new BDDGer(high, varsCache);
 	}
 
 	@Override
@@ -407,7 +414,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD low = fullBDD.low();
 		fullBDD.free();
-		return new BDDGer(low);
+		return new BDDGer(low, varsCache);
 	}
 
 	@Override
@@ -442,6 +449,6 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD renameWithLeader(E r) {
-		return new BDDGer(ger.getFullBDD().renameWithLeader(r));
+		return new BDDGer(ger.getFullBDD().renameWithLeader(r), varsCache);
 	}
 }

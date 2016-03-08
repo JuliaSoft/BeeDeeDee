@@ -5,7 +5,6 @@ import java.util.BitSet;
 import java.util.List;
 
 import com.juliasoft.beedeedee.bdd.BDD;
-import com.juliasoft.beedeedee.factories.Factory;
 
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class GER {
@@ -13,6 +12,7 @@ public class GER {
 	private BDD n;
 	private E l;
 	private LeaderFunction leaderFunction;
+	private VarsCache varsCache;
 
 	/**
 	 * Constructs a GER representation using (TODO copy bdd?) the given bdd and
@@ -20,15 +20,32 @@ public class GER {
 	 * 
 	 * @param n a bdd, saved by reference
 	 * @param l a set of equivalence classes
+	 * @param varsCache a cache for varsEntailed/varsDisentailed
 	 */
-	public GER(BDD n, E l) {
+	public GER(BDD n, E l, VarsCache varsCache) {
 		this.l = l;
+		this.varsCache = varsCache;
 		leaderFunction = new LeaderFunction(l);
 		this.n = n; // TODO copy? sq.With
 	}
 
-	public GER(BDD n) {
-		this(n, new E());
+	/**
+	 * Constructs a GER representation using (TODO copy bdd?) the given bdd and
+	 * an empty set of equivalence classes.
+	 * 
+	 * @param n a bdd, saved by reference
+	 * @param varsCache a cache for varsEntailed/varsDisentailed
+	 */
+	public GER(BDD n, VarsCache varsCache) {
+		this(n, new E(), varsCache);
+	}
+
+	public GER(BDD bdd, E e) {
+		this(bdd, e, null);
+	}
+
+	public GER(BDD bdd) {
+		this(bdd, (VarsCache) null);
 	}
 
 	BDD getN() {
@@ -62,7 +79,7 @@ public class GER {
 		E e = new E();
 		e.addPairs(l.pairs());
 		e.addPairs(other.l.pairs());
-		GER andGer = new GER(and, e);
+		GER andGer = new GER(and, e, varsCache);
 		GER result = andGer.normalize();
 		andGer.free();
 		return result;
@@ -87,7 +104,7 @@ public class GER {
 		n2.free();
 		E equiv = l.intersect(other.l);
 
-		return new GER(or, equiv);
+		return new GER(or, equiv, varsCache);
 	}
 
 	private BDD computeNforOr(GER ger1, GER ger2) {
@@ -119,7 +136,7 @@ public class GER {
 			eq.notWith();
 			not.orWith(eq);
 		}
-		GER notGer = new GER(not);
+		GER notGer = new GER(not, varsCache);
 		GER result = notGer.normalize();
 		notGer.free();
 		return result;
@@ -170,7 +187,16 @@ public class GER {
 	}
 
 	private BitSet varsEntailedAux(BDD f, BitSet s, BitSet i, boolean entailed) {
-		BDD orig = f;
+		if (varsCache != null) {
+			BitSet vars = varsCache.get(f, s, i, entailed);
+			if (vars != null) {
+				return vars;
+			}
+		}
+		BDD original_f = f;
+		BitSet original_s = s;
+		BitSet original_i = i;
+
 		BDD oldf = f;
 		while (!(f.isZero() || f.isOne())) {
 			s.set(f.var());
@@ -180,15 +206,18 @@ public class GER {
 			s.clear(f.var());
 			oldf = f;
 			f = entailed ? f.low() : f.high();
-			if (oldf != orig) {
+			if (oldf != original_f) {
 				oldf.free();
 			}
 		}
 		if (f.isOne()) {
 			i.and(s);
 		}
-		if (f != orig) {
+		if (f != original_f) {
 			f.free();
+		}
+		if (varsCache != null) {
+			varsCache.put(original_f, original_s, original_i, entailed, i);
 		}
 		return i;
 	}
@@ -307,7 +336,7 @@ public class GER {
 			nNew = renameWithLeader(nNew, eNew);
 		} while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
 		nOld.free();
-		return new GER(nNew, eNew);
+		return new GER(nNew, eNew, varsCache);
 	}
 
 	/**
@@ -324,7 +353,7 @@ public class GER {
 	}
 
 	public GER copy() {
-		return new GER(n.copy(), l.copy());
+		return new GER(n.copy(), l.copy(), varsCache);
 	}
 
 	BDD renameWithLeader(BDD f, E r) {

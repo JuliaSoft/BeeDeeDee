@@ -14,9 +14,11 @@ import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.Resi
 public class GERFactory extends Factory {
 
 	private ResizingAndGarbageCollectedFactory factory;
+	private VarsCache varsCache;
 
 	public GERFactory(int utSize, int cacheSize) {
 		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
+		varsCache = new VarsCache(cacheSize);
 	}
 
 	@Override
@@ -26,12 +28,12 @@ public class GERFactory extends Factory {
 
 	@Override
 	public BDD makeVar(int i) {
-		return new BDDGer(factory.makeVar(i));
+		return new BDDGer(factory.makeVar(i), varsCache);
 	}
 
 	@Override
 	public BDD makeNotVar(int i) {
-		return new BDDGer(factory.makeNotVar(i));
+		return new BDDGer(factory.makeNotVar(i), varsCache);
 	}
 
 	@Override
@@ -46,12 +48,12 @@ public class GERFactory extends Factory {
 
 	@Override
 	public BDD makeZero() {
-		return new BDDGer(factory.makeZero());
+		return new BDDGer(factory.makeZero(), varsCache);
 	}
 
 	@Override
 	public BDD makeOne() {
-		return new BDDGer(factory.makeOne());
+		return new BDDGer(factory.makeOne(), varsCache);
 	}
 
 	@Override
