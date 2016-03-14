@@ -168,27 +168,23 @@ public class KnightSolver extends Thread {
 
 		@Override
 		public BDD call() throws Exception {
-			return buildPartialT(n);
+			BDD result = factory.makeZero();
+
+			for (int i = n; i < N; i += availableProcessors)
+				for (int j = 0; j < N; j++) {
+					for (int k = i - 1; k <= i + 1; k += 2)
+						for (int l = j - 2; l <= j + 2; l += 4)
+							if (k >= 0 && k < N && l >= 0 && l < N)
+								result.orWith(buildM(i, j, k, l));
+
+					for (int k = i - 2; k <= i + 2; k += 4)
+						for (int l = j - 1; l <= j + 1; l += 2)
+							if (k >= 0 && k < N && l >= 0 && l < N)
+								result.orWith(buildM(i, j, k, l));
+				}
+
+			return result;
 		}
-	}
-
-	private BDD buildPartialT(int n) {
-		BDD result = factory.makeZero();
-
-		for (int i = n; i < N; i += availableProcessors)
-			for (int j = 0; j < N; j++) {
-				for (int k = i - 1; k <= i + 1; k += 2)
-					for (int l = j - 2; l <= j + 2; l += 4)
-						if (k >= 0 && k < N && l >= 0 && l < N)
-							result.orWith(buildM(i, j, k, l));
-
-				for (int k = i - 2; k <= i + 2; k += 4)
-					for (int l = j - 1; l <= j + 1; l += 2)
-						if (k >= 0 && k < N && l >= 0 && l < N)
-							result.orWith(buildM(i, j, k, l));
-			}
-
-		return result;
 	}
 
 	private BDD buildI() {
