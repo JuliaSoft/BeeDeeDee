@@ -29,7 +29,8 @@ public interface Assignment {
 	 * @param var the variable
 	 * @return true if and only if {@code var} holds in this assignment
 	 * @throws IndexOutOfBoundsException if the variable does not belong to this
-	 *             assignment
+	 *             assignment. This means that the variable can be assigned any
+	 *             value
 	 */
 	public boolean holds(BDD var) throws IndexOutOfBoundsException;
 
@@ -37,9 +38,11 @@ public interface Assignment {
 	 * Determines if the given BDD variable holds in this assignment.
 	 *
 	 * @param i the variable index
-	 * @return true if and only if {@code var} holds in this assignment
+	 * @return true if and only if the variable indexed by {@code i} holds in
+	 *         this assignment
 	 * @throws IndexOutOfBoundsException if the variable does not belong to this
-	 *             assignment
+	 *             assignment. This means that the variable can be assigned any
+	 *             value
 	 */
 	public boolean holds(int i);
 
