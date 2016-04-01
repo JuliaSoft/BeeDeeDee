@@ -42,15 +42,15 @@ import com.juliasoft.utils.concurrent.Executors;
 
 class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollectedFactory {
 	private final static int FIRST_NODE_NUM = 2;
-	private final int NUMBER_OF_PREALLOCATED_VARS;
-	private final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
+	protected final int NUMBER_OF_PREALLOCATED_VARS;
+	protected final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
 	private final int NUM_OF_PREALLOCATED_NODES;
-	protected final ResizingAndGarbageCollectedUniqueTable ut;
+	protected ResizingAndGarbageCollectedUniqueTable ut;
 	private final List<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
-	private final int ZERO;
-	private final int ONE;
-	private final int[] vars;
-	private final int[] notVars;
+	protected int ZERO;
+	protected int ONE;
+	protected final int[] vars;
+	protected final int[] notVars;
 	private int maxVar;
 	
 	ResizingAndGarbageCollectedFactoryImpl(int utSize, int cacheSize) {

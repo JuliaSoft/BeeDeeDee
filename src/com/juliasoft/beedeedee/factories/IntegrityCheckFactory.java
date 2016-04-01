@@ -10,12 +10,26 @@ import java.util.zip.Checksum;
  */
 public class IntegrityCheckFactory extends ResizingAndGarbageCollectedFactoryImpl {
 
-	public IntegrityCheckFactory(int utSize, int cacheSize) {
-		super(utSize, cacheSize);
+	public IntegrityCheckFactory(int utSize, int cacheSize, boolean onlineCheck) {
+		this(utSize, cacheSize, DEFAULT_NUMBER_OF_PREALLOCATED_VARS, onlineCheck);
 	}
 
-	public IntegrityCheckFactory(int utSize, int cacheSize, int numberOfPreallocatedVars) {
+	public IntegrityCheckFactory(int utSize, int cacheSize, int numberOfPreallocatedVars, boolean onlineCheck) {
 		super(utSize, cacheSize, numberOfPreallocatedVars);
+		if (onlineCheck) { // substitute unique table
+			ut = new IntegrityCheckUniqueTable(utSize, cacheSize, this);
+			// insert 0 and 1
+			ZERO = ut.get(Integer.MAX_VALUE - 1, -1, -1);
+			ONE = ut.get(Integer.MAX_VALUE, -1, -1);
+
+			// insert lower variables
+			for (int var = 0; var < NUMBER_OF_PREALLOCATED_VARS; var++)
+				vars[var] = ut.get(var, ZERO, ONE);
+
+			// and their negation
+			for (int var = 0; var < NUMBER_OF_PREALLOCATED_VARS; var++)
+				notVars[var] = ut.get(var, ONE, ZERO);
+		}
 	}
 
 	/**

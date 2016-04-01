@@ -90,17 +90,17 @@ class SimpleUniqueTable implements UniqueTable {
 	}
 
 	@Override
-	public final int var(int id) {
+	public int var(int id) {
 		return ut[id * NODE_SIZE + VAR_OFFSET];
 	}
 
 	@Override
-	public final int low(int id) {
+	public int low(int id) {
 		return ut[id * NODE_SIZE + LOW_OFFSET];
 	}
 
 	@Override
-	public final int high(int id) {
+	public int high(int id) {
 		return ut[id * NODE_SIZE + HIGH_OFFSET];
 	}
 
