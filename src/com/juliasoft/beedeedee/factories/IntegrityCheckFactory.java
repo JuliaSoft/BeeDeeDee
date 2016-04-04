@@ -17,18 +17,7 @@ public class IntegrityCheckFactory extends ResizingAndGarbageCollectedFactoryImp
 	public IntegrityCheckFactory(int utSize, int cacheSize, int numberOfPreallocatedVars, boolean onlineCheck) {
 		super(utSize, cacheSize, numberOfPreallocatedVars);
 		if (onlineCheck) { // substitute unique table
-			ut = new IntegrityCheckUniqueTable(utSize, cacheSize, this);
-			// insert 0 and 1
-			ZERO = ut.get(Integer.MAX_VALUE - 1, -1, -1);
-			ONE = ut.get(Integer.MAX_VALUE, -1, -1);
-
-			// insert lower variables
-			for (int var = 0; var < NUMBER_OF_PREALLOCATED_VARS; var++)
-				vars[var] = ut.get(var, ZERO, ONE);
-
-			// and their negation
-			for (int var = 0; var < NUMBER_OF_PREALLOCATED_VARS; var++)
-				notVars[var] = ut.get(var, ONE, ZERO);
+			setUT(new IntegrityCheckUniqueTable(utSize, cacheSize, this));
 		}
 	}
 

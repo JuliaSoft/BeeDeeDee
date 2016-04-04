@@ -24,6 +24,7 @@ import java.util.Map;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.factories.IntegrityCheckFactory;
 import com.juliasoft.beedeedee.ger.GERFactory;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
@@ -55,7 +56,8 @@ public class Queens {
 		}
 
 //		Factory factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
-		Factory factory = new GERFactory(utSize, cacheSize);
+//		Factory factory = new GERFactory(utSize, cacheSize);
+		Factory factory = new IntegrityCheckFactory(utSize, cacheSize, true);
 		BDD queen = factory.makeOne();
 
 		int i, j;

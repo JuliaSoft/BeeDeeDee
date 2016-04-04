@@ -241,8 +241,8 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		}
 	}
 
-	private void setAt(int where, int varNumber, int lowNode, int highNode) {
-		int pos = where * NODE_SIZE;
+	protected void setAt(int where, int varNumber, int lowNode, int highNode) {
+		int pos = where * getNodeSize();
 		int[] table = ut;
 
 		table[pos++] = varNumber;
@@ -450,7 +450,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	}
 
 	private void innerResize(ResizeData data) {
-		System.arraycopy(ut, 0, data.newUt, 0, nextPos * NODE_SIZE);
+		System.arraycopy(ut, 0, data.newUt, 0, nextPos * getNodeSize());
 
 		this.size = data.newSize;
 		this.ut = data.newUt;
@@ -479,7 +479,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			return;
 		}
 
-		for (int i = nextPos - 1, index = i * NODE_SIZE + VAR_OFFSET; i >= 0; i--, index -= NODE_SIZE)
+		for (int i = nextPos - 1, index = i * getNodeSize() + VAR_OFFSET; i >= 0; i--, index -= getNodeSize())
 			// we only consider valid entries
 			if (ut[index] >= 0) {
 				int pos = hash(ut[index], ut[index + 1], ut[index + 2]);
@@ -503,7 +503,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			@Override
 			public void run() {
 
-				for (int i = nextPos - 1 - offset, index = i * NODE_SIZE + VAR_OFFSET; i >= 0; i -= total, index -= NODE_SIZE * total)
+				for (int i = nextPos - 1 - offset, index = i * getNodeSize() + VAR_OFFSET; i >= 0; i -= total, index -= getNodeSize() * total)
 					// we only consider valid entries
 					if (ut[index] >= 0) {
 						int pos = hash(ut[index], ut[index + 1], ut[index + 2]);
@@ -555,7 +555,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	}
 
 	private void setVarLowHighHash(int node, int varNumber, int lowNode, int highNode, int hca) {
-		int pos = node * NODE_SIZE;
+		int pos = node * getNodeSize();
 
 		ut[pos++] = varNumber;
 		ut[pos++] = lowNode;

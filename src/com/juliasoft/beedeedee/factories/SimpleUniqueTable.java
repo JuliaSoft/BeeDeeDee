@@ -29,7 +29,7 @@ class SimpleUniqueTable implements UniqueTable {
 	protected static final int HIGH_OFFSET = 2;
 	protected static final int NEXT_OFFSET = 3;
 	protected static final int HASHCODEAUX_OFFSET = 4;
-	public static final int NODE_SIZE = 5;
+	protected static final int NODE_SIZE = 5;
 
 	protected int[] ut;
 	protected int[] H;
@@ -46,7 +46,7 @@ class SimpleUniqueTable implements UniqueTable {
 
 	protected SimpleUniqueTable(int size, int cacheSize) {
 		this.size = size;
-		this.ut = new int[size * NODE_SIZE];
+		this.ut = new int[size * getNodeSize()];
 		this.H = new int[size];
 		this.computationCache = new ComputationCache(cacheSize);
 		this.restrictCache = new RestrictCache(Math.max(1, cacheSize / 20));
@@ -54,6 +54,10 @@ class SimpleUniqueTable implements UniqueTable {
 		this.quantCache = new QuantCache(Math.max(1, cacheSize / 20));
 
 		Arrays.fill(H, -1);
+	}
+
+	protected int getNodeSize() {
+		return NODE_SIZE;
 	}
 
 	@Override
@@ -84,32 +88,32 @@ class SimpleUniqueTable implements UniqueTable {
 	 */
 
 	protected final boolean isVarLowHigh(int id, int var, int low, int high) {
-		int pos = id * NODE_SIZE + 2;
+		int pos = id * getNodeSize() + 2;
 
 		return ut[pos--] == high && ut[pos--] == low && ut[pos] == var;
 	}
 
 	@Override
 	public int var(int id) {
-		return ut[id * NODE_SIZE + VAR_OFFSET];
+		return ut[id * getNodeSize() + VAR_OFFSET];
 	}
 
 	@Override
 	public int low(int id) {
-		return ut[id * NODE_SIZE + LOW_OFFSET];
+		return ut[id * getNodeSize() + LOW_OFFSET];
 	}
 
 	@Override
 	public int high(int id) {
-		return ut[id * NODE_SIZE + HIGH_OFFSET];
+		return ut[id * getNodeSize() + HIGH_OFFSET];
 	}
 
 	protected final int next(int id) {
-		return ut[id * NODE_SIZE + NEXT_OFFSET];
+		return ut[id * getNodeSize() + NEXT_OFFSET];
 	}
 
 	protected final int hashCodeAux(int id) {
-		return ut[id * NODE_SIZE + HASHCODEAUX_OFFSET];
+		return ut[id * getNodeSize() + HASHCODEAUX_OFFSET];
 	}
 
 	/*
@@ -118,7 +122,7 @@ class SimpleUniqueTable implements UniqueTable {
 
 	protected int setAtNextPos(int varNumber, int lowNode, int highNode, int next) {
 		int nextPos = this.nextPos++;
-		int pos = nextPos * NODE_SIZE;
+		int pos = nextPos * getNodeSize();
 		int[] table = ut;
 
 		table[pos++] = varNumber;
@@ -131,21 +135,21 @@ class SimpleUniqueTable implements UniqueTable {
 	}
 
 	protected final void setNext(int node, int nextNode) {
-		ut[node * NODE_SIZE + NEXT_OFFSET] = nextNode;
+		ut[node * getNodeSize() + NEXT_OFFSET] = nextNode;
 	}
 	
 	@Override
 	public String toString() {
 		String s = "";
-		int nextPos = this.nextPos * NODE_SIZE;
+		int nextPos = this.nextPos * getNodeSize();
 
 		for (int i = 0; i < nextPos; i++) {
-			if (i % NODE_SIZE == 0) {
-				s += i / NODE_SIZE + ": \t" + var(i / NODE_SIZE) + "\t";
+			if (i % getNodeSize() == 0) {
+				s += i / getNodeSize() + ": \t" + var(i / getNodeSize()) + "\t";
 			} else {
 				s += ut[i] + "\t";
 			}
-			if ((i + 1) % NODE_SIZE == 0) {
+			if ((i + 1) % getNodeSize() == 0) {
 				s += "\n";
 			}
 		}

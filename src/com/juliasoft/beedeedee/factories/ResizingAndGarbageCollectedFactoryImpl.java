@@ -64,8 +64,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		notVars = new int[NUMBER_OF_PREALLOCATED_VARS];
 
 		utSize = Math.max(utSize, NUM_OF_PREALLOCATED_NODES);
-		ut = new ResizingAndGarbageCollectedUniqueTable(utSize, cacheSize, this);
+		setUT(new ResizingAndGarbageCollectedUniqueTable(utSize, cacheSize, this));
+	}
 
+	protected void setUT(ResizingAndGarbageCollectedUniqueTable uniqueTable) {
+		ut = uniqueTable;
 		// insert 0 and 1
 		ZERO = ut.get(Integer.MAX_VALUE - 1, -1, -1);
 		ONE = ut.get(Integer.MAX_VALUE, -1, -1);
