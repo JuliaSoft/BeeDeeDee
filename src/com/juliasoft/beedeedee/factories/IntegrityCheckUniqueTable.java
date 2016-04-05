@@ -39,6 +39,10 @@ public class IntegrityCheckUniqueTable extends ResizingAndGarbageCollectedUnique
 		return (int) checksum.getValue();
 	}
 
+	/*
+	 * Reading
+	 */
+
 	@Override
 	public int var(int id) {
 		checkNodeIntegrity(id);
@@ -58,8 +62,42 @@ public class IntegrityCheckUniqueTable extends ResizingAndGarbageCollectedUnique
 	}
 
 	@Override
+	protected int next(int id) {
+		checkNodeIntegrity(id);
+		return super.next(id);
+	}
+
+	@Override
+	protected int hashCodeAux(int id) {
+		checkNodeIntegrity(id);
+		return super.hashCodeAux(id);
+	}
+
+	@Override
+	protected boolean isVarLowHigh(int id, int var, int low, int high) {
+		checkNodeIntegrity(id);
+		return super.isVarLowHigh(id, var, low, high);
+	}
+
+	/*
+	 * Writing
+	 */
+
+	@Override
 	protected void setAt(int where, int varNumber, int lowNode, int highNode) {
 		super.setAt(where, varNumber, lowNode, highNode);
 		ut[where * getNodeSize() + CHECKSUM_OFFSET] = nodeChecksum(where);
+	}
+
+	@Override
+	protected void setNext(int node, int nextNode) {
+		super.setNext(node, nextNode);
+		ut[node * getNodeSize() + CHECKSUM_OFFSET] = nodeChecksum(node);
+	}
+
+	@Override
+	protected void setVarLowHighHash(int node, int varNumber, int lowNode, int highNode, int hca) {
+		super.setVarLowHighHash(node, varNumber, lowNode, highNode, hca);
+		ut[node * getNodeSize() + CHECKSUM_OFFSET] = nodeChecksum(node);
 	}
 }

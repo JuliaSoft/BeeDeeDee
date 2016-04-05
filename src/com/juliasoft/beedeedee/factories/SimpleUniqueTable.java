@@ -87,7 +87,7 @@ class SimpleUniqueTable implements UniqueTable {
 	 * Node accessor methods
 	 */
 
-	protected final boolean isVarLowHigh(int id, int var, int low, int high) {
+	protected boolean isVarLowHigh(int id, int var, int low, int high) {
 		int pos = id * getNodeSize() + 2;
 
 		return ut[pos--] == high && ut[pos--] == low && ut[pos] == var;
@@ -108,11 +108,11 @@ class SimpleUniqueTable implements UniqueTable {
 		return ut[id * getNodeSize() + HIGH_OFFSET];
 	}
 
-	protected final int next(int id) {
+	protected int next(int id) {
 		return ut[id * getNodeSize() + NEXT_OFFSET];
 	}
 
-	protected final int hashCodeAux(int id) {
+	protected int hashCodeAux(int id) {
 		return ut[id * getNodeSize() + HASHCODEAUX_OFFSET];
 	}
 
@@ -134,7 +134,7 @@ class SimpleUniqueTable implements UniqueTable {
 		return nextPos;
 	}
 
-	protected final void setNext(int node, int nextNode) {
+	protected void setNext(int node, int nextNode) {
 		ut[node * getNodeSize() + NEXT_OFFSET] = nextNode;
 	}
 	

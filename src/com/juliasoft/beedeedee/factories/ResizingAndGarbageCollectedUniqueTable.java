@@ -554,7 +554,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		return collected;
 	}
 
-	private void setVarLowHighHash(int node, int varNumber, int lowNode, int highNode, int hca) {
+	protected void setVarLowHighHash(int node, int varNumber, int lowNode, int highNode, int hca) {
 		int pos = node * getNodeSize();
 
 		ut[pos++] = varNumber;
