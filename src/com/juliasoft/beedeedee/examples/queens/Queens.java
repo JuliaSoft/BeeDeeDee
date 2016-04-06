@@ -172,6 +172,7 @@ System.out.println("\n\n" + factory.bddCount() + "\n\n");
 		factory.done();
 		Executors.shutdown();
 		System.out.println("Done, ms: " + (System.currentTimeMillis() - start));*/
+		factory.done();
 	}
 
 	private static void printAssignment(Assignment assignment) {

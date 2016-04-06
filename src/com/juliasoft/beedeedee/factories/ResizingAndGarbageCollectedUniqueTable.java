@@ -414,7 +414,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		return oldMinFreeNodes;
 	}
 
-	private static class ResizeData {
+	private class ResizeData {
 		private final long start;
 		private final int oldSize;
 		private final int newSize;
@@ -440,7 +440,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 			newH = new int[newSize];
 			Arrays.fill(newH, -1);
-			newUt = new int[newSize * NODE_SIZE];
+			newUt = new int[newSize * getNodeSize()];
 
 			computationCache = new ComputationCache(newCacheSize);
 			restrictCache = new RestrictCache(Math.max(1, newCacheSize / 20));
