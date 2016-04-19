@@ -332,7 +332,7 @@ public class GERTest {
 	@Test
 	public void testVarsEntailed1() {
 		BDD one = factory.makeOne();
-		BitSet varsEntailed = fakeGer.varsEntailed(one);
+		BitSet varsEntailed = one.varsEntailed();
 		assertTrue(varsEntailed.isEmpty());
 
 //		assertEquals(1, factory.bddCount());
@@ -342,7 +342,7 @@ public class GERTest {
 	public void testVarsEntailed2() {
 		BDD zero = factory.makeZero();
 		factory.makeVar(4); // set maxVar to 4 for the current factory
-		BitSet varsEntailed = fakeGer.varsEntailed(zero);
+		BitSet varsEntailed = zero.varsEntailed();
 		// expect a set containing all possible variables up to maxVar
 		BitSet expected = new BitSet();
 		expected.set(0, 5);
@@ -356,7 +356,7 @@ public class GERTest {
 		BDD f = factory.makeVar(3);
 		f.andWith(factory.makeVar(4));
 
-		BitSet varsEntailed = fakeGer.varsEntailed(f);
+		BitSet varsEntailed = f.varsEntailed();
 		BitSet expected = new BitSet();
 		expected.set(3, 5);
 		assertEquals(expected, varsEntailed);
@@ -371,7 +371,7 @@ public class GERTest {
 		f.andWith(factory.makeVar(2));
 
 		// disentailed variables are those whose negation is entailed
-		BitSet varsDisentailed = fakeGer.varsDisentailed(f);
+		BitSet varsDisentailed = f.varsDisentailed();
 		BitSet expected = new BitSet();
 		expected.set(1);
 		assertEquals(expected, varsDisentailed);
@@ -514,7 +514,7 @@ public class GERTest {
 
 		E l = new E();
 		l.addClass(1, 2);
-		BDD n = fakeGer.renameWithLeader(bdd, l);
+		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
 		expected.andWith(factory.makeVar(3));
@@ -529,7 +529,7 @@ public class GERTest {
 
 		E l = new E();
 		l.addClass(1, 2);
-		BDD n = fakeGer.renameWithLeader(bdd, l);
+		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
 		assertTrue(n.isEquivalentTo(expected));
@@ -543,7 +543,7 @@ public class GERTest {
 
 		E l = new E();
 		l.addClass(2, 3);
-		BDD n = fakeGer.renameWithLeader(bdd, l);
+		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
 		assertTrue(n.isEquivalentTo(expected));
@@ -557,7 +557,7 @@ public class GERTest {
 
 		E l = new E();
 		l.addClass(2, 3);
-		BDD n = fakeGer.renameWithLeader(bdd, l);
+		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
 		assertTrue(n.isEquivalentTo(expected));
@@ -577,7 +577,7 @@ public class GERTest {
 		E l = new E();
 		l.addClass(1, 2);
 		l.addClass(6, 7);
-		BDD n = fakeGer.renameWithLeader(bdd, l);
+		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
 		expected.biimpWith(factory.makeVar(3));

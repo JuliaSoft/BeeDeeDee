@@ -444,4 +444,14 @@ public class BDDGer implements BDD {
 	public BDD renameWithLeader(E r) {
 		return new BDDGer(ger.getFullBDD().renameWithLeader(r));
 	}
+
+	@Override
+	public BitSet varsEntailed() {
+		return ger.getFullBDD().varsEntailed();
+	}
+
+	@Override
+	public BitSet varsDisentailed() {
+		return ger.getFullBDD().varsDisentailed();
+	}
 }

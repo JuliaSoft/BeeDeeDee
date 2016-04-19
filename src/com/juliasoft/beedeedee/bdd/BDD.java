@@ -442,4 +442,18 @@ public interface BDD {
 	 * @return the modified BDD
 	 */
 	public BDD renameWithLeader(E r);
+
+	/**
+	 * Computes the set of variables entailed by the given BDD.
+	 * 
+	 * @return the set of entailed variables
+	 */
+	public BitSet varsEntailed();
+
+	/**
+	 * Computes the set of variables disentailed by the given BDD.
+	 * 
+	 * @return the set of disentailed variables
+	 */
+	public BitSet varsDisentailed();
 }

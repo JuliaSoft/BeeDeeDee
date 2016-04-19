@@ -230,6 +230,16 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
+		public final boolean equals(Object obj) {
+			return obj instanceof BDDImpl && ((BDDImpl) obj).id == id;
+		}
+
+		@Override
+		public final int hashCode() {
+			return hashCodeAux();
+		}
+
+		@Override
 		public void free() {
 			if (id == -1) {
 				return;	// already freed, idempotent
@@ -1432,6 +1442,67 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				return renameWithLeader(ut.high(f), r, c + 1, t);
 			}
 			return renameWithLeader(ut.low(f), r, c + 1, t);
+		}
+
+		public BitSet varsEntailed() {
+			return new VarsEntailedCalculator(true).result;
+		}
+
+		public BitSet varsDisentailed() {
+			return new VarsEntailedCalculator(false).result;
+		}
+
+		private class VarsEntailedCalculator {
+			private final BitSet s;
+			private final BitSet result;
+			private final boolean entailed;
+
+			private VarsEntailedCalculator(boolean entailed) {
+				this.s = new BitSet();
+				this.result = universe();
+				this.entailed = entailed;
+
+				varsEntailed(BDDImpl.this);
+			}
+
+			private void varsEntailed(BDD f) {
+				BDD orig = f;
+				BDD oldf = f;
+				while (!f.isZero() && !f.isOne()) {
+					int var = f.var();
+					s.set(var);
+					BDD child = entailed ? f.high() : f.low();
+					varsEntailed(child);
+					child.free();
+					s.clear(var);
+					oldf = f;
+					f = entailed ? f.low() : f.high();
+					if (oldf != orig)
+						oldf.free();
+				}
+				if (f.isOne())
+					result.and(s);
+
+				if (f != orig)
+					f.free();
+			}
+
+			/**
+			 * Computes the set of all variable indexes up to max var index created so far.
+			 * 
+			 * @param f the BDD from which to compute maxVar
+			 * @return the set of all variable indexes
+			 */
+
+			private BitSet universe() {
+				BitSet u = new BitSet();
+				int maxVar = getFactory().getMaxVar();
+				if (maxVar > 0)
+					for (int i = 0; i <= maxVar; i++)
+						u.set(i);
+
+				return u;
+			}
 		}
 	}
 

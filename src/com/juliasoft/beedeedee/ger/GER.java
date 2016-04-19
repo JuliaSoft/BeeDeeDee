@@ -159,79 +159,6 @@ public class GER {
 	}
 
 	/**
-	 * Computes the set of variables entailed by the given BDD.
-	 * 
-	 * @param f the BDD
-	 * @return the set of entailed variables
-	 */
-	BitSet varsEntailed(BDD f) {
-		return new VarsEntailedCalculator(f, true).result;
-	}
-
-	private static class VarsEntailedCalculator {
-		private final BitSet s;
-		private final BitSet result;
-		private final boolean entailed;
-
-		private VarsEntailedCalculator(BDD f, boolean entailed) {
-			this.s = new BitSet();
-			this.result = universe(f);
-			this.entailed = entailed;
-
-			varsEntailed(f);
-		}
-
-		private void varsEntailed(BDD f) {
-			BDD orig = f;
-			BDD oldf = f;
-			while (!f.isZero() && !f.isOne()) {
-				int var = f.var();
-				s.set(var);
-				BDD child = entailed ? f.high() : f.low();
-				varsEntailed(child);
-				child.free();
-				s.clear(var);
-				oldf = f;
-				f = entailed ? f.low() : f.high();
-				if (oldf != orig)
-					oldf.free();
-			}
-			if (f.isOne())
-				result.and(s);
-
-			if (f != orig)
-				f.free();
-		}
-
-		/**
-		 * Computes the set of all variable indexes up to max var index created so far.
-		 * 
-		 * @param f the BDD from which to compute maxVar
-		 * @return the set of all variable indexes
-		 */
-
-		private static BitSet universe(BDD f) {
-			BitSet u = new BitSet();
-			int maxVar = f.getFactory().getMaxVar();
-			if (maxVar > 0)
-				for (int i = 0; i <= maxVar; i++)
-					u.set(i);
-
-			return u;
-		}
-	}
-
-	/**
-	 * Computes the set of variables disentailed by the given BDD.
-	 * 
-	 * @param f the BDD
-	 * @return the set of disentailed variables
-	 */
-	BitSet varsDisentailed(BDD f) {
-		return new VarsEntailedCalculator(f, false).result;
-	}
-
-	/**
 	 * Finds pairs of equivalent variables in the given BDD.
 	 * 
 	 * @param f the BDD
@@ -253,8 +180,8 @@ public class GER {
 		List<Pair> pairs = new ArrayList<>();
 		BDD high = f.high();
 		BDD low = f.low();
-		BitSet varsEntailedByHigh = varsEntailed(high);
-		varsEntailedByHigh.and(varsDisentailed(low));
+		BitSet varsEntailedByHigh = high.varsEntailed();
+		varsEntailedByHigh.and(low.varsDisentailed());
 		for (int i = varsEntailedByHigh.nextSetBit(0); i >= 0; i = varsEntailedByHigh.nextSetBit(i + 1)) {
 			pairs.add(new Pair(f.var(), i));
 		}
@@ -314,7 +241,7 @@ public class GER {
 			eNew.addPairs(equivVars);
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
-			nNew = renameWithLeader(nNew, eNew);
+			nNew = nNew.renameWithLeader(eNew);
 		} while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
 		nOld.free();
 		return new GER(nNew, eNew);
@@ -335,10 +262,6 @@ public class GER {
 
 	public GER copy() {
 		return new GER(n.copy(), l.copy());
-	}
-
-	BDD renameWithLeader(BDD f, E r) {
-		return f.renameWithLeader(r);
 	}
 
 	public long satCount() {
