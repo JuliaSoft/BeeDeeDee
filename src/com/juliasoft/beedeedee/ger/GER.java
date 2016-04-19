@@ -5,7 +5,6 @@ import java.util.BitSet;
 import java.util.List;
 
 import com.juliasoft.beedeedee.bdd.BDD;
-import com.juliasoft.beedeedee.factories.Factory;
 
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class GER {
@@ -166,31 +165,60 @@ public class GER {
 	 * @return the set of entailed variables
 	 */
 	BitSet varsEntailed(BDD f) {
-		return varsEntailedAux(f, new BitSet(), universe(f), true);
+		return new VarsEntailedCalculator(f, true).result;
 	}
 
-	private BitSet varsEntailedAux(BDD f, BitSet s, BitSet i, boolean entailed) {
-		BDD orig = f;
-		BDD oldf = f;
-		while (!(f.isZero() || f.isOne())) {
-			s.set(f.var());
-			BDD child = entailed ? f.high() : f.low();
-			varsEntailedAux(child, s, i, entailed);
-			child.free();
-			s.clear(f.var());
-			oldf = f;
-			f = entailed ? f.low() : f.high();
-			if (oldf != orig) {
-				oldf.free();
+	private static class VarsEntailedCalculator {
+		private final BitSet s;
+		private final BitSet result;
+		private final boolean entailed;
+
+		private VarsEntailedCalculator(BDD f, boolean entailed) {
+			this.s = new BitSet();
+			this.result = universe(f);
+			this.entailed = entailed;
+
+			varsEntailed(f);
+		}
+
+		private void varsEntailed(BDD f) {
+			BDD orig = f;
+			BDD oldf = f;
+			while (!f.isZero() && !f.isOne()) {
+				int var = f.var();
+				s.set(var);
+				BDD child = entailed ? f.high() : f.low();
+				varsEntailed(child);
+				child.free();
+				s.clear(var);
+				oldf = f;
+				f = entailed ? f.low() : f.high();
+				if (oldf != orig)
+					oldf.free();
 			}
+			if (f.isOne())
+				result.and(s);
+
+			if (f != orig)
+				f.free();
 		}
-		if (f.isOne()) {
-			i.and(s);
+
+		/**
+		 * Computes the set of all variable indexes up to max var index created so far.
+		 * 
+		 * @param f the BDD from which to compute maxVar
+		 * @return the set of all variable indexes
+		 */
+
+		private static BitSet universe(BDD f) {
+			BitSet u = new BitSet();
+			int maxVar = f.getFactory().getMaxVar();
+			if (maxVar > 0)
+				for (int i = 0; i <= maxVar; i++)
+					u.set(i);
+
+			return u;
 		}
-		if (f != orig) {
-			f.free();
-		}
-		return i;
 	}
 
 	/**
@@ -200,25 +228,7 @@ public class GER {
 	 * @return the set of disentailed variables
 	 */
 	BitSet varsDisentailed(BDD f) {
-		return varsEntailedAux(f, new BitSet(), universe(f), false);
-	}
-
-	/**
-	 * Computes the set of all variable indexes up to max var index created so
-	 * far.
-	 * 
-	 * @param f the BDD from which to compute maxVar
-	 * @return the set of all variable indexes
-	 */
-	private BitSet universe(BDD f) {
-		BitSet u = new BitSet();
-		int maxVar = f.getFactory().getMaxVar();
-		if (maxVar > 0) {
-			for (int i = 0; i <= maxVar; i++) {
-				u.set(i);
-			}
-		}
-		return u;
+		return new VarsEntailedCalculator(f, false).result;
 	}
 
 	/**

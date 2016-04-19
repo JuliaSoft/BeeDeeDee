@@ -73,7 +73,8 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 	@Override
 	protected void initialize(int nodenum, int cachesize) {
-		factory = new GERFactory(nodenum, cachesize);//Factory.mkResizingAndGarbageCollected(nodenum, cachesize);
+		factory = new GERFactory(nodenum, cachesize);
+			//Factory.mkResizingAndGarbageCollected(nodenum, cachesize);
 
 		// we set the default call-backs
 
