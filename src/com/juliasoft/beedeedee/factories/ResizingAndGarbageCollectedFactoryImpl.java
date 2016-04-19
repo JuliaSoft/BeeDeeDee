@@ -1444,12 +1444,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		private class VarsCalculator {
-			private final BitSet s;
+			private final BitSet s = new BitSet();
+			private final Set<Integer> seen = new HashSet<>();
 			private BitSet result;
 
 			private VarsCalculator(boolean entailed, int id) {
-				this.s = new BitSet();
-
 				if (entailed)
 					varsEntailed(id);
 				else
@@ -1460,8 +1459,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 
 			private void varsEntailed(int id) {
+				//if (!seen.add(id)) // this leads to UnsatException???
+					//return;
 				while (id != ZERO && id != ONE) {
 					int var = ut.var(id);
+					// do we have reached a variable that is already considered false?
+					if (result != null && result.previousSetBit(var) < 0)
+						break;
 					s.set(var);
 					varsEntailed(ut.high(id));
 					s.clear(var);
@@ -1476,8 +1480,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 
 			private void varsDisentailed(int id) {
+				if (!seen.add(id))
+					return;
+
 				while (id != ZERO && id != ONE) {
 					int var = ut.var(id);
+					// do we have reached a variable that is already considered false?
+					if (result != null && result.previousSetBit(var) < 0)
+						break;
 					s.set(var);
 					varsDisentailed(ut.low(id));
 					s.clear(var);
