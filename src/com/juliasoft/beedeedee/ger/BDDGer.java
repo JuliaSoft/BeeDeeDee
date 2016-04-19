@@ -447,16 +447,6 @@ public class BDDGer implements BDD {
 	}
 
 	@Override
-	public BitSet varsEntailed() {
-		return ger.getFullBDD().varsEntailed();
-	}
-
-	@Override
-	public BitSet varsDisentailed() {
-		return ger.getFullBDD().varsDisentailed();
-	}
-
-	@Override
 	public Set<Pair> equivVars() {
 		return ger.getFullBDD().equivVars();
 	}

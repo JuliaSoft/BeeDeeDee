@@ -446,20 +446,6 @@ public interface BDD {
 	public BDD renameWithLeader(E r);
 
 	/**
-	 * Computes the set of variables entailed by this BDD.
-	 * 
-	 * @return the set of entailed variables
-	 */
-	public BitSet varsEntailed();
-
-	/**
-	 * Computes the set of variables disentailed by this BDD.
-	 * 
-	 * @return the set of disentailed variables
-	 */
-	public BitSet varsDisentailed();
-	
-	/**
 	 * Finds pairs of equivalent variables in this BDD.
 	 * 
 	 * @return the list of equivalent pairs

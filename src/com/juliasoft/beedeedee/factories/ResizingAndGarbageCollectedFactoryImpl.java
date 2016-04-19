@@ -1435,16 +1435,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 
-		@Override
-		public BitSet varsEntailed() {
-			return new VarsEntailedCalculator(true).result;
-		}
-
-		@Override
-		public BitSet varsDisentailed() {
-			return new VarsEntailedCalculator(false).result;
-		}
-
 		private BitSet varsEntailed(int id) {
 			return new VarsEntailedCalculator(true, id).result;
 		}
