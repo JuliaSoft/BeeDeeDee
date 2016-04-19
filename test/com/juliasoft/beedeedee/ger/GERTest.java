@@ -1,10 +1,12 @@
 package com.juliasoft.beedeedee.ger;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -16,12 +18,10 @@ import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 public class GERTest {
 
 	private ResizingAndGarbageCollectedFactory factory;
-	private GER fakeGer;
 
 	@Before
 	public void setUp() throws Exception {
 		factory = Factory.mkResizingAndGarbageCollected(10, 10, 0);
-		fakeGer = new GER(null, null);
 	}
 
 	@Test
@@ -405,22 +405,22 @@ public class GERTest {
 		assertEquals(6, ger.maxVar());
 	}
 
-	@Test
-	public void testGeneratePairs() {
-		List<Pair> pairs = fakeGer.generatePairs(3);
-		assertEquals(6, pairs.size());
-		assertTrue(pairs.contains(new Pair(0, 1)));
-		assertTrue(pairs.contains(new Pair(0, 2)));
-		assertTrue(pairs.contains(new Pair(0, 3)));
-		assertTrue(pairs.contains(new Pair(1, 2)));
-		assertTrue(pairs.contains(new Pair(1, 3)));
-		assertTrue(pairs.contains(new Pair(2, 3)));
-	}
+//	@Test
+//	public void testGeneratePairs() {
+//		List<Pair> pairs = fakeGer.generatePairs(3);
+//		assertEquals(6, pairs.size());
+//		assertTrue(pairs.contains(new Pair(0, 1)));
+//		assertTrue(pairs.contains(new Pair(0, 2)));
+//		assertTrue(pairs.contains(new Pair(0, 3)));
+//		assertTrue(pairs.contains(new Pair(1, 2)));
+//		assertTrue(pairs.contains(new Pair(1, 3)));
+//		assertTrue(pairs.contains(new Pair(2, 3)));
+//	}
 
 	@Test
 	public void testEquivVars1() {
 		BDD one = factory.makeOne();
-		List<Pair> equivVars = fakeGer.equivVars(one);
+		Set<Pair> equivVars = one.equivVars();
 		assertTrue(equivVars.isEmpty());
 
 //		assertEquals(1, factory.bddCount());
@@ -429,7 +429,7 @@ public class GERTest {
 	@Test
 	public void testEquivVars2() {
 		BDD zero = factory.makeZero();
-		List<Pair> equivVars = fakeGer.equivVars(zero);
+		Set<Pair> equivVars = zero.equivVars();
 		assertTrue(equivVars.isEmpty());
 
 //		assertEquals(1, factory.bddCount());
@@ -441,7 +441,7 @@ public class GERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		List<Pair> equivVars = fakeGer.equivVars(bdd);
+		Set<Pair> equivVars = bdd.equivVars();
 		assertEquals(1, equivVars.size());
 		assertTrue(equivVars.contains(new Pair(1, 2)));
 
@@ -456,7 +456,7 @@ public class GERTest {
 		BDD temp = factory.makeVar(2);
 		temp.biimpWith(factory.makeVar(3));
 		bdd.andWith(temp);
-		List<Pair> equivVars = fakeGer.equivVars(bdd);
+		Set<Pair> equivVars = bdd.equivVars();
 		assertEquals(3, equivVars.size());
 		assertTrue(equivVars.contains(new Pair(1, 2)));
 		assertTrue(equivVars.contains(new Pair(1, 3)));

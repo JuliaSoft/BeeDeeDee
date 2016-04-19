@@ -119,9 +119,9 @@ public class E implements Iterable<BitSet> {
 	/**
 	 * Adds pairs to this set.
 	 * 
-	 * @param pairs the list of pairs to add
+	 * @param pairs the pairs to add
 	 */
-	public void addPairs(List<Pair> pairs) {
+	public void addPairs(Iterable<Pair> pairs) {
 		for (Pair pair : pairs) {
 			addPair(pair);
 		}

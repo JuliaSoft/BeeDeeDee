@@ -1,6 +1,5 @@
 package com.juliasoft.beedeedee.ger;
 
-import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.List;
 
@@ -159,60 +158,6 @@ public class GER {
 	}
 
 	/**
-	 * Finds pairs of equivalent variables in the given BDD.
-	 * 
-	 * @param f the BDD
-	 * @return a list of pairs
-	 */
-	public List<Pair> equivVars(BDD f) {
-		int maxVar = f.maxVar();
-		return equivVars(f, generatePairs(maxVar));
-	}
-
-	private List<Pair> equivVars(BDD f, List<Pair> universePairs) {
-		if (f.isOne()) {
-			return new ArrayList<>();
-		}
-		if (f.isZero()) {
-			return universePairs;
-		}
-
-		List<Pair> pairs = new ArrayList<>();
-		BDD high = f.high();
-		BDD low = f.low();
-		BitSet varsEntailedByHigh = high.varsEntailed();
-		varsEntailedByHigh.and(low.varsDisentailed());
-		for (int i = varsEntailedByHigh.nextSetBit(0); i >= 0; i = varsEntailedByHigh.nextSetBit(i + 1)) {
-			pairs.add(new Pair(f.var(), i));
-		}
-
-		List<Pair> equivVars = equivVars(high, universePairs);
-		equivVars.retainAll(equivVars(low, universePairs));
-
-		high.free();
-		low.free();
-
-		pairs.addAll(equivVars);
-		return pairs;
-	}
-
-	/**
-	 * Generates all ordered pairs of variables up to the given maxVar.
-	 * 
-	 * @param maxVar the maximum variable index
-	 * @return the list of generated pairs
-	 */
-	List<Pair> generatePairs(int maxVar) {
-		List<Pair> pairs = new ArrayList<>();
-		for (int i = 0; i < maxVar; i++) {
-			for (int j = i + 1; j <= maxVar; j++) {
-				pairs.add(new Pair(i, j));
-			}
-		}
-		return pairs;
-	}
-
-	/**
 	 * Finds the maximum variable index in this GER.
 	 * 
 	 * @return the maximum variable index, -1 for terminal nodes
@@ -237,8 +182,7 @@ public class GER {
 				nOld.free();
 			}
 			nOld = nNew.copy();
-			List<Pair> equivVars = equivVars(nNew);
-			eNew.addPairs(equivVars);
+			eNew.addPairs(nNew.equivVars());
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
 			nNew = nNew.renameWithLeader(eNew);

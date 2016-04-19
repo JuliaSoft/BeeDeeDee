@@ -1,7 +1,6 @@
 package com.juliasoft.beedeedee.ger;
 
-public class Pair {
-
+public final class Pair {
 	public final int first;
 	public final int second;
 
@@ -20,21 +19,9 @@ public class Pair {
 		return result;
 	}
 
-	// eclipse generated
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj)
-			return true;
-		if (obj == null)
-			return false;
-		if (getClass() != obj.getClass())
-			return false;
-		Pair other = (Pair) obj;
-		if (first != other.first)
-			return false;
-		if (second != other.second)
-			return false;
-		return true;
+		return obj instanceof Pair && ((Pair) obj).first == first && ((Pair) obj).second == second;
 	}
 
 	@Override

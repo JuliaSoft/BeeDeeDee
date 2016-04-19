@@ -37,6 +37,7 @@ import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.ger.E;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
+import com.juliasoft.beedeedee.ger.Pair;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
@@ -227,16 +228,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			this.id = id;
 			this.hashCode = ut.hashCodeAux(id);
 			this.nodeCount = -1;
-		}
-
-		@Override
-		public final boolean equals(Object obj) {
-			return obj instanceof BDDImpl && ((BDDImpl) obj).id == id;
-		}
-
-		@Override
-		public final int hashCode() {
-			return hashCodeAux();
 		}
 
 		@Override
@@ -1327,7 +1318,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD high() {
+		public BDDImpl high() {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1339,7 +1330,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD low() {
+		public BDDImpl low() {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1444,22 +1435,24 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 
+		@Override
 		public BitSet varsEntailed() {
 			return new VarsEntailedCalculator(true).result;
 		}
 
+		@Override
 		public BitSet varsDisentailed() {
 			return new VarsEntailedCalculator(false).result;
 		}
 
 		private class VarsEntailedCalculator {
 			private final BitSet s;
-			private final BitSet result;
+			private BitSet result;
 			private final boolean entailed;
 
 			private VarsEntailedCalculator(boolean entailed) {
 				this.s = new BitSet();
-				this.result = universe();
+				this.result = null;
 				this.entailed = entailed;
 
 				varsEntailed(BDDImpl.this);
@@ -1480,11 +1473,18 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					if (oldf != orig)
 						oldf.free();
 				}
+
 				if (f.isOne())
-					result.and(s);
+					if (result == null)
+						result = (BitSet) s.clone();
+					else
+						result.and(s);
 
 				if (f != orig)
 					f.free();
+
+				if (result == null)
+					result = universe();
 			}
 
 			/**
@@ -1503,6 +1503,52 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 				return u;
 			}
+		}
+
+		@Override
+		public Set<Pair> equivVars() {
+			return equivVars(generatePairs(maxVar()));
+		}
+
+		private Set<Pair> equivVars(Set<Pair> universePairs) {
+			if (isZero())
+				return universePairs;
+
+			Set<Pair> pairs = new HashSet<>();
+			if (isOne())
+				return pairs;
+
+			BDDImpl high = high();
+			BDDImpl low = low();
+			BitSet vars = high.varsEntailed();
+			vars.and(low.varsDisentailed());
+			for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
+				pairs.add(new Pair(var(), i));
+
+			Set<Pair> equivVars = high.equivVars(universePairs);
+			equivVars.retainAll(low.equivVars(universePairs));
+
+			high.free();
+			low.free();
+
+			pairs.addAll(equivVars);
+			return pairs;
+		}
+
+		/**
+		 * Generates all ordered pairs of variables up to the given maxVar.
+		 * 
+		 * @param maxVar the maximum variable index
+		 * @return the list of generated pairs
+		 */
+		private Set<Pair> generatePairs(int maxVar) {
+			Set<Pair> pairs = new HashSet<>();
+			for (int i = 0; i < maxVar; i++) {
+				for (int j = i + 1; j <= maxVar; j++) {
+					pairs.add(new Pair(i, j));
+				}
+			}
+			return pairs;
 		}
 	}
 

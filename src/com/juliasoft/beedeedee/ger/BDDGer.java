@@ -3,6 +3,7 @@ package com.juliasoft.beedeedee.ger;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -453,5 +454,10 @@ public class BDDGer implements BDD {
 	@Override
 	public BitSet varsDisentailed() {
 		return ger.getFullBDD().varsDisentailed();
+	}
+
+	@Override
+	public Set<Pair> equivVars() {
+		return ger.getFullBDD().equivVars();
 	}
 }

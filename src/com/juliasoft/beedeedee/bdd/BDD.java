@@ -21,10 +21,12 @@ package com.juliasoft.beedeedee.bdd;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.ger.E;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
+import com.juliasoft.beedeedee.ger.Pair;
 
 /**
  * A Binary Decision Diagram.
@@ -444,16 +446,23 @@ public interface BDD {
 	public BDD renameWithLeader(E r);
 
 	/**
-	 * Computes the set of variables entailed by the given BDD.
+	 * Computes the set of variables entailed by this BDD.
 	 * 
 	 * @return the set of entailed variables
 	 */
 	public BitSet varsEntailed();
 
 	/**
-	 * Computes the set of variables disentailed by the given BDD.
+	 * Computes the set of variables disentailed by this BDD.
 	 * 
 	 * @return the set of disentailed variables
 	 */
 	public BitSet varsDisentailed();
+	
+	/**
+	 * Finds pairs of equivalent variables in this BDD.
+	 * 
+	 * @return the list of equivalent pairs
+	 */
+	public Set<Pair> equivVars();
 }
