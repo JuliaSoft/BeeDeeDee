@@ -1449,12 +1449,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			private VarsCalculator(boolean entailed, int id) {
 				this.s = new BitSet();
-				this.result = null;
 
 				if (entailed)
 					varsEntailed(id);
 				else
 					varsDisentailed(id);
+
+				if (result == null)
+					result = universe();
 			}
 
 			private void varsEntailed(int id) {
@@ -1471,9 +1473,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 						result = (BitSet) s.clone();
 					else
 						result.and(s);
-				else
-					if (result == null)
-						result = universe();
 			}
 
 			private void varsDisentailed(int id) {
@@ -1490,9 +1489,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 						result = (BitSet) s.clone();
 					else
 						result.and(s);
-				else
-					if (result == null)
-						result = universe();
 			}
 
 			/**
@@ -1549,8 +1545,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				BitSet vars = varsEntailed(ut.high(id));
 				vars.and(varsDisentailed(ut.low(id)));
 				Set<Pair> pairs = new HashSet<>();
-				for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
-					pairs.add(new Pair(ut.var(id), i));
+				for (int i = vars.nextSetBit(0), var = ut.var(id); i >= 0; i = vars.nextSetBit(i + 1))
+					pairs.add(new Pair(var, i));
 
 				pairs.addAll(equivVars);
 				return pairs;
