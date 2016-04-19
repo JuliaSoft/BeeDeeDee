@@ -1436,42 +1436,34 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		private BitSet varsEntailed(int id) {
-			return new VarsEntailedCalculator(true, id).result;
+			return new VarsCalculator(true, id).result;
 		}
 
 		private BitSet varsDisentailed(int id) {
-			return new VarsEntailedCalculator(false, id).result;
+			return new VarsCalculator(false, id).result;
 		}
 
-		private class VarsEntailedCalculator {
+		private class VarsCalculator {
 			private final BitSet s;
 			private BitSet result;
-			private final boolean entailed;
 
-			private VarsEntailedCalculator(boolean entailed) {
+			private VarsCalculator(boolean entailed, int id) {
 				this.s = new BitSet();
 				this.result = null;
-				this.entailed = entailed;
 
-				varsEntailed(id);
-			}
-
-			private VarsEntailedCalculator(boolean entailed, int id) {
-				this.s = new BitSet();
-				this.result = null;
-				this.entailed = entailed;
-
-				varsEntailed(id);
+				if (entailed)
+					varsEntailed(id);
+				else
+					varsDisentailed(id);
 			}
 
 			private void varsEntailed(int id) {
 				while (id != ZERO && id != ONE) {
 					int var = ut.var(id);
 					s.set(var);
-					int child = entailed ? ut.high(id) : ut.low(id);
-					varsEntailed(child);
+					varsEntailed(ut.high(id));
 					s.clear(var);
-					id = entailed ? ut.low(id) : ut.high(id);
+					id = ut.low(id);
 				}
 
 				if (id == ONE)
@@ -1479,9 +1471,28 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 						result = (BitSet) s.clone();
 					else
 						result.and(s);
+				else
+					if (result == null)
+						result = universe();
+			}
 
-				if (result == null)
-					result = universe();
+			private void varsDisentailed(int id) {
+				while (id != ZERO && id != ONE) {
+					int var = ut.var(id);
+					s.set(var);
+					varsDisentailed(ut.low(id));
+					s.clear(var);
+					id = ut.high(id);
+				}
+
+				if (id == ONE)
+					if (result == null)
+						result = (BitSet) s.clone();
+					else
+						result.and(s);
+				else
+					if (result == null)
+						result = universe();
 			}
 
 			/**
@@ -1504,42 +1515,60 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public Set<Pair> equivVars() {
-			return equivVars(id, generatePairs(maxVar()));
+			Set<Pair> result = equivVars(id);
+			if (result == null)
+				return generateAllPairs();
+			else
+				return result;
 		}
 
-		private Set<Pair> equivVars(int id, Set<Pair> universePairs) {
+		/**
+		 * Generates all equivalent pairs for the BDD with the given id
+		 * 
+		 * @param id the id
+		 * @return the equivalent pairs. If null, it means all pairs
+		 */
+		private Set<Pair> equivVars(int id) {
 			if (id == ZERO)
-				return universePairs;
+				return null;
+			else if (id == ONE)
+				return new HashSet<>();
 
-			Set<Pair> pairs = new HashSet<>();
-			if (id == ONE)
+			Set<Pair> equivVars = equivVars(ut.high(id));
+			if (equivVars == null)
+				equivVars = equivVars(ut.low(id));
+			else {
+				Set<Pair> lowEquivVars = equivVars(ut.low(id));
+				if (lowEquivVars != null)
+					equivVars.retainAll(lowEquivVars);
+			}
+
+			if (equivVars == null)
+				return null;
+			else {
+				BitSet vars = varsEntailed(ut.high(id));
+				vars.and(varsDisentailed(ut.low(id)));
+				Set<Pair> pairs = new HashSet<>();
+				for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
+					pairs.add(new Pair(ut.var(id), i));
+
+				pairs.addAll(equivVars);
 				return pairs;
-
-			BitSet vars = varsEntailed(ut.high(id));
-			vars.and(varsDisentailed(ut.low(id)));
-			for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
-				pairs.add(new Pair(ut.var(id), i));
-
-			Set<Pair> equivVars = equivVars(ut.high(id), universePairs);
-			equivVars.retainAll(equivVars(ut.low(id), universePairs));
-
-			pairs.addAll(equivVars);
-			return pairs;
+			}
 		}
 
 		/**
 		 * Generates all ordered pairs of variables up to the given maxVar.
 		 * 
-		 * @param maxVar the maximum variable index
 		 * @return the list of generated pairs
 		 */
-		private Set<Pair> generatePairs(int maxVar) {
+		private Set<Pair> generateAllPairs() {
+			int maxVar = maxVar();
 			Set<Pair> pairs = new HashSet<>();
-			for (int i = 0; i < maxVar; i++) {
-				for (int j = i + 1; j <= maxVar; j++) {
+			for (int i = 0; i < maxVar; i++)
+				for (int j = i + 1; j <= maxVar; j++)
 					pairs.add(new Pair(i, j));
-				}
-			}
+
 			return pairs;
 		}
 	}

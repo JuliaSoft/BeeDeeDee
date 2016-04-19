@@ -165,13 +165,14 @@ public class E implements Iterable<BitSet> {
 		return null;
 	}
 
-	// FIXME specialized equals - efficiency?
 	@Override
 	public boolean equals(Object obj) {
-		E other = (E) obj;
-		Set<BitSet> e = new HashSet<>(equivalenceClasses);
-		e.removeAll(other.equivalenceClasses);
-		return e.isEmpty();
+		return obj instanceof E && ((E) obj).equivalenceClasses.equals(equivalenceClasses);
+	}
+
+	@Override
+	public int hashCode() {
+		return equivalenceClasses.hashCode();
 	}
 
 	/**

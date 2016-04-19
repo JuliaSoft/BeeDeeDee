@@ -178,16 +178,19 @@ public class GER {
 		BDD nOld = null;
 		do {
 			eOld = eNew.copy();
-			if (nOld != null) {
+			if (nOld != null)
 				nOld.free();
-			}
+
 			nOld = nNew.copy();
 			eNew.addPairs(nNew.equivVars());
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
 			nNew = nNew.renameWithLeader(eNew);
-		} while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+		}
+		while (!nNew.isEquivalentTo(nOld) || !eNew.equals(eOld));
+
 		nOld.free();
+
 		return new GER(nNew, eNew);
 	}
 
