@@ -1445,6 +1445,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return new VarsEntailedCalculator(false).result;
 		}
 
+		private BitSet varsEntailed(int id) {
+			return new VarsEntailedCalculator(true, id).result;
+		}
+
+		private BitSet varsDisentailed(int id) {
+			return new VarsEntailedCalculator(false, id).result;
+		}
+
 		private class VarsEntailedCalculator {
 			private final BitSet s;
 			private BitSet result;
@@ -1455,33 +1463,32 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				this.result = null;
 				this.entailed = entailed;
 
-				varsEntailed(BDDImpl.this);
+				varsEntailed(id);
 			}
 
-			private void varsEntailed(BDD f) {
-				BDD orig = f;
-				BDD oldf = f;
-				while (!f.isZero() && !f.isOne()) {
-					int var = f.var();
+			private VarsEntailedCalculator(boolean entailed, int id) {
+				this.s = new BitSet();
+				this.result = null;
+				this.entailed = entailed;
+
+				varsEntailed(id);
+			}
+
+			private void varsEntailed(int id) {
+				while (id != ZERO && id != ONE) {
+					int var = ut.var(id);
 					s.set(var);
-					BDD child = entailed ? f.high() : f.low();
+					int child = entailed ? ut.high(id) : ut.low(id);
 					varsEntailed(child);
-					child.free();
 					s.clear(var);
-					oldf = f;
-					f = entailed ? f.low() : f.high();
-					if (oldf != orig)
-						oldf.free();
+					id = entailed ? ut.low(id) : ut.high(id);
 				}
 
-				if (f.isOne())
+				if (id == ONE)
 					if (result == null)
 						result = (BitSet) s.clone();
 					else
 						result.and(s);
-
-				if (f != orig)
-					f.free();
 
 				if (result == null)
 					result = universe();
@@ -1507,29 +1514,24 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public Set<Pair> equivVars() {
-			return equivVars(generatePairs(maxVar()));
+			return equivVars(id, generatePairs(maxVar()));
 		}
 
-		private Set<Pair> equivVars(Set<Pair> universePairs) {
-			if (isZero())
+		private Set<Pair> equivVars(int id, Set<Pair> universePairs) {
+			if (id == ZERO)
 				return universePairs;
 
 			Set<Pair> pairs = new HashSet<>();
-			if (isOne())
+			if (id == ONE)
 				return pairs;
 
-			BDDImpl high = high();
-			BDDImpl low = low();
-			BitSet vars = high.varsEntailed();
-			vars.and(low.varsDisentailed());
+			BitSet vars = varsEntailed(ut.high(id));
+			vars.and(varsDisentailed(ut.low(id)));
 			for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
-				pairs.add(new Pair(var(), i));
+				pairs.add(new Pair(ut.var(id), i));
 
-			Set<Pair> equivVars = high.equivVars(universePairs);
-			equivVars.retainAll(low.equivVars(universePairs));
-
-			high.free();
-			low.free();
+			Set<Pair> equivVars = equivVars(ut.high(id), universePairs);
+			equivVars.retainAll(equivVars(ut.low(id), universePairs));
 
 			pairs.addAll(equivVars);
 			return pairs;
