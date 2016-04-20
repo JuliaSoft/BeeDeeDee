@@ -1461,6 +1461,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			private void varsEntailed(int id) {
 				//if (!seen.add(id)) // this leads to UnsatException???
 					//return;
+				
 				while (id != ZERO && id != ONE) {
 					int var = ut.var(id);
 					// do we have reached a variable that is already considered false?
@@ -1576,6 +1577,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					pairs.add(new Pair(i, j));
 
 			return pairs;
+		}
+
+		public BitSet varsEntailed() {
+			return varsEntailed(id);
+		}
+
+		public BitSet varsDisentailed() {
+			return varsDisentailed(id);
 		}
 	}
 

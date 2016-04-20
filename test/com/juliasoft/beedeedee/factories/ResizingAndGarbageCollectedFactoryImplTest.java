@@ -122,4 +122,55 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		bdd.andWith(factory.makeVar(8));
 		assertEquals(8, bdd.maxVar());
 	}
+
+	@Test
+	public void testVarsEntailed1() {
+		BDDImpl one = (BDDImpl) factory.makeOne();
+		BitSet varsEntailed = one.varsEntailed();
+		assertTrue(varsEntailed.isEmpty());
+
+//		assertEquals(1, factory.bddCount());
+	}
+
+	@Test
+	public void testVarsEntailed2() {
+		BDDImpl zero = (BDDImpl) factory.makeZero();
+		factory.makeVar(4); // set maxVar to 4 for the current factory
+		BitSet varsEntailed = zero.varsEntailed();
+		// expect a set containing all possible variables up to maxVar
+		BitSet expected = new BitSet();
+		expected.set(0, 5);
+		assertEquals(expected, varsEntailed);
+
+//		assertEquals(2, factory.bddCount());
+	}
+
+	@Test
+	public void testVarsEntailed3() {
+		BDDImpl f = factory.makeVar(3);
+		f.andWith(factory.makeVar(4));
+
+		BitSet varsEntailed = f.varsEntailed();
+		BitSet expected = new BitSet();
+		expected.set(3, 5);
+		assertEquals(expected, varsEntailed);
+
+//		assertEquals(1, factory.bddCount());
+	}
+
+	@Test
+	public void testVarsDisentailed() {
+		BDDImpl f = factory.makeVar(1);
+		f.notWith();
+		f.andWith(factory.makeVar(2));
+
+		// disentailed variables are those whose negation is entailed
+		BitSet varsDisentailed = f.varsDisentailed();
+		BitSet expected = new BitSet();
+		expected.set(1);
+		assertEquals(expected, varsDisentailed);
+
+//		assertEquals(1, factory.bddCount());
+	}
+
 }

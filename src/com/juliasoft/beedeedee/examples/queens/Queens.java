@@ -56,8 +56,8 @@ public class Queens {
 		}
 
 //		Factory factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
-//		Factory factory = new GERFactory(utSize, cacheSize);
-		Factory factory = new IntegrityCheckFactory(utSize, cacheSize, true);
+		Factory factory = new GERFactory(utSize, cacheSize);
+//		Factory factory = new IntegrityCheckFactory(utSize, cacheSize, true);
 		BDD queen = factory.makeOne();
 
 		int i, j;
