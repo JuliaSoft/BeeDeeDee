@@ -128,8 +128,6 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		BDDImpl one = (BDDImpl) factory.makeOne();
 		BitSet varsEntailed = one.varsEntailed();
 		assertTrue(varsEntailed.isEmpty());
-
-//		assertEquals(1, factory.bddCount());
 	}
 
 	@Test
@@ -141,8 +139,6 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		BitSet expected = new BitSet();
 		expected.set(0, 5);
 		assertEquals(expected, varsEntailed);
-
-//		assertEquals(2, factory.bddCount());
 	}
 
 	@Test
@@ -154,8 +150,18 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		BitSet expected = new BitSet();
 		expected.set(3, 5);
 		assertEquals(expected, varsEntailed);
+	}
 
-//		assertEquals(1, factory.bddCount());
+	@Test
+	public void testVarsEntailed4() {
+		BDDImpl f = factory.makeVar(3);
+		f.orWith(factory.makeVar(4));
+		f.andWith(factory.makeVar(1));
+
+		BitSet varsEntailed = f.varsEntailed();
+		BitSet expected = new BitSet();
+		expected.set(1);
+		assertEquals(expected, varsEntailed);
 	}
 
 	@Test
@@ -169,8 +175,6 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		BitSet expected = new BitSet();
 		expected.set(1);
 		assertEquals(expected, varsDisentailed);
-
-//		assertEquals(1, factory.bddCount());
 	}
 
 }
