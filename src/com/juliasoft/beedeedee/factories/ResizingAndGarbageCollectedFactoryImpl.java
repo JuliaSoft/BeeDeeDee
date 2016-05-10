@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -195,7 +196,103 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	}
 
 	private int freedBDDsCounter;
-	
+
+	Map<Integer, BitSet> cacheVarsEntailed = new HashMap<>();
+	private BitSet varsEntailed(int id) {
+		BitSet result = cacheVarsEntailed.get(id);
+		if (result != null)
+			return result;
+
+		result = new VarsCalculator(true, id).result;
+		cacheVarsEntailed.put(id, result);
+
+		return result;
+	}
+
+	Map<Integer, BitSet> cacheVarsDisentailed = new HashMap<>();
+	private BitSet varsDisentailed(int id) {
+		BitSet result = cacheVarsDisentailed.get(id);
+		if (result != null)
+			return result;
+
+		result = new VarsCalculator(false, id).result;
+		cacheVarsDisentailed.put(id, result);
+
+		return result;
+	}
+
+	private class VarsCalculator {
+		private final BitSet s = new BitSet();
+		private BitSet result;
+
+		private VarsCalculator(boolean entailed, int id) {
+			if (entailed)
+				varsEntailed(id);
+			else
+				varsDisentailed(id);
+
+			if (result == null)
+				result = universe();
+		}
+
+		private void varsEntailed(int id) {
+			while (id != ZERO && id != ONE) {
+				int var = ut.var(id);
+				// do we have reached a variable that is already considered false?
+				if (result != null && result.previousSetBit(var) < 0)
+					return;
+
+				s.set(var);
+				varsEntailed(ut.high(id));
+				s.clear(var);
+				id = ut.low(id);
+			}
+
+			if (id == ONE)
+				if (result == null)
+					result = (BitSet) s.clone();
+				else
+					result.and(s);
+		}
+
+		private void varsDisentailed(int id) {
+			while (id != ZERO && id != ONE) {
+				int var = ut.var(id);
+				// do we have reached a variable that is already considered false?
+				if (result != null && result.previousSetBit(var) < 0)
+					return;
+
+				s.set(var);
+				varsDisentailed(ut.low(id));
+				s.clear(var);
+				id = ut.high(id);
+			}
+
+			if (id == ONE)
+				if (result == null)
+					result = (BitSet) s.clone();
+				else
+					result.and(s);
+		}
+
+		/**
+		 * Computes the set of all variable indexes up to max var index created so far.
+		 * 
+		 * @param f the BDD from which to compute maxVar
+		 * @return the set of all variable indexes
+		 */
+
+		private BitSet universe() {
+			BitSet u = new BitSet();
+			int maxVar = getMaxVar();
+			if (maxVar > 0)
+				for (int i = 0; i <= maxVar; i++)
+					u.set(i);
+
+			return u;
+		}
+	}
+
 	class BDDImpl implements BDD {
 
 		/**
@@ -1435,91 +1532,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 
-		private BitSet varsEntailed(int id) {
-			return new VarsCalculator(true, id).result;
-		}
-
-		private BitSet varsDisentailed(int id) {
-			return new VarsCalculator(false, id).result;
-		}
-
-		private class VarsCalculator {
-			private final BitSet s = new BitSet();
-			private final Set<Integer> seen = new HashSet<>();
-			private BitSet result;
-
-			private VarsCalculator(boolean entailed, int id) {
-				if (entailed)
-					varsEntailed(id);
-				else
-					varsDisentailed(id);
-
-				if (result == null)
-					result = universe();
-			}
-
-			private void varsEntailed(int id) {
-				//if (!seen.add(id)) // this leads to UnsatException???
-					//return;
-				
-				while (id != ZERO && id != ONE) {
-					int var = ut.var(id);
-					// do we have reached a variable that is already considered false?
-					if (result != null && result.previousSetBit(var) < 0)
-						break;
-					s.set(var);
-					varsEntailed(ut.high(id));
-					s.clear(var);
-					id = ut.low(id);
-				}
-
-				if (id == ONE)
-					if (result == null)
-						result = (BitSet) s.clone();
-					else
-						result.and(s);
-			}
-
-			private void varsDisentailed(int id) {
-				if (!seen.add(id))
-					return;
-
-				while (id != ZERO && id != ONE) {
-					int var = ut.var(id);
-					// do we have reached a variable that is already considered false?
-					if (result != null && result.previousSetBit(var) < 0)
-						break;
-					s.set(var);
-					varsDisentailed(ut.low(id));
-					s.clear(var);
-					id = ut.high(id);
-				}
-
-				if (id == ONE)
-					if (result == null)
-						result = (BitSet) s.clone();
-					else
-						result.and(s);
-			}
-
-			/**
-			 * Computes the set of all variable indexes up to max var index created so far.
-			 * 
-			 * @param f the BDD from which to compute maxVar
-			 * @return the set of all variable indexes
-			 */
-
-			private BitSet universe() {
-				BitSet u = new BitSet();
-				int maxVar = getFactory().getMaxVar();
-				if (maxVar > 0)
-					for (int i = 0; i <= maxVar; i++)
-						u.set(i);
-
-				return u;
-			}
-		}
-
 		@Override
 		public Set<Pair> equivVars() {
 			Set<Pair> result = equivVars(id);
@@ -1577,14 +1589,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					pairs.add(new Pair(i, j));
 
 			return pairs;
-		}
-
-		public BitSet varsEntailed() {
-			return varsEntailed(id);
-		}
-
-		public BitSet varsDisentailed() {
-			return varsDisentailed(id);
 		}
 	}
 

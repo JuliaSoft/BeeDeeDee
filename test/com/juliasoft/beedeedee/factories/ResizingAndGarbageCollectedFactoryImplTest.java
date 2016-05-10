@@ -123,7 +123,7 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		assertEquals(8, bdd.maxVar());
 	}
 
-	@Test
+	/*@Test
 	public void testVarsEntailed1() {
 		BDDImpl one = (BDDImpl) factory.makeOne();
 		BitSet varsEntailed = one.varsEntailed();
@@ -175,6 +175,6 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		BitSet expected = new BitSet();
 		expected.set(1);
 		assertEquals(expected, varsDisentailed);
-	}
+	}*/
 
 }
