@@ -1553,6 +1553,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			else if (id == ONE)
 				return new HashSet<>();
 
+			EquivCache equivCache = ut.getEquivCache();
+			Set<Pair> cached = equivCache.get(id);
+			if (cached != null) {
+				return cached;
+			}
 			Set<Pair> equivVars = equivVars(ut.high(id));
 			if (equivVars == null)
 				equivVars = equivVars(ut.low(id));
@@ -1572,6 +1577,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					pairs.add(new Pair(var, i));
 
 				pairs.addAll(equivVars);
+				equivCache.put(id, pairs);
 				return pairs;
 			}
 		}

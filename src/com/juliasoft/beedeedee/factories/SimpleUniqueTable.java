@@ -39,6 +39,7 @@ class SimpleUniqueTable implements UniqueTable {
 	protected RestrictCache restrictCache;
 	protected ReplaceCache replaceCache;
 	protected QuantCache quantCache;
+	protected EquivCache equivCache;
 
 	private final int[] hitCounters = new int[Operator.values().length];
 	private final int[] opCounters = new int[Operator.values().length];
@@ -52,6 +53,7 @@ class SimpleUniqueTable implements UniqueTable {
 		this.restrictCache = new RestrictCache(Math.max(1, cacheSize / 20));
 		this.replaceCache = new ReplaceCache(Math.max(1, cacheSize / 20));
 		this.quantCache = new QuantCache(Math.max(1, cacheSize / 20));
+		this.equivCache = new EquivCache(Math.max(1, cacheSize / 20));
 
 		Arrays.fill(H, -1);
 	}
