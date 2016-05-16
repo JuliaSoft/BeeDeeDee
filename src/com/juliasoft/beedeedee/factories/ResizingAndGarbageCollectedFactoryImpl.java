@@ -1534,14 +1534,18 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public Set<Pair> equivVars() {
-			Set<Pair> result = new HashSet<>();
-			equivVars(id, new BitSet(), new BitSet(), result);
-			return result;
+			return equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
 		}
 
-		private void equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+		private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
 			if (bdd < FIRST_NODE_NUM) {
-				return;
+				return equiv;
+			}
+
+			EquivCache equivCache = ut.getEquivCache();
+			Set<Pair> cached = equivCache.get(bdd);
+			if (cached != null) {
+				return cached;
 			}
 
 			int var = ut.var(bdd);
@@ -1583,6 +1587,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					equiv.add(new Pair(var, n.length() - 1));
 				}
 			}
+			equivCache.put(bdd, equiv);
+			return equiv;
 		}
 
 		/**
