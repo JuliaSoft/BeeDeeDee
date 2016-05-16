@@ -1534,11 +1534,55 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public Set<Pair> equivVars() {
-			Set<Pair> result = equivVars(id);
-			if (result == null)
-				return generateAllPairs();
-			else
-				return result;
+			Set<Pair> result = new HashSet<>();
+			equivVars(id, new BitSet(), new BitSet(), result);
+			return result;
+		}
+
+		private void equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+			if (bdd < FIRST_NODE_NUM) {
+				return;
+			}
+
+			int var = ut.var(bdd);
+
+			if (ut.high(bdd) == ZERO) {
+				if (ut.low(bdd) != ONE) {
+					equivVars(ut.low(bdd), entailed, disentailed, equiv);
+					disentailed.set(var);
+					int maxd = disentailed.length() - 1;
+					if (var != maxd) {
+						equiv.add(new Pair(var, maxd));
+					}
+				} else {
+					disentailed.set(var);
+				}
+			} else if (ut.low(bdd) == ZERO) {
+				if (ut.high(bdd) != ONE) {
+					equivVars(ut.high(bdd), entailed, disentailed, equiv);
+					entailed.set(var);
+					int maxe = entailed.length() - 1;
+					if (var != maxe) {
+						equiv.add(new Pair(var, maxe));
+					}
+				} else {
+					entailed.set(var);
+				}
+			} else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
+				BitSet eTrue = new BitSet();
+				BitSet dFalse = new BitSet();
+				Set<Pair> equivFalse = new HashSet<>();
+				equivVars(ut.high(bdd), eTrue, disentailed, equiv);
+				equivVars(ut.low(bdd), entailed, dFalse, equivFalse);
+				entailed.and(eTrue);
+				disentailed.and(dFalse);
+				equiv.retainAll(equivFalse);
+				BitSet n = (BitSet) eTrue.clone();
+				n.and(dFalse);
+				if (n.cardinality() > 0) {
+					equiv.add(new Pair(var, n.length() - 1));
+				}
+			}
 		}
 
 		/**
