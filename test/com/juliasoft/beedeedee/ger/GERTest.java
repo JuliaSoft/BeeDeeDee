@@ -407,10 +407,12 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd.andWith(temp);
 		Set<Pair> equivVars = bdd.equivVars();
-		assertEquals(3, equivVars.size());
-		assertTrue(equivVars.contains(new Pair(1, 2)));
-		assertTrue(equivVars.contains(new Pair(1, 3)));
-		assertTrue(equivVars.contains(new Pair(2, 3)));
+		assertEquals(2, equivVars.size());
+		Pair p1 = new Pair(1, 2);
+		Pair p2 = new Pair(1, 3);
+		Pair p3 = new Pair(2, 3);
+		assertTrue(equivVars.contains(p1) && equivVars.contains(p2) || equivVars.contains(p2) && equivVars.contains(p3)
+				|| equivVars.contains(p1) && equivVars.contains(p3));
 
 //		assertEquals(1, factory.bddCount());
 	}
