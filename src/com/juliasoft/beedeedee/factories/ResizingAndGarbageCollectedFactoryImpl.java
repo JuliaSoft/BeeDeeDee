@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -196,102 +195,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	}
 
 	private int freedBDDsCounter;
-
-	Map<Integer, BitSet> cacheVarsEntailed = new HashMap<>();
-	private BitSet varsEntailed(int id) {
-		BitSet result = cacheVarsEntailed.get(id);
-		if (result != null)
-			return result;
-
-		result = new VarsCalculator(true, id).result;
-		cacheVarsEntailed.put(id, result);
-
-		return result;
-	}
-
-	Map<Integer, BitSet> cacheVarsDisentailed = new HashMap<>();
-	private BitSet varsDisentailed(int id) {
-		BitSet result = cacheVarsDisentailed.get(id);
-		if (result != null)
-			return result;
-
-		result = new VarsCalculator(false, id).result;
-		cacheVarsDisentailed.put(id, result);
-
-		return result;
-	}
-
-	private class VarsCalculator {
-		private final BitSet s = new BitSet();
-		private BitSet result;
-
-		private VarsCalculator(boolean entailed, int id) {
-			if (entailed)
-				varsEntailed(id);
-			else
-				varsDisentailed(id);
-
-			if (result == null)
-				result = universe();
-		}
-
-		private void varsEntailed(int id) {
-			while (id != ZERO && id != ONE) {
-				int var = ut.var(id);
-				// do we have reached a variable that is already considered false?
-				if (result != null && result.previousSetBit(var) < 0)
-					return;
-
-				s.set(var);
-				varsEntailed(ut.high(id));
-				s.clear(var);
-				id = ut.low(id);
-			}
-
-			if (id == ONE)
-				if (result == null)
-					result = (BitSet) s.clone();
-				else
-					result.and(s);
-		}
-
-		private void varsDisentailed(int id) {
-			while (id != ZERO && id != ONE) {
-				int var = ut.var(id);
-				// do we have reached a variable that is already considered false?
-				if (result != null && result.previousSetBit(var) < 0)
-					return;
-
-				s.set(var);
-				varsDisentailed(ut.low(id));
-				s.clear(var);
-				id = ut.high(id);
-			}
-
-			if (id == ONE)
-				if (result == null)
-					result = (BitSet) s.clone();
-				else
-					result.and(s);
-		}
-
-		/**
-		 * Computes the set of all variable indexes up to max var index created so far.
-		 * 
-		 * @param f the BDD from which to compute maxVar
-		 * @return the set of all variable indexes
-		 */
-
-		private BitSet universe() {
-			BitSet u = new BitSet();
-			int maxVar = getMaxVar();
-			if (maxVar > 0)
-				for (int i = 0; i <= maxVar; i++)
-					u.set(i);
-
-			return u;
-		}
-	}
 
 	class BDDImpl implements BDD {
 
@@ -1591,61 +1494,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return equiv;
 		}
 
-		/**
-		 * Generates all equivalent pairs for the BDD with the given id
-		 * 
-		 * @param id the id
-		 * @return the equivalent pairs. If null, it means all pairs
-		 */
-		private Set<Pair> equivVars(int id) {
-			if (id == ZERO)
-				return null;
-			else if (id == ONE)
-				return new HashSet<>();
-
-			EquivCache equivCache = ut.getEquivCache();
-			Set<Pair> cached = equivCache.get(id);
-			if (cached != null) {
-				return cached;
-			}
-			Set<Pair> equivVars = equivVars(ut.high(id));
-			if (equivVars == null)
-				equivVars = equivVars(ut.low(id));
-			else {
-				Set<Pair> lowEquivVars = equivVars(ut.low(id));
-				if (lowEquivVars != null)
-					equivVars.retainAll(lowEquivVars);
-			}
-
-			if (equivVars == null)
-				return null;
-			else {
-				BitSet vars = varsEntailed(ut.high(id));
-				vars.and(varsDisentailed(ut.low(id)));
-				Set<Pair> pairs = new HashSet<>();
-				for (int i = vars.nextSetBit(0), var = ut.var(id); i >= 0; i = vars.nextSetBit(i + 1))
-					pairs.add(new Pair(var, i));
-
-				pairs.addAll(equivVars);
-				equivCache.put(id, pairs);
-				return pairs;
-			}
-		}
-
-		/**
-		 * Generates all ordered pairs of variables up to the given maxVar.
-		 * 
-		 * @return the list of generated pairs
-		 */
-		private Set<Pair> generateAllPairs() {
-			int maxVar = maxVar();
-			Set<Pair> pairs = new HashSet<>();
-			for (int i = 0; i < maxVar; i++)
-				for (int j = i + 1; j <= maxVar; j++)
-					pairs.add(new Pair(i, j));
-
-			return pairs;
-		}
 	}
 
 	@Override
