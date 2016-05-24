@@ -1,0 +1,6 @@
+{
+  "name": "Beedeedee",
+  "tagline": "A multithreaded library for binary decision diagrams",
+  "body": "BeeDeeDee is a Java BDD library that allows concurrent manipulation of\r\nBinary Decision Diagrams, by exploiting multithreading.\r\n\r\nBinary Decision Diagrams (BDDs) are efficient representations of Boolean formulas.\r\nOnce a variable ordering is defined, these representations are canonical.\r\nThat is, two equivalent\r\nformulas are represented by the same diagram, and\r\nequivalence tests run in constant time.\r\nMoreover, efficient algorithms exist for common Boolean operations.\r\nBy using a BDD library to manipulate Boolean functions, your application\r\nwill be able to manage big logical formulas easily.",
+  "note": "Don't delete this file! It's used internally to help with page regeneration."
+}
