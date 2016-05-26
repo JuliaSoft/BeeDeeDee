@@ -13,7 +13,7 @@
 	</target>
 
 	<target name="jar" depends="compile">
-		<jar destfile="beedeedee.jar" basedir="bin" excludes="**/Test.class" />
+		<jar destfile="beedeedee.jar" basedir="bin" excludes="**/*Test.class" />
 	</target>
 
 	<target name="compileTests" depends="compile">
