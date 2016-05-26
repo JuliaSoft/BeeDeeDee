@@ -20,6 +20,10 @@ public class BDDTest {
 		factory.done();
 	}
 
+	@Test
+	public void test() {
+	}
+
 	/*
 	@Test
 	public void testOpWithSame() {
@@ -129,7 +133,7 @@ public class BDDTest {
 		factory.printNodeTable();
 	}
 	
-    @Test
+//	@Test
     public void testLowHighEquals() {
         BDD res = factory.makeVar(1);
         System.out.println("x1");

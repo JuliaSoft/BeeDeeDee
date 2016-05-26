@@ -110,8 +110,8 @@ public class JavaBDDAdapterFactoryTest {
 			return;
 		}
 			
-		System.out.println(mySw);
-		System.out.println(sw);
+//		System.out.println(mySw);
+//		System.out.println(sw);
 		assertEquals(mySw.toString(), sw.toString());
 	}
 
@@ -140,10 +140,10 @@ public class JavaBDDAdapterFactoryTest {
 		BDD x2 = jfactory.ithVar(2);
 
 		BDD bdd = x0.and(x1).or(x2);
-		System.out.println(bdd);
+//		System.out.println(bdd);
 		
 		BDD var = x1.and(x2);
-		System.out.println(bdd.exist(var));
+//		System.out.println(bdd.exist(var));
 	}
 	
 	@Test
