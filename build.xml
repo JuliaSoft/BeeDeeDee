@@ -1,145 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="beedeedee" basedir="." default="compile" xmlns:ivy="antlib:org.apache.ivy.ant">
+<project name="beedeedee" basedir="." default="compile">
 
-	<!-- load the properties stored into the external file -->
-	<property file="build.properties" />
+	<path id="class.path">
+		<fileset dir="lib" />
+	</path>
 
-	<!-- set build properties -->
-	<dirname property="antfile.dir" file="${ant.file}" />
-	<pathconvert property="build.artifacts.dir">
-		<path location="${antfile.dir}/../julia-artifacts">
-		</path>
-	</pathconvert>
-	<!-- convert the path to the julia-core dependencies in a system-independent way -->
-	<pathconvert property="build.julia-core.lib.folder">
-		<path location="${antfile.dir}/${julia-core.lib.folder}">
-		</path>
-	</pathconvert>
-
-	<tstamp>
-		<format property="build.timestamp" pattern="yyyyMMdd" />
-	</tstamp>
-
-	<property name="jar.name" value="${ant.project.name}-${beedeedee.version}.jar" />
-
-	<!-- name of the unobfuscated jar -->
-	<property name="jar.plain.name" value="${ant.project.name}-${beedeedee.version}-plain.jar" />
-
-	<condition property="scm.commit.id" value="${GIT_COMMIT}">
-		<isset property="GIT_COMMIT" />
-	</condition>
-	<condition property="scm.commit.id" value="r${SVN_REVISION}">
-		<isset property="SVN_REVISION" />
-	</condition>
-
-	<exec executable="git" outputproperty="scm.wc.commit.last" errorproperty="build.null" failonerror="false">
-		<arg value="show" />
-		<arg value="--quiet" />
-		<arg value="--pretty=format:%H" />
-	</exec>
-	<exec executable="git" outputproperty="scm.wc.commit.last.date" errorproperty="build.null" failonerror="false">
-		<arg value="show" />
-		<arg value="--quiet" />
-		<arg value="--pretty=format:%ai" />
-	</exec>
-
-	<!-- ant properties are "final", so this only works if the property has not been already set  (hl=headless) -->
-	<property name="scm.commit.id" value="hl" />
-	<property name="manifest.build.id" value="${ant.project.name}-${beedeedee.version}-${build.timestamp}-${scm.commit.id}" />
-
-	<target name="clean-bin">
-		<delete dir="${build.out.folder}" />
-	</target>
-
-	<target name="clean-doc">
-		<delete dir="${javadoc.out.folder}" />
-	</target>
-
-	<target name="clean-dist">
-		<delete dir="${build.dist.folder}" />
-	</target>
-
-	<target name="update-version-info">
-		<copy file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java.template" tofile="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java" overwrite="true" />
-		<tstamp>
-			<format property="build.date" pattern="d MMM yyyy" locale="en" />
-		</tstamp>
-		<replace file="${build.in.folder}/com/juliasoft/beedeedee/VersionInfo.java">
-			<replacefilter token="[version]" value="${beedeedee.version}" />
-			<replacefilter token="[build.date]" value="${build.date}" />
-			<replacefilter token="[scm.commit.date]" value="${scm.wc.commit.last.date}" />
-			<replacefilter token="[scm.commit.id]" value="${scm.wc.commit.last}" />
-		</replace>
-	</target>
-
-	<target name="resolve">
-		<ivy:resolve />
-	</target>
-	
-	<target name="compile" depends="clean-bin, clean-dist, clean-doc, update-version-info, resolve">
-		<mkdir dir="${build.out.folder}" />
-		<ivy:cachepath pathid="ivy.cachedpath" />
-		<!-- Show information about the current working copy -->
-		<exec executable="git" failonerror="false">
-			<arg value="show" />
-			<arg value="--quiet" />
-		</exec>
-		<exec executable="git" failonerror="false">
-			<arg value="diff" />
-			<arg value="--shortstat" />
-		</exec>
-
-		<javac includeantruntime="false" srcdir="${build.in.folder}" destdir="${build.out.folder}">
-			<include name="**/*.java" />
-			<classpath refid="ivy.cachedpath" />
+	<target name="compile">
+		<javac srcdir="src" destdir="bin">
+			<classpath refid="class.path" />
 		</javac>
 	</target>
 
-	<target name="redistributable.jar" depends="compile">
-
-		<mkdir dir="${build.dist.folder}" />
-		<jar destfile="${build.dist.folder}/${jar.name}">
-			<manifest>
-				<attribute name="Implementation-Title" value="BeeDeeDee" />
-				<attribute name="Implementation-Vendor" value="Julia S.R.L." />
-				<attribute name="Julia-CID" value="${scm.wc.commit.last}" />
-				<attribute name="Julia-BuildId" value="${manifest.build.id}" />
-				<attribute name="Main-Class" value="com.juliasoft.beedeedee.examples.MultiQueens"/>
-			</manifest>
-			<fileset dir="${build.out.folder}" includes="**/*.class" />
-		</jar>
+	<target name="jar" depends="compile">
+		<jar destfile="beedeedee.jar" basedir="bin" excludes="**/Test.class" />
 	</target>
 
-	<target name="javadoc.jar" depends="clean-doc">
-		<javadoc destdir="${build.doc.folder}" sourcepath="src" access="public">
-		</javadoc>
-		<jar destfile="${build.dist.folder}/${ant.project.name}-${beedeedee.version}-javadoc.jar" basedir="${build.doc.folder}">
-		</jar>
+	<target name="compileTests" depends="compile">
+		<javac srcdir="test" destdir="bin">
+			<classpath refid="class.path" />
+		</javac>
 	</target>
 
-	<target name="publish-artifacts">	
-	    <ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
-		<ivy:deliver conf="*(public)" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}" />
-		<ivy:resolve revision="${beedeedee.version}"></ivy:resolve>
-	    <ivy:makepom ivyfile="${basedir}/distrib/ivys/ivy-${beedeedee.version}.xml" pomfile="${basedir}/ant-dist/${ant.project.name}-${beedeedee.version}.pom" conf="default">
-	        <mapping conf="default" scope="runtime"/>
-	    </ivy:makepom>
-		<ivy:publish update="true" resolver="julia-private" organisation="Julia S.R.L." module="${ant.project.name}" revision="${beedeedee.version}">
-			<artifacts pattern="${build.dist.folder}/[module]-[revision](-[classifier]).[ext]">
-			</artifacts>
-		</ivy:publish>
+	<target name="test" depends="compileTests">
+		<junit printsummary="on" haltonfailure="yes">
+			<classpath refid="class.path" />
+			<batchtest fork="yes">
+				<fileset dir="bin" includes="**/*Test.class" />
+			</batchtest>
+		</junit>
+
 	</target>
 
-	<target name="bundle-full.zip" depends="">
-	      <!-- Copy ivy managed dependencies to be included in bundle (needed here for manifest generation) -->
-	        <ivy:retrieve pattern="${build.dist.folder}/lib/[artifact]-[revision](-[classifier]).[ext]" conf="default" />
-		<zip destfile="${build.dist.folder}/${ant.project.name}-bundle-full-${beedeedee.version}.zip">
-			<zipfileset dir="${build.dist.folder}" includes="${jar.name}" />
-			<zipfileset dir="${build.dist.folder}/lib" prefix="lib" includes="*.jar" />
-			<zipfileset dir="lib" prefix="lib" includes="*.jar" />
-			<zipfileset dir="." includes="gpl-license.txt" />
-		</zip>
-		<delete dir="${build.dist.folder}/lib" failonerror="false"/>
+	<target name="clean">
+		<delete>
+			<fileset dir="bin" includes="**/*.class" />
+		</delete>
 	</target>
 
 </project>
