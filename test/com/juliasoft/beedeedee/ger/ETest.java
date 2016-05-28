@@ -215,4 +215,34 @@ public class ETest {
 
 		verify(a).put(1, true);
 	}
+
+	@Test
+	public void testRemoveVar1() {
+		// {(1, 2)}
+		E e = new E();
+		e.addClass(1, 2);
+		e.removeVar(1);
+		assertTrue(e.isEmpty()); // a class must contain at least 2 elements
+	}
+
+	@Test
+	public void testRemoveVar2() {
+		// {(1, 2, 3)}
+		E e = new E();
+		e.addClass(1, 2, 3);
+		e.removeVar(1);
+		List<Pair> pairs = e.pairs();
+		assertEquals(1, pairs.size());
+		assertEquals(pairs.get(0), new Pair(2, 3));
+	}
+
+	@Test
+	public void testRemoveVar3() {
+		// {(1, 2, 3)}
+		E e = new E();
+		e.addClass(1, 2, 3);
+		E copy = e.copy();
+		e.removeVar(4);
+		assertEquals(copy, e);
+	}
 }

@@ -283,16 +283,17 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD exist(int var) {
-		throw new UnsupportedOperationException();
+		GER existGer = ger.exist(var);
+
+		return new BDDGer(existGer);
 	}
 
 	@Override
 	public BDD exist(BDD var) {
 		BitSet vars = var.vars();
-		// TODO try not to use full bdd
-		BDD res = ger.getFullBDD();
+		GER res = ger;
 		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
-			BDD temp = res;
+			GER temp = res;
 			res = res.exist(i);
 			if (temp != res) {
 				temp.free();
@@ -444,6 +445,11 @@ public class BDDGer implements BDD {
 	@Override
 	public BDD renameWithLeader(E r) {
 		return new BDDGer(ger.getFullBDD().renameWithLeader(r));
+	}
+
+	@Override
+	public BDD renameWithLeader(E r, LeaderFunction lf) {
+		return new BDDGer(ger.getFullBDD().renameWithLeader(r, lf));
 	}
 
 	@Override

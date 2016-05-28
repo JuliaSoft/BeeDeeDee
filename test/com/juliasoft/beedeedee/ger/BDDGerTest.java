@@ -197,4 +197,62 @@ public class BDDGerTest {
 //		assertEquals(5, factory.bddCount());
 	}
 
+	@Test
+	public void testExist1() {
+		// (x1 <-> x2)
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		// {1, 2}, 1
+		BDD bddGer = new BDDGer(bdd.copy());
+
+		BDD exist = bddGer.exist(1);
+		BDD originalExist = bdd.exist(1);
+
+		assertTrue(exist.isEquivalentTo(originalExist));
+	}
+
+	@Test
+	public void testExist2() {
+		// (x1 <-> x2) & (x3 <-> x4)
+		BDD biimp = bddX3.biimp(factory.makeVar(4));
+		BDD bdd = bddX1biX2.andWith(biimp);
+		// [{1,2},{3,4}], 1
+		BDD bddGer = new BDDGer(bdd.copy());
+
+		BDD exist = bddGer.exist(1);
+		BDD originalExist = bdd.exist(1);
+
+		assertTrue(exist.isEquivalentTo(originalExist));
+	}
+
+	@Test
+	public void testExist3() {
+		// (x1 <-> x2) & (x2 <-> x3)
+		BDD biimp = bddX3.biimp(factory.makeVar(2));
+		BDD bdd = bddX1biX2.andWith(biimp);
+		// [{1,2,3}], 1
+		BDD bddGer = new BDDGer(bdd.copy());
+
+		BDD exist = bddGer.exist(1);
+		BDD originalExist = bdd.exist(1);
+
+		assertTrue(exist.isEquivalentTo(originalExist));
+	}
+
+	@Test
+	public void testExist4() {
+		// (x1 <-> x2) & (x2 <-> x3) & x1
+		BDD biimp = bddX3.biimp(factory.makeVar(2));
+		BDD bdd = bddX1biX2.andWith(biimp);
+		bdd.andWith(factory.makeVar(1));
+		// [{1,2,3}], x1
+		BDD bddGer = new BDDGer(bdd.copy());
+
+		// [{2,3}], x2
+		BDD exist = bddGer.exist(1);
+		BDD originalExist = bdd.exist(1);
+
+		assertTrue(exist.isEquivalentTo(originalExist));
+	}
+
 }

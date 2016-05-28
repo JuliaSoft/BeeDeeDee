@@ -1394,19 +1394,23 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD renameWithLeader(E r) {
+			return renameWithLeader(r, new LeaderFunction(r));
+		}
+
+		@Override
+		public BDD renameWithLeader(E r, LeaderFunction lf) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(renameWithLeader(id, r, 1, new BitSet()));
+				return new BDDImpl(renameWithLeader(id, r, lf, 0, new BitSet()));
 			}
 			finally {
 				lock.unlock();
 			}
 		}
 
-		private int renameWithLeader(int f, E r, int c, BitSet t) {
+		private int renameWithLeader(int f, E r, LeaderFunction lf, int c, BitSet t) {
 			int var = ut.var(f);
-			LeaderFunction lf = new LeaderFunction(r);
 			int maxVar = r.maxVar();
 			BitSet leaders = lf.getLeaders();
 			if (maxVar < var || f < FIRST_NODE_NUM) {
@@ -1415,24 +1419,27 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			BitSet augmented = new BitSet();
 			augmented.or(t);
 			int minLeader = leaders.nextSetBit(c);
-			if (minLeader > 0 && minLeader < var) {
+			if (lf.minLIB(c, var)) {
 				augmented.set(minLeader);
 				c = minLeader;
-				return MK(minLeader, renameWithLeader(f, r, c + 1, t), renameWithLeader(f, r, c + 1, augmented));
+				return MK(minLeader, renameWithLeader(f, r, lf, c + 1, t),
+						renameWithLeader(f, r, lf, c + 1, augmented));
 			}
 			c = var;
 			if (!r.containsVar(var)) {
-				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t), renameWithLeader(ut.high(f), r, c + 1, t));
+				return MK(var, renameWithLeader(ut.low(f), r, lf, c + 1, t),
+						renameWithLeader(ut.high(f), r, lf, c + 1, t));
 			}
 			int l = lf.get(var);
 			if (l == var) {
 				augmented.set(c);
-				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t), renameWithLeader(ut.high(f), r, c + 1, augmented));
+				return MK(var, renameWithLeader(ut.low(f), r, lf, c + 1, t),
+						renameWithLeader(ut.high(f), r, lf, c + 1, augmented));
 			}
 			if (t.get(l)) {
-				return renameWithLeader(ut.high(f), r, c + 1, t);
+				return renameWithLeader(ut.high(f), r, lf, c + 1, t);
 			}
-			return renameWithLeader(ut.low(f), r, c + 1, t);
+			return renameWithLeader(ut.low(f), r, lf, c + 1, t);
 		}
 
 		@Override

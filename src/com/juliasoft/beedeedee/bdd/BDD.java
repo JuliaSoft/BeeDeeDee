@@ -446,6 +446,16 @@ public interface BDD {
 	public BDD renameWithLeader(E r);
 
 	/**
+	 * Renames each variable in this BDD with its leader according to the given
+	 * equivalence relation and leader function.
+	 * 
+	 * @param r the equivalence relation
+	 * @param lf the leader function to use
+	 * @return the modified BDD
+	 */
+	public BDD renameWithLeader(E r, LeaderFunction lf);
+
+	/**
 	 * Finds pairs of equivalent variables in this BDD.
 	 * 
 	 * @return the list of equivalent pairs

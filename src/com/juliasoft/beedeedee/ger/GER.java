@@ -276,4 +276,11 @@ public class GER {
 	public String toString() {
 		return l + System.lineSeparator() + n;
 	}
+
+	public GER exist(int var) {
+		E lNew = l.copy();
+		lNew.removeVar(var);
+		BDD exist = n.renameWithLeader(l, new ExcludingLeaderFunction(l, var));
+		return new GER(exist, lNew);
+	}
 }

@@ -17,7 +17,7 @@ public class LeaderFunction {
 	public int get(int var) {
 		for (BitSet eqClass : equivalenceClasses) {
 			if (eqClass.get(var)) {
-				return eqClass.nextSetBit(0);
+				return leader(eqClass);
 			}
 		}
 		return var;
@@ -26,9 +26,17 @@ public class LeaderFunction {
 	public BitSet getLeaders() {
 		BitSet leaders = new BitSet();
 		for (BitSet eqClass : equivalenceClasses) {
-			leaders.set(eqClass.nextSetBit(0));
+			leaders.set(leader(eqClass));
 		}
 		return leaders;
 	}
 
+	protected int leader(BitSet eqClass) {
+		return eqClass.nextSetBit(0);
+	}
+
+	public boolean minLIB(int c, int var) {
+		int minLeader = getLeaders().nextSetBit(c);
+		return minLeader >= c && minLeader < var;
+	}
 }

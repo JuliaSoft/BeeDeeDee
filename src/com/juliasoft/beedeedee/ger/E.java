@@ -134,8 +134,8 @@ public class E implements Iterable<BitSet> {
 	 */
 	// TODO ugly code! use union-find data structure?
 	public void addPair(Pair pair) {
-		BitSet c1 = find(pair.first);
-		BitSet c2 = find(pair.second);
+		BitSet c1 = findClass(pair.first);
+		BitSet c2 = findClass(pair.second);
 
 		if (c1 != null) {
 			if (c2 != null) {
@@ -156,7 +156,7 @@ public class E implements Iterable<BitSet> {
 		}
 	}
 
-	private BitSet find(int n) {
+	private BitSet findClass(int n) {
 		for (BitSet eqClass : equivalenceClasses) {
 			if (eqClass.get(n)) {
 				return eqClass;
@@ -236,6 +236,17 @@ public class E implements Iterable<BitSet> {
 	private void setAll(Assignment a, BitSet eqClass, boolean value) {
 		for (int i = eqClass.nextSetBit(0); i >= 0; i = eqClass.nextSetBit(i + 1)) {
 			a.put(i, value);
+		}
+	}
+
+	public void removeVar(int var) {
+		BitSet c = findClass(var);
+		if (c != null) {
+			if (c.cardinality() > 2) {
+				c.clear(var);
+			} else {
+				equivalenceClasses.remove(c);
+			}
 		}
 	}
 }
