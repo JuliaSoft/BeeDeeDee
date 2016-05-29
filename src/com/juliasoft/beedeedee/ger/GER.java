@@ -280,7 +280,7 @@ public class GER {
 	public GER exist(int var) {
 		E lNew = l.copy();
 		lNew.removeVar(var);
-		BDD exist = n.renameWithLeader(l, new ExcludingLeaderFunction(l, var));
+		BDD exist = l.containsVar(var) ? n.renameWithLeader(l, new ExcludingLeaderFunction(l, var)) : n.exist(var);
 		return new GER(exist, lNew);
 	}
 }

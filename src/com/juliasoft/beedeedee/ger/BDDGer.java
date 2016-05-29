@@ -377,7 +377,7 @@ public class BDDGer implements BDD {
 			other = bddGer.ger.getFullBDD();
 		}
 		BDD fullBDD = ger.getFullBDD();
-		boolean equivalentTo = fullBDD.isEquivalentTo(other);
+		boolean equivalentTo = fullBDD.isEquivalentTo(other); // FIXME doesn't work if different factory (ids don't match)
 		fullBDD.free();
 		other.free();
 		return equivalentTo;
