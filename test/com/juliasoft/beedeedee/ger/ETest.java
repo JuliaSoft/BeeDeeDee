@@ -3,6 +3,7 @@ package com.juliasoft.beedeedee.ger;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
 import java.util.List;
@@ -47,6 +48,7 @@ public class ETest {
 		assertEquals(2, (int) next.nextSetBit(2));
 	}
 
+	// FIXME fails with Java 8
 	@Test
 	public void testIntersect3() {
 		// {{1, 2}, {3, 4, 6}}
@@ -179,6 +181,30 @@ public class ETest {
 		assertEquals(1, e.size());
 		BitSet expected = new BitSet();
 		expected.set(1, 5);
+		assertEquals(expected, e.iterator().next());
+	}
+
+	// FIXME red if equivalenceClasses is a HashSet, green if it is an ArrayList
+	// (is HashSet.remove() working?)
+	@Test
+	public void testAddPair4() {
+		// bug exhibited in Julia analyzer
+		// [{0, 2, 9, 11}]
+		E e = new E();
+		e.addClass(0, 2, 9, 11);
+
+		// [(1, 2), (7, 10), (7, 11), (10, 11)]
+		e.addPairs(Arrays.asList(new Pair(1, 2), new Pair(7, 10), new Pair(7, 11), new Pair(10, 11)));
+
+		// KO [{0, 1, 2, 9, 11}, {0, 1, 2, 7, 9, 10, 11}]
+
+		// eq. classes were joined
+		assertEquals(1, e.size());
+		BitSet expected = new BitSet();
+		// OK [{0, 1, 2, 7, 9, 10, 11}]
+		expected.set(0, 3);
+		expected.set(7);
+		expected.set(9, 12);
 		assertEquals(expected, e.iterator().next());
 	}
 

@@ -14,14 +14,14 @@ import com.juliasoft.beedeedee.bdd.Assignment;
  */
 public class E implements Iterable<BitSet> {
 
-	private Set<BitSet> equivalenceClasses;
+	private List<BitSet> equivalenceClasses;
 
 	public E() {
-		equivalenceClasses = new HashSet<>();
+		equivalenceClasses = new ArrayList<>();
 	}
 
-	private Set<BitSet> intersect(Set<BitSet> equiv1, Set<BitSet> equiv2) {
-		Set<BitSet> intersection = new HashSet<>();
+	private List<BitSet> intersect(List<BitSet> equiv1, List<BitSet> equiv2) {
+		List<BitSet> intersection = new ArrayList<>();
 		for (BitSet set1 : equiv1) {
 			for (BitSet set2 : equiv2) {
 				BitSet partialIntersection = new BitSet();
