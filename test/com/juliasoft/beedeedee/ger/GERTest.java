@@ -4,14 +4,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.BDD;
+import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 
@@ -655,5 +658,71 @@ public class GERTest {
 		assertTrue(fullBDD.isEquivalentTo(expected));
 
 		// assertEquals(4, factory.bddCount());
+	}
+
+	@Test
+	public void testReplace1() {
+		BDD x1 = factory.makeVar(1);
+		BDD x2 = factory.makeVar(2);
+
+		GER ger = new GER(x1).normalize();
+		GER expected = new GER(x2).normalize();
+
+		Map<Integer, Integer> renaming = new HashMap<>();
+		renaming.put(1, 2);
+		GER replace = ger.replace(renaming);
+
+		assertEquals(expected, replace);
+	}
+
+	@Test(expected = ReplacementWithExistingVarException.class)
+	public void testReplace2() {
+		E l = new E();
+		l.addClass(1, 2);
+		BDD n = factory.makeVar(3);
+
+		GER ger = new GER(n, l);
+
+		Map<Integer, Integer> renaming = new HashMap<>();
+		renaming.put(1, 2);
+		ger.replace(renaming);
+	}
+
+	@Test
+	public void testReplace3() {
+		E l = new E();
+		l.addClass(1, 2);
+		BDD n = factory.makeVar(3);
+
+		GER ger = new GER(n, l);
+
+		E l2 = new E();
+		l2.addClass(2, 4);
+		GER expected = new GER(n.copy(), l2);
+
+		Map<Integer, Integer> renaming = new HashMap<>();
+		renaming.put(1, 4);
+		GER replace = ger.replace(renaming);
+
+		assertEquals(expected, replace);
+	}
+
+	@Test
+	public void testReplace4() {
+		E l = new E();
+		l.addClass(1, 2, 3);
+		BDD n = factory.makeVar(1);
+
+		GER ger = new GER(n, l);
+
+		E l2 = new E();
+		l2.addClass(2, 3, 4);
+		GER expected = new GER(factory.makeVar(2), l2);
+
+		Map<Integer, Integer> renaming = new HashMap<>();
+		renaming.put(1, 4);
+		GER replace = ger.replace(renaming);
+
+		assertEquals(expected, replace);
 	}
 }

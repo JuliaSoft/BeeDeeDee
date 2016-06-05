@@ -331,18 +331,18 @@ public class BDDGer implements BDD {
 	@Override
 	public BDD replace(Map<Integer, Integer> renaming) {
 		// TODO try not to use full bdd
-		BDD fullBDD = ger.getFullBDD();
-		BDD replace = fullBDD.replaceWith(renaming);
-
+//		BDD fullBDD = ger.getFullBDD();
+//		BDD replace = fullBDD.replaceWith(renaming);
+		GER replace = ger.replace(renaming);
 		return new BDDGer(replace);
 	}
 
 	@Override
 	public BDD replaceWith(Map<Integer, Integer> renaming) {
 		// TODO try not to use full bdd
-		BDD fullBDD = ger.getFullBDD();
-		BDD replace = fullBDD.replaceWith(renaming);
-		GER replaceGer = new GER(replace);
+//		BDD fullBDD = ger.getFullBDD();
+//		BDD replace = fullBDD.replaceWith(renaming);
+		GER replaceGer = ger.replace(renaming);//new GER(replace);
 		free();
 		ger = replaceGer.normalize();
 		replaceGer.free();

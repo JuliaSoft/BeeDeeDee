@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.BDD;
+import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class GER {
@@ -291,5 +292,61 @@ public class GER {
 			exist = n.exist(var);
 		}
 		return new GER(exist, lNew);
+	}
+
+	public GER replace(Map<Integer, Integer> renaming) {
+		BitSet nVars = n.vars();
+		for (Integer v : renaming.values()) {
+			if (l.containsVar(v) || nVars.get(v)) {
+				System.out.println(this);
+				System.out.println(renaming);
+				throw new ReplacementWithExistingVarException(v);
+			}
+		}
+		E eNew = l.copy();
+		eNew.replace(renaming);
+		BDD nNew;
+		try {
+			nNew = n.replace(renaming);
+		} catch (ReplacementWithExistingVarException e) {
+			System.out.println(n);
+			System.out.println(renaming);
+			throw e;
+		}
+		BDD old = nNew;
+		nNew = nNew.renameWithLeader(eNew);
+		old.free();
+		return new GER(nNew, eNew);
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((l == null) ? 0 : l.hashCode());
+		result = prime * result + ((n == null) ? 0 : n.hashCodeAux());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		GER other = (GER) obj;
+		if (l == null) {
+			if (other.l != null)
+				return false;
+		} else if (!l.equals(other.l))
+			return false;
+		if (n == null) {
+			if (other.n != null)
+				return false;
+		} else if (!n.isEquivalentTo(other.n))
+			return false;
+		return true;
 	}
 }

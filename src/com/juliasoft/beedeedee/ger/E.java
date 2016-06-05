@@ -2,10 +2,9 @@ package com.juliasoft.beedeedee.ger;
 
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 
@@ -252,5 +251,15 @@ public class E implements Iterable<BitSet> {
 
 	public int nextLeader(int var) {
 		return findClass(var).nextSetBit(var + 1);
+	}
+
+	public void replace(Map<Integer, Integer> renaming) {
+		for (Integer i : renaming.keySet()) {
+			BitSet c = findClass(i);
+			if (c != null) {
+				c.clear(i);
+				c.set(renaming.get(i));
+			}
+		}
 	}
 }
