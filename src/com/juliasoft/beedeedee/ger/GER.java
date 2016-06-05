@@ -1,7 +1,9 @@
 package com.juliasoft.beedeedee.ger;
 
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 
@@ -186,8 +188,7 @@ public class GER {
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
 			nNew = nNew.renameWithLeader(eNew);
-		}
-		while (!nNew.isEquivalentTo(nOld) || !eNew.equals(eOld));
+		} while (!nNew.isEquivalentTo(nOld) || !eNew.equals(eOld));
 
 		nOld.free();
 
@@ -280,7 +281,15 @@ public class GER {
 	public GER exist(int var) {
 		E lNew = l.copy();
 		lNew.removeVar(var);
-		BDD exist = l.containsVar(var) ? n.renameWithLeader(l, new ExcludingLeaderFunction(l, var)) : n.exist(var);
+		BDD exist;
+		if (l.containsVar(var)) {
+			int nextLeader = l.nextLeader(var);
+			Map<Integer, Integer> renaming = new HashMap<>();
+			renaming.put(var, nextLeader);
+			exist = n.replace(renaming);
+		} else {
+			exist = n.exist(var);
+		}
 		return new GER(exist, lNew);
 	}
 }

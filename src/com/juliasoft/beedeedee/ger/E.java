@@ -249,4 +249,8 @@ public class E implements Iterable<BitSet> {
 			}
 		}
 	}
+
+	public int nextLeader(int var) {
+		return findClass(var).nextSetBit(var + 1);
+	}
 }
