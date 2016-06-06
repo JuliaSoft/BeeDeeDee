@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.factories.Factory;
 
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class GER {
@@ -287,9 +288,34 @@ public class GER {
 			int nextLeader = l.nextLeader(var);
 			Map<Integer, Integer> renaming = new HashMap<>();
 			renaming.put(var, nextLeader);
-			exist = n.replace(renaming);
+			exist = n.replace(renaming);	// requires normalized representation
 		} else {
 			exist = n.exist(var);
+		}
+		return new GER(exist, lNew);
+	}
+
+	public GER exist(BDD vars) {
+		E lNew = l.copy();
+		BitSet vs = vars.vars();
+		BDD vars2 = n.getFactory().makeOne();
+		Map<Integer, Integer> renaming = new HashMap<>();
+		for (int i = vs.nextSetBit(0); i >= 0; i = vs.nextSetBit(i + 1)) {
+			if (l.containsVar(i)) {
+				int nextLeader = l.nextLeader(i);
+				renaming.put(i, nextLeader);
+			} else {
+				vars2.andWith(n.getFactory().makeVar(i));
+			}
+			lNew.removeVar(i);
+		}
+
+		BDD exist = n;
+		if (!renaming.isEmpty()) {
+			exist = n.replace(renaming);	// requires normalized representation
+		}
+		if (!vars2.isOne()) {
+			exist = n.exist(vars2);
 		}
 		return new GER(exist, lNew);
 	}

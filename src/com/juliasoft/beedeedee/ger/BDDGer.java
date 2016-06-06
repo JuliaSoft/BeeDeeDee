@@ -290,17 +290,9 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD exist(BDD var) {
-		BitSet vars = var.vars();
-		GER res = ger;
-		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
-			GER temp = res;
-			res = res.exist(i);
-			if (temp != res) {
-				temp.free();
-			}
-		}
+		GER existGer = ger.exist(var);
 
-		return new BDDGer(res);
+		return new BDDGer(existGer);
 	}
 
 	@Override
