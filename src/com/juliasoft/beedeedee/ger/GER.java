@@ -298,21 +298,13 @@ public class GER {
 		BitSet nVars = n.vars();
 		for (Integer v : renaming.values()) {
 			if (l.containsVar(v) || nVars.get(v)) {
-				System.out.println(this);
-				System.out.println(renaming);
 				throw new ReplacementWithExistingVarException(v);
 			}
 		}
 		E eNew = l.copy();
 		eNew.replace(renaming);
 		BDD nNew;
-		try {
-			nNew = n.replace(renaming);
-		} catch (ReplacementWithExistingVarException e) {
-			System.out.println(n);
-			System.out.println(renaming);
-			throw e;
-		}
+		nNew = n.replace(renaming);
 		BDD old = nNew;
 		nNew = nNew.renameWithLeader(eNew);
 		old.free();
