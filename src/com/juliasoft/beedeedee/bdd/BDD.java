@@ -275,7 +275,16 @@ public interface BDD {
 	 */
 	
 	public BDD exist(BDD var);
-	
+
+	/**
+	 * Existential quantification.
+	 * 
+	 * @param var a set of variables
+	 * @return the resulting BDD
+	 */
+
+	public BDD exist(BitSet vars);
+
 	/**
 	 * Universal quantification.
 	 * 

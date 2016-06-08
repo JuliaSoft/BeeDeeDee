@@ -329,7 +329,7 @@ public class BDDGerTest {
 		// [{1,2,3}], 1
 		BDD bddGer = new BDDGer(bdd.copy());
 
-		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2));
+		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2)).andWith(factory.makeVar(3));
 		BDD exist = bddGer.exist(minterm);
 		BDD originalExist = bdd.exist(minterm);
 
@@ -347,7 +347,7 @@ public class BDDGerTest {
 		// [{1,2,3}], x1 OR x4
 		BDD bddGer = new BDDGer(bdd.copy());
 
-		// [], x2 OR x4
+		// [], x3 OR x4
 		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2));
 		BDD exist = bddGer.exist(minterm);
 		BDD originalExist = bdd.exist(minterm);

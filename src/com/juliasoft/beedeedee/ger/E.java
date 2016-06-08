@@ -253,6 +253,18 @@ public class E implements Iterable<BitSet> {
 		return findClass(var).nextSetBit(var + 1);
 	}
 
+	public int nextLeader(int var, BitSet excludedVars) {
+		BitSet c = findClass(var);
+		do {
+			var = c.nextSetBit(var + 1);
+			if (var < 0) {
+				break;
+			}
+		} while (excludedVars.get(var));
+
+		return var;
+	}
+
 	public void replace(Map<Integer, Integer> renaming) {
 		for (Integer i : renaming.keySet()) {
 			BitSet c = findClass(i);

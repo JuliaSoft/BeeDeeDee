@@ -18,7 +18,7 @@
 */
 package com.juliasoft.beedeedee.factories;
 
-import java.util.Arrays;
+import java.util.BitSet;
 
 /**
  * The cache for existential and universal quantification.
@@ -26,10 +26,10 @@ import java.util.Arrays;
 class QuantCache {
 	private final static int ENTRY_SIZE = 2;
 	private final int[] cache;
-	private final int[][] varss;
+	private final BitSet[] varss;
 	private final int size;
 	private final Object[] locks = new Object[100];
-	
+
 	/**
 	 * Constructs a QuantCache of the given size.
 	 * 
@@ -41,7 +41,7 @@ class QuantCache {
 		this.cache = new int[arraySize];
 		for (int i = 0; i < arraySize; i += ENTRY_SIZE)
 			cache[i] = -1;
-		this.varss = new int[arraySize][];
+		this.varss = new BitSet[arraySize];
 		for (int pos = 0; pos < locks.length; pos++)
 			locks[pos] = new Object();
 	}
@@ -60,19 +60,19 @@ class QuantCache {
 	 * 
 	 * @param exist true if it is an existential quantification result
 	 * @param bdd the operand bdd index
-	 * @param vs the var set
-	 * @param hashCodeOfVs the hashCode of the vs array
+	 * @param vars the var set
+	 * @param hashCodeOfVs the hashCode of the vars set
 	 * @return the index of the result, or -1 if not found
 	 */
-	int get(boolean exist, int bdd, int[] vs, int hashCodeOfVs) {
+	int get(boolean exist, int bdd, BitSet vars, int hashCodeOfVs) {
 		if (exist)
 			bdd = -bdd;
 
 		int pos = hash(bdd, hashCodeOfVs);
 
 		// avoid double call to expensive equals on arrays!
-		int[] oldVarss = varss[pos];
-		if (cache[pos] == bdd && (oldVarss == vs || Arrays.equals(oldVarss, vs)))
+		BitSet oldVarss = varss[pos];
+		if (cache[pos] == bdd && (oldVarss == vars || oldVarss.equals(vars)))
 			synchronized (locks[pos % locks.length]) {
 				return cache[pos] == bdd && oldVarss == varss[pos++] ? cache[pos] : -1;
 			}
@@ -89,18 +89,18 @@ class QuantCache {
 	 * 
 	 * @param exist true if it is an existential quantification result
 	 * @param bdd the operand bdd index
-	 * @param vs the var set
-	 * @param hashCodeOfVs the hashCode of the vs array
+	 * @param vars the var set
+	 * @param hashCodeOfVs the hashCode of the vars set
 	 * @param result the computation result
 	 */
-	void put(boolean exist, int bdd, int[] vs, int hashCodeOfVs, int result) {
+	void put(boolean exist, int bdd, BitSet vars, int hashCodeOfVs, int result) {
 		if (exist)
 			bdd = -bdd;
 
 		int pos = hash(bdd, hashCodeOfVs);
 
 		synchronized (locks[pos % locks.length]) {
-			varss[pos] = vs;
+			varss[pos] = vars;
 			cache[pos++] = bdd;
 			cache[pos] = result;
 		}

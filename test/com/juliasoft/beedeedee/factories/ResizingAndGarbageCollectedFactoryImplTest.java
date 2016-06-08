@@ -10,6 +10,7 @@ import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl.BDDImpl;
+import com.juliasoft.beedeedee.ger.BDDGer;
 
 public class ResizingAndGarbageCollectedFactoryImplTest {
 
@@ -121,6 +122,21 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
 		assertEquals(8, bdd.maxVar());
+	}
+
+	@Test
+	public void testExist() {
+		// (x1 <-> x2) & (x2 <-> x3) & (x1 OR x4)
+		BDD biimp1 = factory.makeVar(1).biimp(factory.makeVar(2));
+		BDD biimp2 = factory.makeVar(2).biimp(factory.makeVar(3));
+		BDD or = factory.makeVar(1).orWith(factory.makeVar(4));;
+		BDD bdd = biimp1.andWith(biimp2).andWith(or);
+
+		// x3 OR x4
+		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2));
+		BDD exist = bdd.exist(minterm);
+		BDD expected = factory.makeVar(3).orWith(factory.makeVar(4));
+		assertTrue(exist.isEquivalentTo(expected));
 	}
 
 	/*@Test

@@ -185,7 +185,7 @@ public class GER {
 			if (nOld != null)
 				nOld.free();
 
-			nOld = nNew.copy();
+			nOld = nNew;//.copy();
 			eNew.addPairs(nNew.equivVars());
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
@@ -295,27 +295,30 @@ public class GER {
 		return new GER(exist, lNew);
 	}
 
-	public GER exist(BDD vars) {
+	public GER exist(BitSet vars) {
 		E lNew = l.copy();
-		BitSet vs = vars.vars();
-		BDD vars2 = n.getFactory().makeOne();
+		BitSet quantifiedVars = new BitSet();
 		Map<Integer, Integer> renaming = new HashMap<>();
-		for (int i = vs.nextSetBit(0); i >= 0; i = vs.nextSetBit(i + 1)) {
+		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
 			if (l.containsVar(i)) {
-				int nextLeader = l.nextLeader(i);
-				renaming.put(i, nextLeader);
+				int nextLeader = l.nextLeader(i, vars);
+				if (nextLeader < 0) {
+					quantifiedVars.set(i);
+				} else {
+					renaming.put(i, nextLeader);
+				}
 			} else {
-				vars2.andWith(n.getFactory().makeVar(i));
+				quantifiedVars.set(i);
 			}
 			lNew.removeVar(i);
 		}
 
 		BDD exist = n;
 		if (!renaming.isEmpty()) {
-			exist = n.replace(renaming);	// requires normalized representation
+			exist = exist.replace(renaming);	// requires normalized representation
 		}
-		if (!vars2.isOne()) {
-			exist = n.exist(vars2);
+		if (!quantifiedVars.isEmpty()) {
+			exist = exist.exist(quantifiedVars);
 		}
 		return new GER(exist, lNew);
 	}

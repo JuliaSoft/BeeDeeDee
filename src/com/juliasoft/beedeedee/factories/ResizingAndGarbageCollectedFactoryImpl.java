@@ -21,7 +21,6 @@ package com.juliasoft.beedeedee.factories;
 import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -904,6 +903,12 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		@Override
 		public BDD exist(BDD var) {
 			assertNonNull(var);
+			return quant(var.vars(), true);
+		}
+
+		@Override
+		public BDD exist(BitSet var) {
+			assertNonNull(var);
 			return quant(var, true);
 		}
 
@@ -918,36 +923,23 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		@Override
 		public BDD forAll(BDD var) {
 			assertNonNull(var);
-			return quant(var, false);
+			return quant(var.vars(), false);
 		}
-		
-		private BDD quant(BDD var, boolean exist) {
-			assertNonNull(var);
-			ArrayList<Integer> vars = new ArrayList<Integer>();
-			int pos = 0;
+
+		private BDD quant(BitSet vars, boolean exist) {
+			assertNonNull(vars);
 
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				int varId = ((BDDImpl) var).id;
-
-				while (varId >= FIRST_NODE_NUM) {
-					vars.add(ut.var(varId));
-					varId = ut.high(varId);
-				}
-	
-				int[] removedVars = new int[vars.size()];
-				for (Integer i: vars)
-					removedVars[pos++] = i;
-	
-				return new BDDImpl(quant_rec(id, removedVars, exist, Arrays.hashCode(removedVars)));
+				return new BDDImpl(quant_rec(id, vars, exist, vars.hashCode()));
 			}
 			finally {
 				lock.unlock();
 			}
 		}
 
-		private int quant_rec(int bdd, int[] vars, boolean exist, int hashCodeOfVars) {
+		private int quant_rec(int bdd, BitSet vars, boolean exist, int hashCodeOfVars) {
 			if (bdd < FIRST_NODE_NUM) // terminal node
 				return bdd;
 
@@ -961,7 +953,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			int var = ut.var(bdd);
 
-			if (Arrays.binarySearch(vars, var) >= 0)
+			if (vars.get(var))
 				if (exist)
 					result = applyOR(a, b);
 				else

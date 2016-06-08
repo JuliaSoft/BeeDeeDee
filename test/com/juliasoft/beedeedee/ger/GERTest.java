@@ -437,7 +437,7 @@ public class GERTest {
 		BDD expected = factory.makeOne();
 		assertTrue(n.isEquivalentTo(expected));
 
-//		assertEquals(3, factory.bddCount());
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
@@ -458,7 +458,7 @@ public class GERTest {
 		BDD expected = factory.makeVar(3);
 		assertTrue(n.isEquivalentTo(expected));
 
-//		assertEquals(3, factory.bddCount());
+		assertEquals(3, factory.bddCount());
 	}
 
 	@Test
