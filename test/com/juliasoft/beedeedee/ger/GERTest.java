@@ -542,23 +542,6 @@ public class GERTest {
 	}
 
 	@Test
-	public void testRenameWithLeaderExcluding() {
-		// bdd for x2 & x3
-		BDD bdd = factory.makeVar(2);
-		bdd.andWith(factory.makeVar(3));
-
-		E l = new E();
-		l.addClass(1, 2, 5);
-		BDD n = bdd.renameWithLeader(l, new ExcludingLeaderFunction(l, 1));
-
-		BDD expected = factory.makeVar(2);
-		expected.andWith(factory.makeVar(3));
-		assertTrue(n.isEquivalentTo(expected));
-
-//		assertEquals(3, factory.bddCount());
-	}
-
-	@Test
 	public void testFullBDD() {
 		// bdd for (x1 <-> x2) & x8
 		BDD bdd = factory.makeVar(1);

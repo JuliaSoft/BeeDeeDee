@@ -17,26 +17,27 @@ public class LeaderFunction {
 	public int get(int var) {
 		for (BitSet eqClass : equivalenceClasses) {
 			if (eqClass.get(var)) {
-				return leader(eqClass);
+				return eqClass.nextSetBit(0);
 			}
 		}
 		return var;
 	}
 
-	public BitSet getLeaders() {
-		BitSet leaders = new BitSet();
+	/**
+	 * Finds the minimum leader that is greater or equal to c
+	 * 
+	 * @param c
+	 * @return the minimum leader >= c
+	 */
+	public int minLeader(int c) {
+		int min = Integer.MAX_VALUE;
 		for (BitSet eqClass : equivalenceClasses) {
-			leaders.set(leader(eqClass));
+			int leader = eqClass.nextSetBit(0);
+			if (leader >= c && leader < min) {
+				min = leader;
+			}
 		}
-		return leaders;
-	}
 
-	protected int leader(BitSet eqClass) {
-		return eqClass.nextSetBit(0);
-	}
-
-	public boolean minLIB(int c, int var) {
-		int minLeader = getLeaders().nextSetBit(c);
-		return minLeader >= c && minLeader < var;
+		return min;
 	}
 }

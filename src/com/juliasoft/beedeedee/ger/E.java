@@ -255,14 +255,14 @@ public class E implements Iterable<BitSet> {
 
 	public int nextLeader(int var, BitSet excludedVars) {
 		BitSet c = findClass(var);
-		do {
-			var = c.nextSetBit(var + 1);
-			if (var < 0) {
+		int leader = c.nextSetBit(0);
+		while (excludedVars.get(leader) || leader == var) {
+			leader = c.nextSetBit(leader + 1);
+			if (leader < 0) {
 				break;
 			}
-		} while (excludedVars.get(var));
-
-		return var;
+		}
+		return leader;
 	}
 
 	public void replace(Map<Integer, Integer> renaming) {

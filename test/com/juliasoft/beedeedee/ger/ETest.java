@@ -271,4 +271,39 @@ public class ETest {
 		e.removeVar(4);
 		assertEquals(copy, e);
 	}
+
+	@Test
+	public void testNextLeader1() {
+		// {(1, 2, 3)}
+		E e = new E();
+		e.addClass(1, 2, 3);
+		BitSet excludedVars = new BitSet();
+		excludedVars.set(1, 4);
+		assertEquals(-1, e.nextLeader(1, excludedVars));
+	}
+
+	@Test
+	public void testNextLeader2() {
+		// {(1, 2, 3)}
+		E e = new E();
+		e.addClass(1, 2, 3);
+		BitSet excludedVars = new BitSet();
+		excludedVars.set(1, 3);
+		assertEquals(3, e.nextLeader(1, excludedVars));
+	}
+
+	@Test
+	public void testNextLeader3() {
+		// {(1, 2),(3,4,5)}
+		E e = new E();
+		e.addClass(1, 2);
+		e.addClass(3, 4, 5);
+		BitSet excludedVars = new BitSet();
+		excludedVars.set(1);
+		excludedVars.set(2);
+		excludedVars.set(4);
+		assertEquals(-1, e.nextLeader(1, excludedVars));
+		assertEquals(5, e.nextLeader(3, excludedVars));
+		assertEquals(3, e.nextLeader(4, excludedVars));
+	}
 }

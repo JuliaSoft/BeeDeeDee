@@ -1404,14 +1404,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		private int renameWithLeader(int f, E r, LeaderFunction lf, int c, BitSet t) {
 			int var = ut.var(f);
 			int maxVar = r.maxVar();
-			BitSet leaders = lf.getLeaders();
 			if (maxVar < var || f < FIRST_NODE_NUM) {
 				return f;
 			}
 			BitSet augmented = new BitSet();
 			augmented.or(t);
-			int minLeader = leaders.nextSetBit(c);
-			if (lf.minLIB(c, var)) {
+			int minLeader = lf.minLeader(c);
+			if (minLeader >= c && minLeader < var) {
 				augmented.set(minLeader);
 				c = minLeader;
 				return MK(minLeader, renameWithLeader(f, r, lf, c + 1, t),
