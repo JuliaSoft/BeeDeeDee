@@ -34,7 +34,7 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
-import com.juliasoft.beedeedee.ger.E;
+import com.juliasoft.beedeedee.ger.EquivalenceRelation;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
 import com.juliasoft.beedeedee.ger.Pair;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
@@ -1385,12 +1385,12 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD renameWithLeader(E r) {
+		public BDD renameWithLeader(EquivalenceRelation r) {
 			return renameWithLeader(r, new LeaderFunction(r));
 		}
 
 		@Override
-		public BDD renameWithLeader(E r, LeaderFunction lf) {
+		public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
@@ -1401,7 +1401,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
-		private int renameWithLeader(int f, E r, LeaderFunction lf, int c, BitSet t) {
+		private int renameWithLeader(int f, EquivalenceRelation r, LeaderFunction lf, int c, BitSet t) {
 			int var = ut.var(f);
 			int maxVar = r.maxVar();
 			if (maxVar < var || f < FIRST_NODE_NUM) {

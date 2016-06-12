@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.ger.E;
+import com.juliasoft.beedeedee.ger.EquivalenceRelation;
 import com.juliasoft.beedeedee.ger.LeaderFunction;
 import com.juliasoft.beedeedee.ger.Pair;
 
@@ -452,7 +452,7 @@ public interface BDD {
 	 * @param r the equivalence relation
 	 * @return the modified BDD
 	 */
-	public BDD renameWithLeader(E r);
+	public BDD renameWithLeader(EquivalenceRelation r);
 
 	/**
 	 * Renames each variable in this BDD with its leader according to the given
@@ -462,7 +462,7 @@ public interface BDD {
 	 * @param lf the leader function to use
 	 * @return the modified BDD
 	 */
-	public BDD renameWithLeader(E r, LeaderFunction lf);
+	public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf);
 
 	/**
 	 * Finds pairs of equivalent variables in this BDD.

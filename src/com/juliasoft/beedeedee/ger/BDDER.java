@@ -11,21 +11,21 @@ import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.factories.Factory;
 
 /**
- * A wrapper for a GER representation using the {@link BDD} interface.
+ * A wrapper for a ER representation using the {@link BDD} interface.
  */
-public class BDDGer implements BDD {
+public class BDDER implements BDD {
 
-	private GER ger;
+	private ER ger;
 
 	/**
-	 * Constructs a BDDGer by normalizing the given bdd.
+	 * Constructs a BDDER by normalizing the given bdd.
 	 * 
 	 * @param bdd the starting BDD, which is immediately freed if not equal to
 	 *            (same as) normalized
 	 */
-	BDDGer(BDD bdd) {
+	BDDER(BDD bdd) {
 		if (bdd != null) {
-			GER temp = new GER(bdd);
+			ER temp = new ER(bdd);
 			ger = temp.normalize();
 			if (!bdd.equals(ger.getN())) {
 				temp.free();
@@ -33,7 +33,7 @@ public class BDDGer implements BDD {
 		}
 	}
 
-	private BDDGer(GER ger) {
+	private BDDER(ER ger) {
 		this.ger = ger;
 	}
 
@@ -60,24 +60,24 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD or(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER orGer = ger.or(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER orGer = ger.or(otherBddGer.ger);
 
-		return new BDDGer(orGer);
+		return new BDDER(orGer);
 	}
 
 	@Override
 	public BDD orWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER orGer = ger.or(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER orGer = ger.or(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = orGer;
@@ -87,24 +87,24 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD and(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER andGer = ger.and(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER andGer = ger.and(otherBddGer.ger);
 
-		return new BDDGer(andGer);
+		return new BDDER(andGer);
 	}
 
 	@Override
 	public BDD andWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER andGer = ger.and(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER andGer = ger.and(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = andGer;
@@ -114,24 +114,24 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD xor(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER xorGer = ger.xor(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER xorGer = ger.xor(otherBddGer.ger);
 
-		return new BDDGer(xorGer);
+		return new BDDER(xorGer);
 	}
 
 	@Override
 	public BDD xorWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER xorGer = ger.xor(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER xorGer = ger.xor(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = xorGer;
@@ -141,26 +141,26 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD nand(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER andGer = ger.and(otherBddGer.ger);
-		GER not = andGer.not();
+		BDDER otherBddGer = (BDDER) other;
+		ER andGer = ger.and(otherBddGer.ger);
+		ER not = andGer.not();
 		andGer.free();
 
-		return new BDDGer(not);
+		return new BDDER(not);
 	}
 
 	@Override
 	public BDD nandWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER andGer = ger.and(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER andGer = ger.and(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = andGer.not();
@@ -171,12 +171,12 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD not() {
-		return new BDDGer(ger.not());
+		return new BDDER(ger.not());
 	}
 
 	@Override
 	public BDD notWith() {
-		GER notGer = ger.not();
+		ER notGer = ger.not();
 		free();
 		ger = notGer;
 
@@ -185,24 +185,24 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD imp(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER impGer = ger.imp(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER impGer = ger.imp(otherBddGer.ger);
 
-		return new BDDGer(impGer);
+		return new BDDER(impGer);
 	}
 
 	@Override
 	public BDD impWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER impGer = ger.imp(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER impGer = ger.imp(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = impGer;
@@ -212,24 +212,24 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD biimp(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER biimpGer = ger.biimp(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER biimpGer = ger.biimp(otherBddGer.ger);
 
-		return new BDDGer(biimpGer);
+		return new BDDER(biimpGer);
 	}
 
 	@Override
 	public BDD biimpWith(BDD other) {
-		if (!(other instanceof BDDGer)) {
+		if (!(other instanceof BDDER)) {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDGer otherBddGer = (BDDGer) other;
-		GER biimpGer = ger.biimp(otherBddGer.ger);
+		BDDER otherBddGer = (BDDER) other;
+		ER biimpGer = ger.biimp(otherBddGer.ger);
 		free();
 		otherBddGer.ger.free();
 		ger = biimpGer;
@@ -239,13 +239,13 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD copy() {
-		return new BDDGer(ger.copy());
+		return new BDDER(ger.copy());
 	}
 
 	@Override
 	public Assignment anySat() throws UnsatException {
 		Assignment anySat = ger.getN().anySat();
-		E equiv = ger.getEquiv();
+		EquivalenceRelation equiv = ger.getEquiv();
 		equiv.updateAssignment(anySat);
 		return anySat;
 	}
@@ -283,23 +283,23 @@ public class BDDGer implements BDD {
 
 	@Override
 	public BDD exist(int var) {
-		GER existGer = ger.exist(var);
+		ER existGer = ger.exist(var);
 
-		return new BDDGer(existGer);
+		return new BDDER(existGer);
 	}
 
 	@Override
 	public BDD exist(BDD var) {
-		GER existGer = ger.exist(var.vars());
+		ER existGer = ger.exist(var.vars());
 
-		return new BDDGer(existGer);
+		return new BDDER(existGer);
 	}
 
 	@Override
 	public BDD exist(BitSet var) {
-		GER existGer = ger.exist(var);
+		ER existGer = ger.exist(var);
 
-		return new BDDGer(existGer);
+		return new BDDER(existGer);
 	}
 
 	@Override
@@ -332,8 +332,8 @@ public class BDDGer implements BDD {
 		// TODO try not to use full bdd
 //		BDD fullBDD = ger.getFullBDD();
 //		BDD replace = fullBDD.replaceWith(renaming);
-		GER replace = ger.replace(renaming);
-		return new BDDGer(replace);
+		ER replace = ger.replace(renaming);
+		return new BDDER(replace);
 	}
 
 	@Override
@@ -341,7 +341,7 @@ public class BDDGer implements BDD {
 		// TODO try not to use full bdd
 //		BDD fullBDD = ger.getFullBDD();
 //		BDD replace = fullBDD.replaceWith(renaming);
-		GER replaceGer = ger.replace(renaming);//new GER(replace);
+		ER replaceGer = ger.replace(renaming);//new GER(replace);
 		free();
 		ger = replaceGer.normalize();
 		replaceGer.free();
@@ -371,8 +371,8 @@ public class BDDGer implements BDD {
 
 	@Override
 	public boolean isEquivalentTo(BDD other) {
-		if (other instanceof BDDGer) {
-			BDDGer bddGer = (BDDGer) other;
+		if (other instanceof BDDER) {
+			BDDER bddGer = (BDDER) other;
 			other = bddGer.ger.getFullBDD();
 		}
 		BDD fullBDD = ger.getFullBDD();
@@ -400,7 +400,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD high = fullBDD.high();
 		fullBDD.free();
-		return new BDDGer(high);
+		return new BDDER(high);
 	}
 
 	@Override
@@ -408,7 +408,7 @@ public class BDDGer implements BDD {
 		BDD fullBDD = ger.getFullBDD();
 		BDD low = fullBDD.low();
 		fullBDD.free();
-		return new BDDGer(low);
+		return new BDDER(low);
 	}
 
 	@Override
@@ -442,13 +442,13 @@ public class BDDGer implements BDD {
 	}
 
 	@Override
-	public BDD renameWithLeader(E r) {
-		return new BDDGer(ger.getFullBDD().renameWithLeader(r));
+	public BDD renameWithLeader(EquivalenceRelation r) {
+		return new BDDER(ger.getFullBDD().renameWithLeader(r));
 	}
 
 	@Override
-	public BDD renameWithLeader(E r, LeaderFunction lf) {
-		return new BDDGer(ger.getFullBDD().renameWithLeader(r, lf));
+	public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf) {
+		return new BDDER(ger.getFullBDD().renameWithLeader(r, lf));
 	}
 
 	@Override

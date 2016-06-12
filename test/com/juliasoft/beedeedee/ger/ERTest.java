@@ -18,7 +18,7 @@ import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 
-public class GERTest {
+public class ERTest {
 
 	private ResizingAndGarbageCollectedFactory factory;
 
@@ -34,10 +34,10 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(2));
 
 		// construct a set of equivalence classes
-		E e = new E();
+		EquivalenceRelation e = new EquivalenceRelation();
 		e.addClass(1, 2);
 
-		GER ger = new GER(bdd, e);
+		ER ger = new ER(bdd, e);
 		BDD n = ger.getSqueezedBDD();
 
 		BDD expected = factory.makeOne();
@@ -53,10 +53,10 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		E e = new E();
+		EquivalenceRelation e = new EquivalenceRelation();
 		e.addClass(1, 2);
 
-		GER ger = new GER(bdd, e);
+		ER ger = new ER(bdd, e);
 		BDD n = ger.getSqueezedBDD();
 
 		BDD expected = factory.makeVar(3);
@@ -75,17 +75,17 @@ public class GERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		GER ger1 = new GER(bdd1);
+		ER ger1 = new ER(bdd1);
 
-		GER ger2 = new GER(bdd2);
+		ER ger2 = new ER(bdd2);
 
-		GER and = ger1.and(ger2);
+		ER and = ger1.and(ger2);
 
 		BDD n = and.getN();
 		BDD expectedN = factory.makeVar(4);
 		assertTrue(n.isEquivalentTo(expectedN));
 
-		E equiv = and.getEquiv();
+		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3}}
 		assertEquals(1, equiv.size());
 		BitSet next = equiv.iterator().next();
@@ -108,13 +108,13 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		GER ger1 = new GER(bdd1);
+		ER ger1 = new ER(bdd1);
 
-		GER ger2 = new GER(bdd2);
+		ER ger2 = new ER(bdd2);
 
-		GER and = ger1.and(ger2);
+		ER and = ger1.and(ger2);
 
-		E equiv = and.getEquiv();
+		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3, 4}}
 		assertEquals(1, equiv.size());
 		BitSet next = equiv.iterator().next();
@@ -142,17 +142,17 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		E e1 = new E();
+		EquivalenceRelation e1 = new EquivalenceRelation();
 		e1.addClass(1, 2);
-		GER ger1 = new GER(bdd1, e1);
+		ER ger1 = new ER(bdd1, e1);
 
-		E e2 = new E();
+		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 2, 3);
-		GER ger2 = new GER(bdd2, e2);
+		ER ger2 = new ER(bdd2, e2);
 
-		GER and = ger1.and(ger2);
+		ER and = ger1.and(ger2);
 
-		E equiv = and.getEquiv();
+		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3}, {6, 7}}
 		assertEquals(2, equiv.size());
 		// FIXME order dependent
@@ -183,21 +183,21 @@ public class GERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		E e1 = new E();
+		EquivalenceRelation e1 = new EquivalenceRelation();
 		e1.addClass(1, 2);
-		GER ger1 = new GER(bdd1, e1);
+		ER ger1 = new ER(bdd1, e1);
 
-		E e2 = new E();
+		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 3);
-		GER ger2 = new GER(bdd2, e2);
+		ER ger2 = new ER(bdd2, e2);
 
-		GER or = ger1.or(ger2);
+		ER or = ger1.or(ger2);
 
 		BDD n = or.getN();
 		BDD expectedN = bdd1.or(bdd2);
 		assertTrue(n.isEquivalentTo(expectedN));
 
-		E equiv = or.getEquiv();
+		EquivalenceRelation equiv = or.getEquiv();
 		assertTrue(equiv.isEmpty());
 
 //		assertEquals(4, factory.bddCount());
@@ -215,17 +215,17 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		E e1 = new E();
+		EquivalenceRelation e1 = new EquivalenceRelation();
 		e1.addClass(1, 2);
-		GER ger1 = new GER(bdd1, e1);
+		ER ger1 = new ER(bdd1, e1);
 
-		E e2 = new E();
+		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 2, 3);
-		GER ger2 = new GER(bdd2, e2);
+		ER ger2 = new ER(bdd2, e2);
 
-		GER or = ger1.or(ger2);
+		ER or = ger1.or(ger2);
 
-		E equiv = or.getEquiv();
+		EquivalenceRelation equiv = or.getEquiv();
 		// (1, 2)
 		assertEquals(1, equiv.size());
 		BitSet next = equiv.iterator().next();
@@ -255,17 +255,17 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		E e1 = new E();
+		EquivalenceRelation e1 = new EquivalenceRelation();
 		e1.addClass(1, 2);
-		GER ger1 = new GER(bdd1, e1);
+		ER ger1 = new ER(bdd1, e1);
 
-		E e2 = new E();
+		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 2, 3);
-		GER ger2 = new GER(bdd2, e2);
+		ER ger2 = new ER(bdd2, e2);
 
-		GER or = ger1.or(ger2);
+		ER or = ger1.or(ger2);
 
-		E equiv = or.getEquiv();
+		EquivalenceRelation equiv = or.getEquiv();
 		// (1, 2)
 		assertEquals(1, equiv.size());
 		BitSet next = equiv.iterator().next();
@@ -296,21 +296,21 @@ public class GERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		E e1 = new E();
+		EquivalenceRelation e1 = new EquivalenceRelation();
 		e1.addClass(1, 2);
-		GER ger1 = new GER(bdd1, e1);
+		ER ger1 = new ER(bdd1, e1);
 
-		E e2 = new E();
+		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 3);
-		GER ger2 = new GER(bdd2, e2);
+		ER ger2 = new ER(bdd2, e2);
 
-		GER xor = ger1.xor(ger2);
+		ER xor = ger1.xor(ger2);
 
 		BDD n = xor.getN();
 		BDD expectedN = bdd1.xor(bdd2);
 		assertTrue(n.isEquivalentTo(expectedN));
 
-		E equiv = xor.getEquiv();
+		EquivalenceRelation equiv = xor.getEquiv();
 		assertTrue(equiv.isEmpty());
 
 //		assertEquals(4, factory.bddCount());
@@ -322,8 +322,8 @@ public class GERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		GER ger = new GER(bdd).normalize();
-		GER notGer = ger.not();
+		ER ger = new ER(bdd).normalize();
+		ER notGer = ger.not();
 
 		BDD full = notGer.getFullBDD();
 		BDD expected = bdd.not();
@@ -339,7 +339,7 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		GER ger = new GER(bdd);
+		ER ger = new ER(bdd);
 		ger = ger.normalize();
 
 		assertEquals(3, ger.maxVar());
@@ -352,7 +352,7 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(6));
 		bdd.andWith(factory.makeVar(3));
 
-		GER ger = new GER(bdd);
+		ER ger = new ER(bdd);
 		ger = ger.normalize();
 
 		assertEquals(6, ger.maxVar());
@@ -426,8 +426,8 @@ public class GERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 
-		GER ger = new GER(bdd);
-		GER normalized = ger.normalize();
+		ER ger = new ER(bdd);
+		ER normalized = ger.normalize();
 
 		List<Pair> pairs = normalized.getEquiv().pairs();
 		assertEquals(1, pairs.size());
@@ -447,8 +447,8 @@ public class GERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		GER ger = new GER(bdd);
-		GER normalized = ger.normalize();
+		ER ger = new ER(bdd);
+		ER normalized = ger.normalize();
 
 		List<Pair> pairs = normalized.getEquiv().pairs();
 		assertEquals(1, pairs.size());
@@ -467,7 +467,7 @@ public class GERTest {
 		BDD bdd = factory.makeVar(2);
 		bdd.andWith(factory.makeVar(3));
 
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		BDD n = bdd.renameWithLeader(l);
 
@@ -482,7 +482,7 @@ public class GERTest {
 	public void testRenameWithLeader2() {
 		BDD bdd = factory.makeVar(2);
 
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		BDD n = bdd.renameWithLeader(l);
 
@@ -496,7 +496,7 @@ public class GERTest {
 	public void testRenameWithLeader3() {
 		BDD bdd = factory.makeVar(1);
 
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(2, 3);
 		BDD n = bdd.renameWithLeader(l);
 
@@ -510,7 +510,7 @@ public class GERTest {
 	public void testRenameWithLeader4() {
 		BDD bdd = factory.makeVar(1);
 
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(2, 3);
 		BDD n = bdd.renameWithLeader(l);
 
@@ -529,7 +529,7 @@ public class GERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd.andWith(temp);
 
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		l.addClass(6, 7);
 		BDD n = bdd.renameWithLeader(l);
@@ -547,7 +547,7 @@ public class GERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		GER ger = new GER(bdd).normalize();
+		ER ger = new ER(bdd).normalize();
 		BDD full = ger.getFullBDD();
 		assertTrue(full.isEquivalentTo(bdd));
 
@@ -558,9 +558,9 @@ public class GERTest {
 	public void testSatCount1() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2); // 1 value - bound to leader's value in bdd (var 1)
-		GER ger = new GER(bdd, l);
+		ER ger = new ER(bdd, l);
 
 		assertEquals(2, ger.satCount());
 	}
@@ -569,10 +569,10 @@ public class GERTest {
 	public void testSatCount2() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		l.addClass(3, 4); // 2 values for this - no constraints
-		GER ger = new GER(bdd, l);
+		ER ger = new ER(bdd, l);
 
 		assertEquals(4, ger.satCount());
 	}
@@ -581,10 +581,10 @@ public class GERTest {
 	public void testSatCount3() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(2, 3); // 2 values for this...
 		l.addClass(4, 5, 6, 7); // times 2 values for this
-		GER ger = new GER(bdd, l);
+		ER ger = new ER(bdd, l);
 
 		assertEquals(8, ger.satCount());
 	}
@@ -595,7 +595,7 @@ public class GERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		GER ger = new GER(bdd).normalize();
+		ER ger = new ER(bdd).normalize();
 
 		BitSet vars = ger.vars();
 		assertEquals(3, vars.cardinality());
@@ -609,16 +609,16 @@ public class GERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		GER ger1 = new GER(x1);
-		GER ger2 = new GER(x2);
+		ER ger1 = new ER(x1);
+		ER ger2 = new ER(x2);
 
-		GER biimp = ger1.biimp(ger2);
+		ER biimp = ger1.biimp(ger2);
 
 		BDD n = biimp.getN();
-		E equiv = biimp.getEquiv();
+		EquivalenceRelation equiv = biimp.getEquiv();
 
 		assertTrue(n.isEquivalentTo(factory.makeOne()));
-		E expectedEquiv = new E();
+		EquivalenceRelation expectedEquiv = new EquivalenceRelation();
 		expectedEquiv.addClass(1, 2);
 		assertEquals(expectedEquiv, equiv);
 
@@ -630,10 +630,10 @@ public class GERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		GER ger1 = new GER(x1);
-		GER ger2 = new GER(x2);
+		ER ger1 = new ER(x1);
+		ER ger2 = new ER(x2);
 
-		GER imp = ger1.imp(ger2);
+		ER imp = ger1.imp(ger2);
 
 		BDD fullBDD = imp.getFullBDD();
 		BDD expected = x1.imp(x2);
@@ -648,23 +648,23 @@ public class GERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		GER ger = new GER(x1).normalize();
-		GER expected = new GER(x2).normalize();
+		ER ger = new ER(x1).normalize();
+		ER expected = new ER(x2).normalize();
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 2);
-		GER replace = ger.replace(renaming);
+		ER replace = ger.replace(renaming);
 
 		assertEquals(expected, replace);
 	}
 
 	@Test(expected = ReplacementWithExistingVarException.class)
 	public void testReplace2() {
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		BDD n = factory.makeVar(3);
 
-		GER ger = new GER(n, l);
+		ER ger = new ER(n, l);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 2);
@@ -673,38 +673,38 @@ public class GERTest {
 
 	@Test
 	public void testReplace3() {
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2);
 		BDD n = factory.makeVar(3);
 
-		GER ger = new GER(n, l);
+		ER ger = new ER(n, l);
 
-		E l2 = new E();
+		EquivalenceRelation l2 = new EquivalenceRelation();
 		l2.addClass(2, 4);
-		GER expected = new GER(n.copy(), l2);
+		ER expected = new ER(n.copy(), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 4);
-		GER replace = ger.replace(renaming);
+		ER replace = ger.replace(renaming);
 
 		assertEquals(expected, replace);
 	}
 
 	@Test
 	public void testReplace4() {
-		E l = new E();
+		EquivalenceRelation l = new EquivalenceRelation();
 		l.addClass(1, 2, 3);
 		BDD n = factory.makeVar(1);
 
-		GER ger = new GER(n, l);
+		ER ger = new ER(n, l);
 
-		E l2 = new E();
+		EquivalenceRelation l2 = new EquivalenceRelation();
 		l2.addClass(2, 3, 4);
-		GER expected = new GER(factory.makeVar(2), l2);
+		ER expected = new ER(factory.makeVar(2), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 4);
-		GER replace = ger.replace(renaming);
+		ER replace = ger.replace(renaming);
 
 		assertEquals(expected, replace);
 	}

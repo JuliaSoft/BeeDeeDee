@@ -9,13 +9,13 @@ import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.Garb
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
 
 /**
- * A BDD factory using the GER representation.
+ * A BDD factory using the ER representation.
  */
-public class GERFactory extends Factory {
+public class ERFactory extends Factory {
 
 	private ResizingAndGarbageCollectedFactory factory;
 
-	public GERFactory(int utSize, int cacheSize) {
+	public ERFactory(int utSize, int cacheSize) {
 		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
 	}
 
@@ -26,12 +26,12 @@ public class GERFactory extends Factory {
 
 	@Override
 	public BDD makeVar(int i) {
-		return new BDDGer(factory.makeVar(i));
+		return new BDDER(factory.makeVar(i));
 	}
 
 	@Override
 	public BDD makeNotVar(int i) {
-		return new BDDGer(factory.makeNotVar(i));
+		return new BDDER(factory.makeNotVar(i));
 	}
 
 	@Override
@@ -46,12 +46,12 @@ public class GERFactory extends Factory {
 
 	@Override
 	public BDD makeZero() {
-		return new BDDGer(factory.makeZero());
+		return new BDDER(factory.makeZero());
 	}
 
 	@Override
 	public BDD makeOne() {
-		return new BDDGer(factory.makeOne());
+		return new BDDER(factory.makeOne());
 	}
 
 	@Override

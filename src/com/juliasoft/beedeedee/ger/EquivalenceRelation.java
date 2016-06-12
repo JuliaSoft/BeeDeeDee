@@ -11,11 +11,11 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 /**
  * A set of equivalence classes.
  */
-public class E implements Iterable<BitSet> {
+public class EquivalenceRelation implements Iterable<BitSet> {
 
 	private List<BitSet> equivalenceClasses;
 
-	public E() {
+	public EquivalenceRelation() {
 		equivalenceClasses = new ArrayList<>();
 	}
 
@@ -40,8 +40,8 @@ public class E implements Iterable<BitSet> {
 	 * @param other the other set
 	 * @return the resulting set
 	 */
-	public E intersect(E other) {
-		E result = new E();
+	public EquivalenceRelation intersect(EquivalenceRelation other) {
+		EquivalenceRelation result = new EquivalenceRelation();
 		result.equivalenceClasses = intersect(equivalenceClasses, other.equivalenceClasses);
 		return result;
 	}
@@ -90,7 +90,7 @@ public class E implements Iterable<BitSet> {
 	 * @param other the other set
 	 * @return the list of the pairs of this set not contained in the other
 	 */
-	public List<Pair> subtract(E other) {
+	public List<Pair> subtract(EquivalenceRelation other) {
 		List<Pair> myPairs = pairs();
 		List<Pair> otherPairs = other.pairs();
 		ArrayList<Pair> result = new ArrayList<>();
@@ -166,7 +166,7 @@ public class E implements Iterable<BitSet> {
 
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof E && ((E) obj).equivalenceClasses.equals(equivalenceClasses);
+		return obj instanceof EquivalenceRelation && ((EquivalenceRelation) obj).equivalenceClasses.equals(equivalenceClasses);
 	}
 
 	@Override
@@ -177,8 +177,8 @@ public class E implements Iterable<BitSet> {
 	/**
 	 * @return a copy of this set.
 	 */
-	public E copy() {
-		E e = new E();
+	public EquivalenceRelation copy() {
+		EquivalenceRelation e = new EquivalenceRelation();
 		for (BitSet eqClass : equivalenceClasses) {
 			BitSet eqClassCopy = new BitSet();
 			eqClassCopy.or(eqClass);

@@ -29,7 +29,7 @@ public class BDDGerTest {
 	@Test
 	public void testBasicMethods() {
 		BDD bdd = factory.makeVar(2);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 		assertEquals(2, bddGer.var());
 		assertTrue(bddGer.low().isZero());
 		assertTrue(bddGer.high().isOne());
@@ -40,7 +40,7 @@ public class BDDGerTest {
 	@Test
 	public void testZero() {
 		BDD bdd = factory.makeZero();
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 		assertTrue(bddGer.isZero());
 		// TODO can l be non-empty?
 
@@ -50,7 +50,7 @@ public class BDDGerTest {
 	@Test
 	public void testOne1() {
 		BDD bdd = factory.makeOne();
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 		assertTrue(bddGer.isOne());
 
 //		assertEquals(3, factory.bddCount());
@@ -58,7 +58,7 @@ public class BDDGerTest {
 
 	@Test
 	public void testOne2() {
-		BDD bddGer = new BDDGer(bddX1biX2);
+		BDD bddGer = new BDDER(bddX1biX2);
 		// the normalized BDD is ONE, but not the original one
 		assertFalse(bddGer.isOne());
 
@@ -67,8 +67,8 @@ public class BDDGerTest {
 
 	@Test
 	public void testOr() {
-		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
-		BDD bddGer2 = new BDDGer(bddX3.copy());
+		BDD bddGer1 = new BDDER(bddX1biX2.copy());
+		BDD bddGer2 = new BDDER(bddX3.copy());
 
 		BDD or = bddGer1.or(bddGer2);
 		BDD originalOr = bddX1biX2.or(bddX3);
@@ -80,8 +80,8 @@ public class BDDGerTest {
 
 	@Test
 	public void testAnd() {
-		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
-		BDD bddGer2 = new BDDGer(bddX3.copy());
+		BDD bddGer1 = new BDDER(bddX1biX2.copy());
+		BDD bddGer2 = new BDDER(bddX3.copy());
 
 		BDD and = bddGer1.and(bddGer2);
 		BDD originalAnd = bddX1biX2.and(bddX3);
@@ -93,8 +93,8 @@ public class BDDGerTest {
 
 	@Test
 	public void testXor() {
-		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
-		BDD bddGer2 = new BDDGer(bddX3.copy());
+		BDD bddGer1 = new BDDER(bddX1biX2.copy());
+		BDD bddGer2 = new BDDER(bddX3.copy());
 
 		BDD xor = bddGer1.xor(bddGer2);
 		BDD originalXor = bddX1biX2.xor(bddX3);
@@ -106,8 +106,8 @@ public class BDDGerTest {
 
 	@Test
 	public void testNand() {
-		BDD bddGer1 = new BDDGer(bddX1biX2.copy());
-		BDD bddGer2 = new BDDGer(bddX3.copy());
+		BDD bddGer1 = new BDDER(bddX1biX2.copy());
+		BDD bddGer2 = new BDDER(bddX3.copy());
 
 		BDD nand = bddGer1.nand(bddGer2);
 		BDD originalNand = bddX1biX2.nand(bddX3);
@@ -121,7 +121,7 @@ public class BDDGerTest {
 	public void testNot() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD not = bddGer.not();
 		BDD originalNot = bdd.not();
@@ -135,7 +135,7 @@ public class BDDGerTest {
 	public void testNodeCount1() {
 		// (x1 <-> x2) & x3
 		BDD bdd = bddX1biX2.and(bddX3);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 
 		assertEquals(1, bddGer.nodeCount());
 
@@ -146,7 +146,7 @@ public class BDDGerTest {
 	public void testNodeCount2() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// the bdd is already normalized, same node count
 		assertEquals(bdd.nodeCount(), bddGer.nodeCount());
@@ -158,7 +158,7 @@ public class BDDGerTest {
 	public void testAnySat1() {
 		// (x1 <-> x2) & x3
 		BDD bdd = bddX1biX2.and(bddX3);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 
 		Assignment anySat = bddGer.anySat();
 		assertTrue(anySat.holds(bddX3));
@@ -172,7 +172,7 @@ public class BDDGerTest {
 		// (x1 <-> x2) & (x3 <-> x4)
 		BDD biimp = bddX3.biimp(factory.makeVar(4));
 		BDD bdd = bddX1biX2.andWith(biimp);
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 
 		Assignment anySat = bddGer.anySat();
 		assertEquals(anySat.holds(factory.makeVar(1)), anySat.holds(factory.makeVar(2)));
@@ -187,7 +187,7 @@ public class BDDGerTest {
 		BDD and = bddX3.and(factory.makeVar(1));
 		BDD bdd = bddX1biX2.andWith(and);
 		// {1, 2, 3}, x1
-		BDD bddGer = new BDDGer(bdd);
+		BDD bddGer = new BDDER(bdd);
 
 		Assignment anySat = bddGer.anySat();
 		assertTrue(anySat.holds(bddX3));
@@ -203,7 +203,7 @@ public class BDDGerTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		// {1, 2}, 1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD exist = bddGer.exist(1);
 		BDD originalExist = bdd.exist(1);
@@ -217,7 +217,7 @@ public class BDDGerTest {
 		BDD biimp = bddX3.biimp(factory.makeVar(4));
 		BDD bdd = bddX1biX2.andWith(biimp);
 		// [{1,2},{3,4}], 1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD exist = bddGer.exist(1);
 		BDD originalExist = bdd.exist(1);
@@ -231,7 +231,7 @@ public class BDDGerTest {
 		BDD biimp = bddX3.biimp(factory.makeVar(2));
 		BDD bdd = bddX1biX2.andWith(biimp);
 		// [{1,2,3}], 1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD exist = bddGer.exist(1);
 		BDD originalExist = bdd.exist(1);
@@ -246,7 +246,7 @@ public class BDDGerTest {
 		BDD bdd = bddX1biX2.andWith(biimp);
 		bdd.andWith(factory.makeVar(1));
 		// [{1,2,3}], x1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// [{2,3}], x2
 		BDD exist = bddGer.exist(1);
@@ -264,7 +264,7 @@ public class BDDGerTest {
 		temp.orWith(factory.makeVar(4));
 		bdd.andWith(temp);
 		// [{1,2,3}], x1 OR x4
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// [{2,3}], x2 OR x4
 		BDD exist = bddGer.exist(1);
@@ -280,7 +280,7 @@ public class BDDGerTest {
 		temp.orWith(factory.makeVar(4));
 		BDD bdd = bddX1biX2.andWith(temp);
 		// [{1,2}], x1 OR x4
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// x2 OR x4
 		BDD exist = bddGer.exist(1);
@@ -297,7 +297,7 @@ public class BDDGerTest {
 		BDD bdd = bddX3.biimp(factory.makeVar(2));
 		bdd.andWith(temp);
 		// [{2,3}], x1 OR x4
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// [{2,3}]
 		BDD exist = bddGer.exist(1);
@@ -312,7 +312,7 @@ public class BDDGerTest {
 		BDD biimp = bddX3.biimp(factory.makeVar(4));
 		BDD bdd = bddX1biX2.andWith(biimp);
 		// [{1,2},{3,4}], 1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(3));
 		BDD exist = bddGer.exist(minterm);
@@ -327,7 +327,7 @@ public class BDDGerTest {
 		BDD biimp = bddX3.biimp(factory.makeVar(2));
 		BDD bdd = bddX1biX2.andWith(biimp);
 		// [{1,2,3}], 1
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2)).andWith(factory.makeVar(3));
 		BDD exist = bddGer.exist(minterm);
@@ -345,7 +345,7 @@ public class BDDGerTest {
 		temp.orWith(factory.makeVar(4));
 		bdd.andWith(temp);
 		// [{1,2,3}], x1 OR x4
-		BDD bddGer = new BDDGer(bdd.copy());
+		BDD bddGer = new BDDER(bdd.copy());
 
 		// [], x3 OR x4
 		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2));

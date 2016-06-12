@@ -8,9 +8,9 @@ import java.util.BitSet;
  */
 public class LeaderFunction {
 
-	private E equivalenceClasses;
+	private EquivalenceRelation equivalenceClasses;
 
-	public LeaderFunction(E equivalenceClasses) {
+	public LeaderFunction(EquivalenceRelation equivalenceClasses) {
 		this.equivalenceClasses = equivalenceClasses;
 	}
 
