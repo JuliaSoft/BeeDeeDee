@@ -7,8 +7,11 @@ import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.factories.Factory;
 
+/**
+ * A representation for Boolean functions separating information on equivalent
+ * variables from the BDD.
+ */
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class ER {
 
