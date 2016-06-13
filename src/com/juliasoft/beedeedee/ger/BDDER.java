@@ -44,18 +44,12 @@ public class BDDER implements BDD {
 
 	@Override
 	public boolean isZero() {
-		BDD fullBDD = ger.getFullBDD();
-		boolean zero = fullBDD.isZero();
-		fullBDD.free();
-		return zero;
+		return ger.getN().isZero() && ger.getEquiv().isEmpty();
 	}
 
 	@Override
 	public boolean isOne() {
-		BDD fullBDD = ger.getFullBDD();
-		boolean one = fullBDD.isOne();
-		fullBDD.free();
-		return one;
+		return ger.getN().isOne() && ger.getEquiv().isEmpty();
 	}
 
 	@Override
@@ -329,18 +323,12 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD replace(Map<Integer, Integer> renaming) {
-		// TODO try not to use full bdd
-//		BDD fullBDD = ger.getFullBDD();
-//		BDD replace = fullBDD.replaceWith(renaming);
 		ER replace = ger.replace(renaming);
 		return new BDDER(replace);
 	}
 
 	@Override
 	public BDD replaceWith(Map<Integer, Integer> renaming) {
-		// TODO try not to use full bdd
-//		BDD fullBDD = ger.getFullBDD();
-//		BDD replace = fullBDD.replaceWith(renaming);
 		ER replaceGer = ger.replace(renaming);//new GER(replace);
 		free();
 		ger = replaceGer.normalize();
@@ -371,20 +359,13 @@ public class BDDER implements BDD {
 
 	@Override
 	public boolean isEquivalentTo(BDD other) {
-		if (other instanceof BDDER) {
-			BDDER bddGer = (BDDER) other;
-			other = bddGer.ger.getFullBDD();
-		}
-		BDD fullBDD = ger.getFullBDD();
-		boolean equivalentTo = fullBDD.isEquivalentTo(other); // FIXME doesn't work if different factory (ids don't match)
-		fullBDD.free();
-		other.free();
-		return equivalentTo;
+		BDDER o = (BDDER) other;
+		return ger.getEquiv().equals(o.ger.getEquiv()) && ger.getN().isEquivalentTo(o.ger.getN());
 	}
 
 	@Override
 	public int hashCodeAux() {
-		return hashCode();
+		return ger.getN().hashCodeAux() ^ ger.getEquiv().hashCode();
 	}
 
 	@Override
