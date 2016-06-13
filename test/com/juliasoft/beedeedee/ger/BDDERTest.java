@@ -9,7 +9,7 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
 
-public class BDDGerTest {
+public class BDDERTest {
 
 	private Factory factory;
 	private BDD bddX1biX2;
