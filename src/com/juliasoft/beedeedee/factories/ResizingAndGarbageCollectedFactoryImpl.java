@@ -35,7 +35,6 @@ import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.ger.EquivalenceRelation;
-import com.juliasoft.beedeedee.ger.LeaderFunction;
 import com.juliasoft.beedeedee.ger.Pair;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
@@ -1235,11 +1234,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD squeezeEquiv(LeaderFunction leaderFunction) {
+		public BDD squeezeEquiv(EquivalenceRelation r) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(squeezeEquiv(id, leaderFunction));
+				return new BDDImpl(squeezeEquiv(id, r));
 			}
 			finally {
 				lock.unlock();
@@ -1247,11 +1246,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD squeezeEquivWith(LeaderFunction leaderFunction) {
+		public BDD squeezeEquivWith(EquivalenceRelation r) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(squeezeEquiv(id, leaderFunction));
+				setId(squeezeEquiv(id, r));
 			}
 			finally {
 				lock.unlock();
@@ -1260,18 +1259,18 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return this;
 		}
 
-		private int squeezeEquiv(int bdd, LeaderFunction leaderFunction) {
+		private int squeezeEquiv(int bdd, EquivalenceRelation equivalenceRelation) {
 			if (bdd < FIRST_NODE_NUM) {
 				return bdd;
 			}
 			int var = ut.var(bdd);
-			if (leaderFunction.get(var) == var) {
-				return MK(var, squeezeEquiv(ut.low(bdd), leaderFunction), squeezeEquiv(ut.high(bdd), leaderFunction));
+			if (equivalenceRelation.getLeader(var) == var) {
+				return MK(var, squeezeEquiv(ut.low(bdd), equivalenceRelation), squeezeEquiv(ut.high(bdd), equivalenceRelation));
 			}
 			if (ut.high(bdd) == 0) {
-				return squeezeEquiv(ut.low(bdd), leaderFunction);
+				return squeezeEquiv(ut.low(bdd), equivalenceRelation);
 			}
-			return squeezeEquiv(ut.high(bdd), leaderFunction);
+			return squeezeEquiv(ut.high(bdd), equivalenceRelation);
 		}
 
 		@Override
@@ -1386,22 +1385,17 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public BDD renameWithLeader(EquivalenceRelation r) {
-			return renameWithLeader(r, new LeaderFunction(r));
-		}
-
-		@Override
-		public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(renameWithLeader(id, r, lf, 0, new BitSet()));
+				return new BDDImpl(renameWithLeader(id, r, 0, new BitSet()));
 			}
 			finally {
 				lock.unlock();
 			}
 		}
 
-		private int renameWithLeader(int f, EquivalenceRelation r, LeaderFunction lf, int c, BitSet t) {
+		private int renameWithLeader(int f, EquivalenceRelation r, int c, BitSet t) {
 			int var = ut.var(f);
 			int maxVar = r.maxVar();
 			if (maxVar < var || f < FIRST_NODE_NUM) {
@@ -1409,28 +1403,28 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 			BitSet augmented = new BitSet();
 			augmented.or(t);
-			int minLeader = lf.minLeader(c);
+			int minLeader = r.minLeader(c);
 			if (minLeader >= c && minLeader < var) {
 				augmented.set(minLeader);
 				c = minLeader;
-				return MK(minLeader, renameWithLeader(f, r, lf, c + 1, t),
-						renameWithLeader(f, r, lf, c + 1, augmented));
+				return MK(minLeader, renameWithLeader(f, r, c + 1, t),
+						renameWithLeader(f, r, c + 1, augmented));
 			}
 			c = var;
 			if (!r.containsVar(var)) {
-				return MK(var, renameWithLeader(ut.low(f), r, lf, c + 1, t),
-						renameWithLeader(ut.high(f), r, lf, c + 1, t));
+				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t),
+						renameWithLeader(ut.high(f), r, c + 1, t));
 			}
-			int l = lf.get(var);
+			int l = r.getLeader(var);
 			if (l == var) {
 				augmented.set(c);
-				return MK(var, renameWithLeader(ut.low(f), r, lf, c + 1, t),
-						renameWithLeader(ut.high(f), r, lf, c + 1, augmented));
+				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t),
+						renameWithLeader(ut.high(f), r, c + 1, augmented));
 			}
 			if (t.get(l)) {
-				return renameWithLeader(ut.high(f), r, lf, c + 1, t);
+				return renameWithLeader(ut.high(f), r, c + 1, t);
 			}
-			return renameWithLeader(ut.low(f), r, lf, c + 1, t);
+			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 
 		@Override

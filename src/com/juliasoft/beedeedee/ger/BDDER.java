@@ -412,12 +412,12 @@ public class BDDER implements BDD {
 	}
 
 	@Override
-	public BDD squeezeEquiv(LeaderFunction leaderFunction) {
+	public BDD squeezeEquiv(EquivalenceRelation r) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public BDD squeezeEquivWith(LeaderFunction leaderFunction) {
+	public BDD squeezeEquivWith(EquivalenceRelation r) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -444,11 +444,6 @@ public class BDDER implements BDD {
 	@Override
 	public BDD renameWithLeader(EquivalenceRelation r) {
 		return new BDDER(ger.getFullBDD().renameWithLeader(r));
-	}
-
-	@Override
-	public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf) {
-		return new BDDER(ger.getFullBDD().renameWithLeader(r, lf));
 	}
 
 	@Override

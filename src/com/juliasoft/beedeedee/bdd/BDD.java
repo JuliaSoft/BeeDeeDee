@@ -25,7 +25,6 @@ import java.util.Set;
 
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.ger.EquivalenceRelation;
-import com.juliasoft.beedeedee.ger.LeaderFunction;
 import com.juliasoft.beedeedee.ger.Pair;
 
 /**
@@ -412,21 +411,20 @@ public interface BDD {
 
 	/**
 	 * Squeezes equivalent variables from the BDD.
-	 * See paper by Bagnara & Schachte.
 	 * 
-	 * @param leaderFunction a function returning the leader (minimum) of the equivalence class of each variable
+	 * @param r the object containing information on equivalent variables
 	 * @return the resulting BDD
 	 */
-	public BDD squeezeEquiv(LeaderFunction leaderFunction);
+	public BDD squeezeEquiv(EquivalenceRelation r);
 
 	/**
-	 * Squeezes equivalent variables from the BDD, storing the result in this BDD. 
-	 * See paper by Bagnara & Schachte.
+	 * Squeezes equivalent variables from the BDD, storing the result in this
+	 * BDD.
 	 * 
-	 * @param leaderFunction a function returning the leader (minimum) of the equivalence class of each variable
+	 * @param r the object containing information on equivalent variables
 	 * @return this
 	 */
-	public BDD squeezeEquivWith(LeaderFunction leaderFunction);
+	public BDD squeezeEquivWith(EquivalenceRelation r);
 
 	/**
 	 * @return the factory which created this BDD
@@ -453,16 +451,6 @@ public interface BDD {
 	 * @return the modified BDD
 	 */
 	public BDD renameWithLeader(EquivalenceRelation r);
-
-	/**
-	 * Renames each variable in this BDD with its leader according to the given
-	 * equivalence relation and leader function.
-	 * 
-	 * @param r the equivalence relation
-	 * @param lf the leader function to use
-	 * @return the modified BDD
-	 */
-	public BDD renameWithLeader(EquivalenceRelation r, LeaderFunction lf);
 
 	/**
 	 * Finds pairs of equivalent variables in this BDD.

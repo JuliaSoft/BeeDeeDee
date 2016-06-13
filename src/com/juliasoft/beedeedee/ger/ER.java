@@ -17,7 +17,6 @@ public class ER {
 
 	private BDD n;
 	private EquivalenceRelation l;
-	private LeaderFunction leaderFunction;
 
 	/**
 	 * Constructs a ER representation using (TODO copy bdd?) the given bdd and
@@ -28,7 +27,6 @@ public class ER {
 	 */
 	public ER(BDD n, EquivalenceRelation l) {
 		this.l = l;
-		leaderFunction = new LeaderFunction(l);
 		this.n = n; // TODO copy? sq.With
 	}
 
@@ -50,7 +48,6 @@ public class ER {
 	public void free() {
 		n.free();
 		l = null;
-		leaderFunction = null;
 	}
 
 	/**
@@ -161,7 +158,7 @@ public class ER {
 	 * @return the squeezed bdd
 	 */
 	public BDD getSqueezedBDD() {
-		return n.squeezeEquiv(leaderFunction);
+		return n.squeezeEquiv(l);
 	}
 
 	/**
