@@ -79,7 +79,7 @@ public class BDDERTest {
 	}
 
 	@Test
-	public void testAnd() {
+	public void testAnd1() {
 		BDD bddGer1 = new BDDER(bddX1biX2.copy());
 		BDD bddGer2 = new BDDER(bddX3.copy());
 
@@ -89,6 +89,22 @@ public class BDDERTest {
 		assertTrue(and.isEquivalentTo(originalAnd));
 
 //		assertEquals(5, factory.bddCount());
+	}
+
+	@Test
+	public void testAnd2() {
+		BDD bdd1 = factory.makeVar(0);
+		bdd1.orWith(factory.makeVar(2));
+		bdd1.notWith();
+		BDD bdd2 = factory.makeVar(2);
+
+		BDD bddGer1 = new BDDER(bdd1.copy());
+		BDD bddGer2 = new BDDER(bdd2.copy());
+
+		BDD and = bddGer1.and(bddGer2);
+		BDD originalAnd = bdd1.and(bdd2);
+
+		assertTrue(and.isEquivalentTo(originalAnd));
 	}
 
 	@Test
