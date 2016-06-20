@@ -359,6 +359,9 @@ public class BDDER implements BDD {
 
 	@Override
 	public boolean isEquivalentTo(BDD other) {
+		if (!(other instanceof BDDER)) {
+			return other.isEquivalentTo(ger.getFullBDD());
+		}
 		BDDER o = (BDDER) other;
 		return ger.getEquiv().equals(o.ger.getEquiv()) && ger.getN().isEquivalentTo(o.ger.getN());
 	}
