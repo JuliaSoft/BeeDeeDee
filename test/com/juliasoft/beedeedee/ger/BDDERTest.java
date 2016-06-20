@@ -70,9 +70,10 @@ public class BDDERTest {
 		BDD bddGer1 = new BDDER(bddX1biX2.copy());
 		BDD bddGer2 = new BDDER(bddX3.copy());
 
-		BDD or = bddGer1.or(bddGer2);
+		BDDER or = (BDDER) bddGer1.or(bddGer2);
 		BDD originalOr = bddX1biX2.or(bddX3);
 
+		assertTrue(or.isNormalized());
 		assertTrue(or.isEquivalentTo(originalOr));
 
 //		assertEquals(5, factory.bddCount());
@@ -105,8 +106,9 @@ public class BDDERTest {
 		BDDER bddGer2 = new BDDER(bdd2.copy());
 
 		BDDER or = (BDDER) bddGer1.or(bddGer2);
-
 		BDD originalOr = bdd1.or(bdd2);
+
+		assertTrue(or.isNormalized());
 		assertTrue(or.isEquivalentTo(originalOr));
 	}
 
@@ -130,6 +132,7 @@ public class BDDERTest {
 		BDDER or = (BDDER) bddGer1.or(bddGer2);
 		BDD originalOr = bdd1.or(bdd2);
 
+		assertTrue(or.isNormalized());
 		assertTrue(or.isEquivalentTo(originalOr));
 	}
 

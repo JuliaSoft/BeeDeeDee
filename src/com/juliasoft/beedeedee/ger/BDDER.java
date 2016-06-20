@@ -434,4 +434,9 @@ public class BDDER implements BDD {
 	public Set<Pair> equivVars() {
 		return ger.getFullBDD().equivVars();
 	}
+
+	public boolean isNormalized() {
+		ER norm = ger.normalize();
+		return norm.getEquiv().equals(ger.getEquiv()) && norm.getN().isEquivalentTo(ger.getN());
+	}
 }

@@ -93,9 +93,15 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	public List<Pair> subtract(EquivalenceRelation other) {
 		List<Pair> myPairs = pairs();
 		List<Pair> otherPairs = other.pairs();
-		ArrayList<Pair> result = new ArrayList<>();
+		BitSet toRemove = new BitSet();
+		List<Pair> result = new ArrayList<>();
 		for (Pair pair : myPairs) {
-			if (!otherPairs.contains(pair)) {
+			if (otherPairs.contains(pair)) {
+				toRemove.set(pair.second);
+			}
+		}
+		for (Pair pair : myPairs) {
+			if (!toRemove.get(pair.first) && !toRemove.get(pair.second)) {
 				result.add(pair);
 			}
 		}
