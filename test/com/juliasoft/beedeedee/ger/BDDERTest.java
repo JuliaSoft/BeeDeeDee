@@ -66,7 +66,7 @@ public class BDDERTest {
 	}
 
 	@Test
-	public void testOr() {
+	public void testOr1() {
 		BDD bddGer1 = new BDDER(bddX1biX2.copy());
 		BDD bddGer2 = new BDDER(bddX3.copy());
 
@@ -76,6 +76,61 @@ public class BDDERTest {
 		assertTrue(or.isEquivalentTo(originalOr));
 
 //		assertEquals(5, factory.bddCount());
+	}
+
+	@Test
+	public void testOr2() {
+		// testcase from the Julia analyzer
+		BDD bdd1 = factory.makeVar(0);
+		bdd1.orWith(factory.makeVar(4));
+		bdd1.orWith(factory.makeVar(6));
+		bdd1.orWith(factory.makeVar(7));
+		bdd1.notWith();
+
+		BDD bdd2 = factory.makeNotVar(0);
+		BDD b2 = factory.makeNotVar(4);
+		b2.andWith(factory.makeVar(6));
+		BDD b1 = factory.makeVar(1);
+		b1.andWith(b2);
+		BDD temp = factory.makeNotVar(1);
+		BDD b3 = factory.makeNotVar(4);
+		BDD b5 = factory.makeVar(6);
+		b5.andWith(factory.makeNotVar(7));
+		b3.andWith(b5);
+		temp.andWith(b3);
+		b1.orWith(temp);
+		bdd2.andWith(b1);
+
+		BDDER bddGer1 = new BDDER(bdd1.copy());
+		BDDER bddGer2 = new BDDER(bdd2.copy());
+
+		BDDER or = (BDDER) bddGer1.or(bddGer2);
+
+		BDD originalOr = bdd1.or(bdd2);
+		assertTrue(or.isEquivalentTo(originalOr));
+	}
+
+	@Test
+	public void testOr3() {
+		BDD bdd1 = factory.makeVar(0);
+		bdd1.orWith(factory.makeVar(4));
+		bdd1.orWith(factory.makeVar(6));
+		bdd1.notWith();
+
+		BDD bdd2 = factory.makeNotVar(0);
+		BDD b2 = factory.makeNotVar(4);
+		b2.andWith(factory.makeVar(6));
+		BDD b1 = factory.makeVar(1);
+		b1.andWith(b2);
+		bdd2.andWith(b1);
+
+		BDDER bddGer1 = new BDDER(bdd1.copy());
+		BDDER bddGer2 = new BDDER(bdd2.copy());
+
+		BDDER or = (BDDER) bddGer1.or(bddGer2);
+		BDD originalOr = bdd1.or(bdd2);
+
+		assertTrue(or.isEquivalentTo(originalOr));
 	}
 
 	@Test
