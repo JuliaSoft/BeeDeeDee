@@ -125,10 +125,9 @@ public class ETest {
 		EquivalenceRelation e2 = new EquivalenceRelation();
 		e2.addClass(1, 2);
 
-		// expected result is {(2, 3), (1, 3)}
+		// expected result is {(1, 3)} (removes pairs containing non leaders)
 		List<Pair> pairs = e1.subtract(e2);
-		assertEquals(2, pairs.size());
-		assertTrue(pairs.contains(new Pair(2, 3)));
+		assertEquals(1, pairs.size());
 		assertTrue(pairs.contains(new Pair(1, 3)));
 	}
 
