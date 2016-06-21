@@ -44,7 +44,7 @@ public class BDDER implements BDD {
 
 	@Override
 	public boolean isZero() {
-		return ger.getN().isZero() && ger.getEquiv().isEmpty();
+		return ger.getN().isZero();
 	}
 
 	@Override
