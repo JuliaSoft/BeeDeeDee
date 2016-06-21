@@ -274,12 +274,9 @@ public class ERTest {
 		assertEquals(expected, next);
 
 		BDD n = or.getN();
-		// we expect (x8 or (1 & (x2 <-> x3) & (x1 <-> x3)))
-		BDD expectedN = factory.makeVar(2);
+		// we expect (x8 or (1 & (x1 <-> x3)))
+		BDD expectedN = factory.makeVar(1);
 		expectedN.biimpWith(factory.makeVar(3));
-		temp = factory.makeVar(1);
-		temp.biimpWith(factory.makeVar(3));
-		expectedN.andWith(temp);
 		expectedN.orWith(factory.makeVar(8));
 		assertTrue(n.isEquivalentTo(expectedN));
 
