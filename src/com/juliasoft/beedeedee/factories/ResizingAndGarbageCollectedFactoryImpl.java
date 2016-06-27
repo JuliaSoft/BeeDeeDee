@@ -1429,7 +1429,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 		@Override
 		public Set<Pair> equivVars() {
-			return equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+			} finally {
+				lock.unlock();
+			}
 		}
 
 		private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
