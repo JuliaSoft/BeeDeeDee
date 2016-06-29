@@ -1432,7 +1432,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+				EquivCache equivCache = ut.getEquivCache();
+				Set<Pair> cached = equivCache.get(id);
+				if (cached != null) {
+					return cached;
+				}
+				Set<Pair> ev = equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+				equivCache.put(id, ev);
+				return ev;
 			} finally {
 				lock.unlock();
 			}
@@ -1441,12 +1448,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
 			if (bdd < FIRST_NODE_NUM) {
 				return equiv;
-			}
-
-			EquivCache equivCache = ut.getEquivCache();
-			Set<Pair> cached = equivCache.get(bdd);
-			if (cached != null) {
-				return cached;
 			}
 
 			int var = ut.var(bdd);
@@ -1488,7 +1489,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					equiv.add(new Pair(var, n.length() - 1));
 				}
 			}
-			equivCache.put(bdd, equiv);
 			return equiv;
 		}
 
