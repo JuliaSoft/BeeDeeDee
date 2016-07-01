@@ -705,4 +705,24 @@ public class ERTest {
 
 		assertEquals(expected, replace);
 	}
+
+	@Test
+	public void testReplace5() {
+		EquivalenceRelation l = new EquivalenceRelation();
+		l.addClass(6, 9);
+		BDD n = factory.makeVar(8);
+
+		ER ger = new ER(n, l);
+
+		EquivalenceRelation l2 = new EquivalenceRelation();
+		l2.addClass(3, 9);
+		ER expected = new ER(factory.makeVar(8), l2);
+
+		Map<Integer, Integer> renaming = new HashMap<>();
+		renaming.put(9, 3);	// this should be performed first
+		renaming.put(6, 9);
+		ER replace = ger.replace(renaming);
+
+		assertEquals(expected, replace);
+	}
 }

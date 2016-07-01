@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl.BDDImpl;
-import com.juliasoft.beedeedee.ger.BDDER;
 
 public class ResizingAndGarbageCollectedFactoryImplTest {
 

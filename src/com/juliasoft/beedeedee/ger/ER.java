@@ -1,5 +1,6 @@
 package com.juliasoft.beedeedee.ger;
 
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
@@ -292,7 +293,10 @@ public class ER {
 		} else {
 			exist = n.exist(var);
 		}
-		return new ER(exist, lNew);
+		ER existEr = new ER(exist, lNew);
+		ER normalized = existEr.normalize();
+		existEr.free();
+		return normalized;
 	}
 
 	public ER exist(BitSet vars) {
@@ -320,24 +324,57 @@ public class ER {
 		if (!quantifiedVars.isEmpty()) {
 			exist = exist.exist(quantifiedVars);
 		}
-		return new ER(exist, lNew);
+		ER existEr = new ER(exist, lNew);
+		ER normalized = existEr.normalize();
+		existEr.free();
+		return normalized;
 	}
 
 	public ER replace(Map<Integer, Integer> renaming) {
 		BitSet nVars = n.vars();
 		for (Integer v : renaming.values()) {
-			if (l.containsVar(v) || nVars.get(v)) {
+			if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v)) {
 				throw new ReplacementWithExistingVarException(v);
 			}
 		}
+
+		// perform "simultaneous" substitution
+		renaming = new HashMap<>(renaming);
+		Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
 		EquivalenceRelation eNew = l.copy();
+		eNew.replace(varsOnTheRighSide);	// these renamings need to be performed first
 		eNew.replace(renaming);
+
 		BDD nNew;
 		nNew = n.replace(renaming);
 		BDD old = nNew;
 		nNew = nNew.renameWithLeader(eNew);
 		old.free();
-		return new ER(nNew, eNew);
+		ER replaceEr = new ER(nNew, eNew);
+		ER normalized = replaceEr.normalize();
+		replaceEr.free();
+		return normalized;
+	}
+
+	/**
+	 * Separates renamings affecting variables on the right side of some renaming.
+	 * The original renaming map is modified.
+	 * 
+	 * @param renaming the original renaming map. After the execution of this method
+	 * it does not contain mappings present in the returned map
+	 * @return a map containing mappings renaming variables present on the right side
+	 * of some other mapping
+	 */
+	private Map<Integer, Integer> splitRenaming(Map<Integer, Integer> renaming) {
+		Map<Integer, Integer> varsOnTheRighSide = new HashMap<>();
+		ArrayList<Integer> values = new ArrayList<>(renaming.values());
+		for (Integer i : values) {
+			if (renaming.keySet().contains(i)) {
+				varsOnTheRighSide.put(i, renaming.get(i));
+				renaming.remove(i);
+			}
+		}
+		return varsOnTheRighSide;
 	}
 
 	@Override
