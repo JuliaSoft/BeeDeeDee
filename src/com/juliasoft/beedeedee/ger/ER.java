@@ -338,6 +338,9 @@ public class ER {
 			}
 		}
 
+		BDD nNew;
+		nNew = n.replace(renaming);
+
 		// perform "simultaneous" substitution
 		renaming = new HashMap<>(renaming);
 		Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
@@ -345,8 +348,6 @@ public class ER {
 		eNew.replace(varsOnTheRighSide);	// these renamings need to be performed first
 		eNew.replace(renaming);
 
-		BDD nNew;
-		nNew = n.replace(renaming);
 		BDD old = nNew;
 		nNew = nNew.renameWithLeader(eNew);
 		old.free();
