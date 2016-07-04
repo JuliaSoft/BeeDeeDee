@@ -15,7 +15,7 @@ import com.juliasoft.beedeedee.factories.Factory;
  */
 public class BDDER implements BDD {
 
-	private ER ger;
+	private ER er;
 
 	/**
 	 * Constructs a BDDER by normalizing the given bdd.
@@ -26,30 +26,30 @@ public class BDDER implements BDD {
 	BDDER(BDD bdd) {
 		if (bdd != null) {
 			ER temp = new ER(bdd);
-			ger = temp.normalize();
-			if (!bdd.equals(ger.getN())) {
+			er = temp.normalize();
+			if (!bdd.equals(er.getN())) {
 				temp.free();
 			}
 		}
 	}
 
-	private BDDER(ER ger) {
-		this.ger = ger;
+	private BDDER(ER er) {
+		this.er = er;
 	}
 
 	@Override
 	public void free() {
-		ger.free();
+		er.free();
 	}
 
 	@Override
 	public boolean isZero() {
-		return ger.getN().isZero();
+		return er.getN().isZero();
 	}
 
 	@Override
 	public boolean isOne() {
-		return ger.getN().isOne() && ger.getEquiv().isEmpty();
+		return er.getN().isOne() && er.getEquiv().isEmpty();
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER orGer = ger.or(otherBddGer.ger);
+		ER orGer = er.or(otherBddGer.er);
 
 		return new BDDER(orGer);
 	}
@@ -71,10 +71,10 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER orGer = ger.or(otherBddGer.ger);
+		ER orGer = er.or(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = orGer;
+		otherBddGer.er.free();
+		er = orGer;
 
 		return this;
 	}
@@ -86,7 +86,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER andGer = ger.and(otherBddGer.ger);
+		ER andGer = er.and(otherBddGer.er);
 
 		return new BDDER(andGer);
 	}
@@ -98,10 +98,10 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER andGer = ger.and(otherBddGer.ger);
+		ER andGer = er.and(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = andGer;
+		otherBddGer.er.free();
+		er = andGer;
 
 		return this;
 	}
@@ -113,7 +113,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER xorGer = ger.xor(otherBddGer.ger);
+		ER xorGer = er.xor(otherBddGer.er);
 
 		return new BDDER(xorGer);
 	}
@@ -125,10 +125,10 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER xorGer = ger.xor(otherBddGer.ger);
+		ER xorGer = er.xor(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = xorGer;
+		otherBddGer.er.free();
+		er = xorGer;
 
 		return this;
 	}
@@ -140,7 +140,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER andGer = ger.and(otherBddGer.ger);
+		ER andGer = er.and(otherBddGer.er);
 		ER not = andGer.not();
 		andGer.free();
 
@@ -154,10 +154,10 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER andGer = ger.and(otherBddGer.ger);
+		ER andGer = er.and(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = andGer.not();
+		otherBddGer.er.free();
+		er = andGer.not();
 		andGer.free();
 
 		return this;
@@ -165,14 +165,14 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD not() {
-		return new BDDER(ger.not());
+		return new BDDER(er.not());
 	}
 
 	@Override
 	public BDD notWith() {
-		ER notGer = ger.not();
+		ER notGer = er.not();
 		free();
-		ger = notGer;
+		er = notGer;
 
 		return this;
 	}
@@ -184,7 +184,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER impGer = ger.imp(otherBddGer.ger);
+		ER impGer = er.imp(otherBddGer.er);
 
 		return new BDDER(impGer);
 	}
@@ -196,10 +196,10 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER impGer = ger.imp(otherBddGer.ger);
+		ER impGer = er.imp(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = impGer;
+		otherBddGer.er.free();
+		er = impGer;
 
 		return this;
 	}
@@ -211,7 +211,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER biimpGer = ger.biimp(otherBddGer.ger);
+		ER biimpGer = er.biimp(otherBddGer.er);
 
 		return new BDDER(biimpGer);
 	}
@@ -223,23 +223,23 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER biimpGer = ger.biimp(otherBddGer.ger);
+		ER biimpGer = er.biimp(otherBddGer.er);
 		free();
-		otherBddGer.ger.free();
-		ger = biimpGer;
+		otherBddGer.er.free();
+		er = biimpGer;
 
 		return this;
 	}
 
 	@Override
 	public BDD copy() {
-		return new BDDER(ger.copy());
+		return new BDDER(er.copy());
 	}
 
 	@Override
 	public Assignment anySat() throws UnsatException {
-		Assignment anySat = ger.getN().anySat();
-		EquivalenceRelation equiv = ger.getEquiv();
+		Assignment anySat = er.getN().anySat();
+		EquivalenceRelation equiv = er.getEquiv();
 		equiv.updateAssignment(anySat);
 		return anySat;
 	}
@@ -251,13 +251,13 @@ public class BDDER implements BDD {
 
 	@Override
 	public long satCount() {
-		return ger.satCount();
+		return er.satCount();
 	}
 
 	@Override
 	public long satCount(int maxVar) {
 		// TODO FIXME check this
-		return ger.satCount();
+		return er.satCount();
 	}
 
 	@Override
@@ -277,21 +277,21 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD exist(int var) {
-		ER existGer = ger.exist(var);
+		ER existGer = er.exist(var);
 
 		return new BDDER(existGer);
 	}
 
 	@Override
 	public BDD exist(BDD var) {
-		ER existGer = ger.exist(var.vars());
+		ER existGer = er.exist(var.vars());
 
 		return new BDDER(existGer);
 	}
 
 	@Override
 	public BDD exist(BitSet var) {
-		ER existGer = ger.exist(var);
+		ER existGer = er.exist(var);
 
 		return new BDDER(existGer);
 	}
@@ -318,20 +318,20 @@ public class BDDER implements BDD {
 
 	@Override
 	public int nodeCount() {
-		return ger.getN().nodeCount();
+		return er.getN().nodeCount();
 	}
 
 	@Override
 	public BDD replace(Map<Integer, Integer> renaming) {
-		ER replace = ger.replace(renaming);
+		ER replace = er.replace(renaming);
 		return new BDDER(replace);
 	}
 
 	@Override
 	public BDD replaceWith(Map<Integer, Integer> renaming) {
-		ER replaceGer = ger.replace(renaming);//new GER(replace);
+		ER replaceGer = er.replace(renaming);
 		free();
-		ger = replaceGer.normalize();
+		er = replaceGer.normalize();
 		replaceGer.free();
 
 		return this;
@@ -360,20 +360,20 @@ public class BDDER implements BDD {
 	@Override
 	public boolean isEquivalentTo(BDD other) {
 		if (!(other instanceof BDDER)) {
-			return other.isEquivalentTo(ger.getFullBDD());
+			return other.isEquivalentTo(er.getFullBDD());
 		}
 		BDDER o = (BDDER) other;
-		return ger.getEquiv().equals(o.ger.getEquiv()) && ger.getN().isEquivalentTo(o.ger.getN());
+		return er.getEquiv().equals(o.er.getEquiv()) && er.getN().isEquivalentTo(o.er.getN());
 	}
 
 	@Override
 	public int hashCodeAux() {
-		return ger.getN().hashCodeAux() ^ ger.getEquiv().hashCode();
+		return er.getN().hashCodeAux() ^ er.getEquiv().hashCode();
 	}
 
 	@Override
 	public int var() {
-		BDD fullBDD = ger.getFullBDD();
+		BDD fullBDD = er.getFullBDD();
 		int var = fullBDD.var();
 		fullBDD.free();
 		return var;
@@ -381,7 +381,7 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD high() {
-		BDD fullBDD = ger.getFullBDD();
+		BDD fullBDD = er.getFullBDD();
 		BDD high = fullBDD.high();
 		fullBDD.free();
 		return new BDDER(high);
@@ -389,7 +389,7 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD low() {
-		BDD fullBDD = ger.getFullBDD();
+		BDD fullBDD = er.getFullBDD();
 		BDD low = fullBDD.low();
 		fullBDD.free();
 		return new BDDER(low);
@@ -412,31 +412,31 @@ public class BDDER implements BDD {
 
 	@Override
 	public String toString() {
-		return ger.toString();
+		return er.toString();
 	}
 
 	@Override
 	public BitSet vars() {
-		return ger.vars();
+		return er.vars();
 	}
 
 	@Override
 	public int maxVar() {
-		return ger.maxVar();
+		return er.maxVar();
 	}
 
 	@Override
 	public BDD renameWithLeader(EquivalenceRelation r) {
-		return new BDDER(ger.getFullBDD().renameWithLeader(r));
+		return new BDDER(er.getFullBDD().renameWithLeader(r));
 	}
 
 	@Override
 	public Set<Pair> equivVars() {
-		return ger.getFullBDD().equivVars();
+		return er.getFullBDD().equivVars();
 	}
 
 	public boolean isNormalized() {
-		ER norm = ger.normalize();
-		return norm.getEquiv().equals(ger.getEquiv()) && norm.getN().isEquivalentTo(ger.getN());
+		ER norm = er.normalize();
+		return norm.getEquiv().equals(er.getEquiv()) && norm.getN().isEquivalentTo(er.getN());
 	}
 }

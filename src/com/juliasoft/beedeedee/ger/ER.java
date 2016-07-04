@@ -40,7 +40,7 @@ public class ER {
 	}
 
 	/**
-	 * Frees resources allocated to this ER. Call this method when the ger is
+	 * Frees resources allocated to this ER. Call this method when the er is
 	 * no more needed.
 	 * 
 	 * TODO the bdd is saved by reference, and calling this method can thus
@@ -93,9 +93,9 @@ public class ER {
 		return new ER(or, equiv);
 	}
 
-	private BDD computeNforOr(ER ger1, ER ger2) {
-		BDD squeezedBDD = ger1.getSqueezedBDD();
-		List<Pair> subtract = ger1.l.subtract(ger2.l);
+	private BDD computeNforOr(ER er1, ER er2) {
+		BDD squeezedBDD = er1.getSqueezedBDD();
+		List<Pair> subtract = er1.l.subtract(er2.l);
 		for (Pair pair : subtract) {
 			BDD biimp = squeezedBDD.getFactory().makeVar(pair.first);
 			biimp.biimpWith(squeezedBDD.getFactory().makeVar(pair.second));
