@@ -14,7 +14,7 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.er.EquivalenceRelation;
 import com.juliasoft.beedeedee.er.Pair;
 
-public class ETest {
+public class EquivalenceRelationTest {
 
 	@Test
 	public void testIntersect1() {
