@@ -177,7 +177,7 @@ public class ER {
 	 * @return a normalized version of this ER.
 	 */
 	public ER normalize() {
-		EquivalenceRelation eNew = l;
+		EquivalenceRelation eNew = l.copy();
 		BDD nNew = n.copy();
 		EquivalenceRelation eOld;
 		BDD nOld = null;
