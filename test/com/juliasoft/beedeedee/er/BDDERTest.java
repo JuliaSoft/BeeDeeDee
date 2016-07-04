@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.ger;
+package com.juliasoft.beedeedee.er;
 
 import static org.junit.Assert.*;
 
@@ -7,6 +7,7 @@ import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
+import com.juliasoft.beedeedee.er.BDDER;
 import com.juliasoft.beedeedee.factories.Factory;
 
 public class BDDERTest {

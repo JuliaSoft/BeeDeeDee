@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.ger;
+package com.juliasoft.beedeedee.er;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
@@ -11,6 +11,8 @@ import java.util.List;
 import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
+import com.juliasoft.beedeedee.er.EquivalenceRelation;
+import com.juliasoft.beedeedee.er.Pair;
 
 public class ETest {
 

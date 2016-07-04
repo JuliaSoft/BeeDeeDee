@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.ger;
+package com.juliasoft.beedeedee.er;
 
 import java.util.Collection;
 

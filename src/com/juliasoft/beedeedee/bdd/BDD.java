@@ -23,9 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.juliasoft.beedeedee.er.EquivalenceRelation;
+import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.ger.EquivalenceRelation;
-import com.juliasoft.beedeedee.ger.Pair;
 
 /**
  * A Binary Decision Diagram.

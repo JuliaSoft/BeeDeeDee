@@ -38,9 +38,9 @@ import net.sf.javabdd.BDDPairing;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.er.ERFactory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
-import com.juliasoft.beedeedee.ger.ERFactory;
 import com.juliasoft.julia.checkers.nullness.NonNull;
 
 /**

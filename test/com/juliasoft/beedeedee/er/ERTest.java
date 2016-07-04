@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.ger;
+package com.juliasoft.beedeedee.er;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -15,6 +15,9 @@ import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.er.ER;
+import com.juliasoft.beedeedee.er.EquivalenceRelation;
+import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
 

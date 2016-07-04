@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.ger;
+package com.juliasoft.beedeedee.er;
 
 public class NotBDDGerException extends RuntimeException {
 	public NotBDDGerException() {

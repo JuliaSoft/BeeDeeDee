@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.juliasoft.beedeedee.ger.Pair;
+import com.juliasoft.beedeedee.er.Pair;
 
 @SuppressWarnings("rawtypes")
 class EquivCache {
