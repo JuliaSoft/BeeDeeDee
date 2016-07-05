@@ -1238,7 +1238,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(squeezeEquiv(id, r));
+				return new BDDImpl(squeezeEquiv(id, r, new SqueezeEquivCache(20)));
 			}
 			finally {
 				lock.unlock();
@@ -1250,7 +1250,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(squeezeEquiv(id, r));
+				setId(squeezeEquiv(id, r, new SqueezeEquivCache(20)));
 			}
 			finally {
 				lock.unlock();
@@ -1259,18 +1259,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return this;
 		}
 
-		private int squeezeEquiv(int bdd, EquivalenceRelation equivalenceRelation) {
+		private int squeezeEquiv(int bdd, EquivalenceRelation equivalenceRelation, SqueezeEquivCache cache) {
 			if (bdd < FIRST_NODE_NUM) {
 				return bdd;
 			}
+			int cached = cache.get(bdd);
+			if (cached >= 0) {
+				return cached;
+			}
+
 			int var = ut.var(bdd);
 			if (equivalenceRelation.getLeader(var) == var) {
-				return MK(var, squeezeEquiv(ut.low(bdd), equivalenceRelation), squeezeEquiv(ut.high(bdd), equivalenceRelation));
+				int res = MK(var, squeezeEquiv(ut.low(bdd), equivalenceRelation, cache), squeezeEquiv(ut.high(bdd), equivalenceRelation, cache));
+				cache.put(bdd, res);
+				return res;
 			}
 			if (ut.high(bdd) == 0) {
-				return squeezeEquiv(ut.low(bdd), equivalenceRelation);
+				return squeezeEquiv(ut.low(bdd), equivalenceRelation, cache);
 			}
-			return squeezeEquiv(ut.high(bdd), equivalenceRelation);
+			return squeezeEquiv(ut.high(bdd), equivalenceRelation, cache);
 		}
 
 		@Override
