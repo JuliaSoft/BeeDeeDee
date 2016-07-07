@@ -425,6 +425,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		private final QuantCache quantCache;
 		private final ReplaceCache replaceCache;
 		private final EquivCache equivCache;
+		private final RenameWithLeaderCache rwlCache;
 
 		private ResizeData(ResizingAndGarbageCollectedUniqueTable table) {
 			start = System.currentTimeMillis();
@@ -448,6 +449,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			replaceCache = new ReplaceCache(Math.max(1, newCacheSize / 20));
 			quantCache = new QuantCache(Math.max(1, newCacheSize / 20));
 			equivCache = new EquivCache(Math.max(1, newCacheSize / 20));
+			rwlCache = new RenameWithLeaderCache(Math.max(1, newCacheSize / 20));
 		}
 	}
 
@@ -462,6 +464,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		this.replaceCache = data.replaceCache;
 		this.quantCache = data.quantCache;
 		this.equivCache = data.equivCache;
+		this.rwlCache = data.rwlCache;
 
 		updateHashTable();
 	}
@@ -554,6 +557,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		replaceCache.clear();
 		quantCache.clear();
 		equivCache.clear();
+		rwlCache.clear();
 
 		return collected;
 	}
@@ -569,5 +573,9 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	public EquivCache getEquivCache() {
 		return equivCache;
+	}
+
+	public RenameWithLeaderCache getRWLCache() {
+		return rwlCache;
 	}
 }

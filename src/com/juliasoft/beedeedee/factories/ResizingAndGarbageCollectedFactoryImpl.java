@@ -1395,7 +1395,14 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(renameWithLeader(id, r, 0, new BitSet()));
+				RenameWithLeaderCache cache = ut.getRWLCache();
+				int cached = cache.get(id, r);
+				if (cached >= 0) {
+					return new BDDImpl(cached);
+				}
+				int rwl = renameWithLeader(id, r, 0, new BitSet());
+				cache.put(id, r, rwl);
+				return new BDDImpl(rwl);
 			}
 			finally {
 				lock.unlock();
