@@ -1233,12 +1233,15 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				return ite(id2, ut.high(id1), ut.low(id1));
 		}
 
+		private SqueezeEquivCache squeezeEquivCache = new SqueezeEquivCache(20);
+
 		@Override
 		public BDD squeezeEquiv(EquivalenceRelation r) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(squeezeEquiv(id, r, new SqueezeEquivCache(20)));
+				squeezeEquivCache.clear();
+				return new BDDImpl(squeezeEquiv(id, r, squeezeEquivCache));
 			}
 			finally {
 				lock.unlock();
@@ -1250,7 +1253,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(squeezeEquiv(id, r, new SqueezeEquivCache(20)));
+				squeezeEquivCache.clear();
+				setId(squeezeEquiv(id, r, squeezeEquivCache));
 			}
 			finally {
 				lock.unlock();
