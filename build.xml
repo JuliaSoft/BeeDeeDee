@@ -30,7 +30,10 @@
 				<fileset dir="bin" includes="**/*Test.class" />
 			</batchtest>
 		</junit>
+	</target>
 
+	<target name="javadoc">
+		<javadoc sourcepath="src" destdir="docs"/>
 	</target>
 
 	<target name="clean">
