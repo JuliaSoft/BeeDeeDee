@@ -1404,19 +1404,15 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		@Override
-		public BDD renameWithLeader(EquivalenceRelation r) {
+		public BDD renameWithLeader(EquivalenceRelation equivalenceRelations) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
 				RenameWithLeaderCache cache = ut.getRWLCache();
-				int cached = cache.get(id, r);
-				if (cached >= 0)
-					return new BDDImpl(cached);
-
-				//System.out.println();
-				int rwl = new RenamerWithLeader(r).resultId;
-				cache.put(id, r, rwl);
-				return new BDDImpl(rwl);
+				int result = cache.get(id, equivalenceRelations);
+				if (result >= 0)
+					return new BDDImpl(result);
+				return new BDDImpl(new RenamerWithLeader(equivalenceRelations).resultId);
 			}
 			finally {
 				lock.unlock();
@@ -1427,33 +1423,23 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			private final EquivalenceRelation equivalenceRelations;
 			private final int resultId;
 			private final int maxVar;
-			private final static int CACHE_SIZE = 200;
-			private final int[] bdds = new int[CACHE_SIZE];
-			private final int[] cs = new int[CACHE_SIZE];
-			private final BitSet[] ts = new BitSet[CACHE_SIZE];
-			private final int[] results = new int[CACHE_SIZE];
-			private final int[] minLeaderGreaterThanOrEqual = new int[CACHE_SIZE * 10];
+			private final static int CACHE_SIZE = 2000;
+			private final int[] minLeaderGreaterThanOrEqual = new int[CACHE_SIZE];
 
-			RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
+			private RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
 				this.equivalenceRelations = equivalenceRelations;
 				this.maxVar = equivalenceRelations.maxVar();
-				Arrays.fill(bdds, -1);
 				Arrays.fill(minLeaderGreaterThanOrEqual, -1);
 
 				this.resultId = renameWithLeader(id, 0, new BitSet());
 			}
 
 			private int renameWithLeader(final int bdd, final int c, final BitSet t) {
-				int var;
+				int var, l;
 				if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
 					return bdd;
 
-				int hash = bdd % CACHE_SIZE, result, l;
-				// can we relax the following condition?
-				if (bdd == bdds[hash] && c == cs[hash] && t.equals(ts[hash]))
-					return results[hash];
-
-				int minLeader;
+				int result, minLeader;
 				
 				if (c < minLeaderGreaterThanOrEqual.length) {
 					minLeader = minLeaderGreaterThanOrEqual[c];
@@ -1468,9 +1454,8 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					augmented.set(minLeader);
 					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
 				}
-				else if (!equivalenceRelations.containsVar(var)) {
+				else if (!equivalenceRelations.containsVar(var))
 					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
-				}
 				else if ((l = equivalenceRelations.getLeader(var)) == var) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(var);
@@ -1480,11 +1465,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					result = renameWithLeader(ut.high(bdd), var + 1, t);
 				else
 					result = renameWithLeader(ut.low(bdd), var + 1, t);
-
-				bdds[hash] = bdd;
-				cs[hash] = c;
-				ts[hash] = t;
-				results[hash] = result;
 
 				return result;
 			}

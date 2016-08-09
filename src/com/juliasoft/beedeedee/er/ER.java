@@ -190,7 +190,7 @@ public class ER {
 			eNew.addPairs(nNew.equivVars());
 //			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
 //			nNew.squeezeEquivWith(leaderFunctionNew);
-			nNew = nNew.renameWithLeader(eNew);
+			nNew = nNew.renameWithLeader(eNew.copy());
 		} while (!nNew.isEquivalentTo(nOld) || !eNew.equals(eOld));
 
 		nOld.free();
