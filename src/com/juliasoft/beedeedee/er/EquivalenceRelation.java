@@ -293,7 +293,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @param c
 	 * @return the minimum leader >= c
 	 */
-	public int minLeader(int c) {
+	public int minLeaderGreaterOrEqualtTo(int c) {
 		int min = Integer.MAX_VALUE;
 		for (BitSet eqClass : equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);

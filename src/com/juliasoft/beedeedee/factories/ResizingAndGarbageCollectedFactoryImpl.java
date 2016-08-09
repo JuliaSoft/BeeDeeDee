@@ -21,6 +21,7 @@ package com.juliasoft.beedeedee.factories;
 import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1413,7 +1414,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					return new BDDImpl(cached);
 
 				//System.out.println();
-				int rwl = new RenamerWithLeader(id, r, 0, new BitSet()).resultId;
+				int rwl = new RenamerWithLeader(r).resultId;
 				cache.put(id, r, rwl);
 				return new BDDImpl(rwl);
 			}
@@ -1426,45 +1427,67 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			private final EquivalenceRelation equivalenceRelations;
 			private final int resultId;
 			private final int maxVar;
+			private final static int CACHE_SIZE = 200;
+			private final int[] bdds = new int[CACHE_SIZE];
+			private final int[] cs = new int[CACHE_SIZE];
+			private final BitSet[] ts = new BitSet[CACHE_SIZE];
+			private final int[] results = new int[CACHE_SIZE];
+			private final int[] minLeaderGreaterThanOrEqual = new int[CACHE_SIZE * 10];
 
-			RenamerWithLeader(int bdd, EquivalenceRelation equivalenceRelations, int c, BitSet t) {
+			RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
 				this.equivalenceRelations = equivalenceRelations;
 				this.maxVar = equivalenceRelations.maxVar();
+				Arrays.fill(bdds, -1);
+				Arrays.fill(cs, -1);
+				Arrays.fill(minLeaderGreaterThanOrEqual, -1);
 
-				resultId = renameWithLeader(bdd, c, t);
+				this.resultId = renameWithLeader(id, 0, new BitSet());
 			}
 
-			private int renameWithLeader(int bdd, int c, BitSet t) {
-				//System.out.println(bdd + ":" + c + ":" + t.hashCode());
-				if (bdd < FIRST_NODE_NUM)
+			private int renameWithLeader(final int bdd, final int c, final BitSet t) {
+				int var;
+				if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
 					return bdd;
 
-				int var = ut.var(bdd);
-				if (maxVar < var)
-					return bdd;
+				int hash = bdd % CACHE_SIZE, result, l;
+				// can we relax the following condition?
+				if (bdd == bdds[hash] && c == cs[hash] && t.equals(ts[hash]))
+					return results[hash];
 
-				int minLeader = equivalenceRelations.minLeader(c);
-				if (minLeader >= c && minLeader < var) {
+				int minLeader;
+				
+				if (c < minLeaderGreaterThanOrEqual.length) {
+					minLeader = minLeaderGreaterThanOrEqual[c];
+					if (minLeader == -1)
+						minLeaderGreaterThanOrEqual[c] = minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c);
+				}
+				else
+					minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c);
+
+				if (minLeader < var) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(minLeader);
-					return MK(minLeader, renameWithLeader(bdd, minLeader + 1, t),
-							renameWithLeader(bdd, minLeader + 1, augmented));
+					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
 				}
-				if (!equivalenceRelations.containsVar(var)) {
-					return MK(var, renameWithLeader(ut.low(bdd), var + 1, t),
-							renameWithLeader(ut.high(bdd), var + 1, t));
+				else if (!equivalenceRelations.containsVar(var)) {
+					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
 				}
-				int l = equivalenceRelations.getLeader(var);
-				if (l == var) {
+				else if ((l = equivalenceRelations.getLeader(var)) == var) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(var);
-					return MK(var, renameWithLeader(ut.low(bdd), var + 1, t), 
-							renameWithLeader(ut.high(bdd), var + 1, augmented));
+					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, augmented));
 				}
-				if (t.get(l))
-					return renameWithLeader(ut.high(bdd), var + 1, t);
+				else if (t.get(l))
+					result = renameWithLeader(ut.high(bdd), var + 1, t);
 				else
-					return renameWithLeader(ut.low(bdd), var + 1, t);
+					result = renameWithLeader(ut.low(bdd), var + 1, t);
+
+				bdds[hash] = bdd;
+				cs[hash] = c;
+				ts[hash] = t;
+				results[hash] = result;
+
+				return result;
 			}
 		}
 
@@ -1478,7 +1501,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if (cached != null) {
 					return cached;
 				}
-				Set<Pair> ev = equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+				Set<Pair> ev = new EquivVarsCalculator().result;
 				equivCache.put(id, ev);
 				return ev;
 			} finally {
@@ -1486,52 +1509,74 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
-		private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
-			if (bdd < FIRST_NODE_NUM) {
+		private class EquivVarsCalculator {
+			private class Result {
+				private final BitSet entailed;
+				private final BitSet disentailed;
+				private final Set<Pair> equiv;
+				private final Set<Pair> result;
+
+				private Result(BitSet entailed, BitSet disentailed, Set<Pair> equiv, Set<Pair> result) {
+					this.entailed = entailed;
+					this.disentailed = disentailed;
+					this.equiv = equiv;
+					this.result = result;
+				}
+			}
+
+			private final Set<Pair> result;
+
+			private EquivVarsCalculator() {
+				this.result = equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+			}
+
+			private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+				if (bdd < FIRST_NODE_NUM)
+					return equiv;
+
+				int var = ut.var(bdd);
+
+				if (ut.high(bdd) == ZERO) {
+					if (ut.low(bdd) != ONE) {
+						equivVars(ut.low(bdd), entailed, disentailed, equiv);
+						disentailed.set(var);
+						int maxd = disentailed.length() - 1;
+						if (var != maxd) {
+							equiv.add(new Pair(var, maxd));
+						}
+					}
+					else
+						disentailed.set(var);
+				}
+				else if (ut.low(bdd) == ZERO) {
+					if (ut.high(bdd) != ONE) {
+						equivVars(ut.high(bdd), entailed, disentailed, equiv);
+						entailed.set(var);
+						int maxe = entailed.length() - 1;
+						if (var != maxe) {
+							equiv.add(new Pair(var, maxe));
+						}
+					}
+					else
+						entailed.set(var);
+				}
+				else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
+					BitSet eTrue = new BitSet();
+					BitSet dFalse = new BitSet();
+					Set<Pair> equivFalse = new HashSet<>();
+					equivVars(ut.high(bdd), eTrue, disentailed, equiv);
+					equivVars(ut.low(bdd), entailed, dFalse, equivFalse);
+					entailed.and(eTrue);
+					disentailed.and(dFalse);
+					equiv.retainAll(equivFalse);
+					eTrue.and(dFalse);
+					if (eTrue.cardinality() > 0)
+						equiv.add(new Pair(var, eTrue.length() - 1));
+				}
+
 				return equiv;
 			}
-
-			int var = ut.var(bdd);
-
-			if (ut.high(bdd) == ZERO) {
-				if (ut.low(bdd) != ONE) {
-					equivVars(ut.low(bdd), entailed, disentailed, equiv);
-					disentailed.set(var);
-					int maxd = disentailed.length() - 1;
-					if (var != maxd) {
-						equiv.add(new Pair(var, maxd));
-					}
-				} else {
-					disentailed.set(var);
-				}
-			} else if (ut.low(bdd) == ZERO) {
-				if (ut.high(bdd) != ONE) {
-					equivVars(ut.high(bdd), entailed, disentailed, equiv);
-					entailed.set(var);
-					int maxe = entailed.length() - 1;
-					if (var != maxe) {
-						equiv.add(new Pair(var, maxe));
-					}
-				} else {
-					entailed.set(var);
-				}
-			} else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
-				BitSet eTrue = new BitSet();
-				BitSet dFalse = new BitSet();
-				Set<Pair> equivFalse = new HashSet<>();
-				equivVars(ut.high(bdd), eTrue, disentailed, equiv);
-				equivVars(ut.low(bdd), entailed, dFalse, equivFalse);
-				entailed.and(eTrue);
-				disentailed.and(dFalse);
-				equiv.retainAll(equivFalse);
-				eTrue.and(dFalse);
-				if (eTrue.cardinality() > 0) {
-					equiv.add(new Pair(var, eTrue.length() - 1));
-				}
-			}
-			return equiv;
 		}
-
 	}
 
 	@Override
