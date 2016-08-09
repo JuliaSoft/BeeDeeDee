@@ -16,7 +16,7 @@ import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 // TODO / FIXME this representation doesn't separate ground variables (yet?)
 public class ER {
 
-	private BDD n;
+	private final BDD n;
 	private EquivalenceRelation l;
 
 	/**

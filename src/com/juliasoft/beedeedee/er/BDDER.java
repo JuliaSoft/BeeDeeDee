@@ -24,12 +24,10 @@ public class BDDER implements BDD {
 	 *            (same as) normalized
 	 */
 	BDDER(BDD bdd) {
-		if (bdd != null) {
-			ER temp = new ER(bdd);
-			er = temp.normalize();
-			if (!bdd.equals(er.getN())) {
-				temp.free();
-			}
+		ER temp = new ER(bdd);
+		er = temp.normalize();
+		if (!bdd.equals(er.getN())) {
+			temp.free();
 		}
 	}
 

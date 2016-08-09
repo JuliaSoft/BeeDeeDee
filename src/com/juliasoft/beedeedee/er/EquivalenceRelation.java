@@ -12,11 +12,14 @@ import com.juliasoft.beedeedee.bdd.Assignment;
  * A set of equivalence classes.
  */
 public class EquivalenceRelation implements Iterable<BitSet> {
-
-	private List<BitSet> equivalenceClasses;
+	private final List<BitSet> equivalenceClasses;
 
 	public EquivalenceRelation() {
 		equivalenceClasses = new ArrayList<>();
+	}
+
+	private EquivalenceRelation(List<BitSet> equivalenceClasses) {
+		this.equivalenceClasses = equivalenceClasses;
 	}
 
 	private List<BitSet> intersect(List<BitSet> equiv1, List<BitSet> equiv2) {
@@ -41,9 +44,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @return the resulting set
 	 */
 	public EquivalenceRelation intersect(EquivalenceRelation other) {
-		EquivalenceRelation result = new EquivalenceRelation();
-		result.equivalenceClasses = intersect(equivalenceClasses, other.equivalenceClasses);
-		return result;
+		return new EquivalenceRelation(intersect(equivalenceClasses, other.equivalenceClasses));
 	}
 
 	/**
@@ -51,7 +52,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param equivalenceClass the class to add
 	 */
-	void add(BitSet equivalenceClass) {
+	private void add(BitSet equivalenceClass) {
 		equivalenceClasses.add(equivalenceClass);
 	}
 
@@ -186,9 +187,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	public EquivalenceRelation copy() {
 		EquivalenceRelation e = new EquivalenceRelation();
 		for (BitSet eqClass : equivalenceClasses) {
-			BitSet eqClassCopy = new BitSet();
-			eqClassCopy.or(eqClass);
-			e.add(eqClassCopy);
+			e.add((BitSet) eqClass.clone());
 		}
 		return e;
 	}
@@ -223,15 +222,13 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	void updateAssignment(Assignment a) {
 		classIteration: for (BitSet eqClass : equivalenceClasses) {
 			for (int i = eqClass.nextSetBit(0); i >= 0; i = eqClass.nextSetBit(i + 1)) {
-				boolean holds = false;
 				try {
-					holds = a.holds(i);
+					if (a.holds(i)) {
+						setAll(a, eqClass, true);
+						continue classIteration;
+					}
 				} catch (Exception e) {
 					// ignore exception if variable not in assignment
-				}
-				if (holds) {
-					setAll(a, eqClass, true);
-					continue classIteration;
 				}
 			}
 			setAll(a, eqClass, false);
@@ -307,5 +304,4 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 		return min;
 	}
-
 }
