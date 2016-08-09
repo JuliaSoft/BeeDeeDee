@@ -1233,18 +1233,48 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				return ite(id2, ut.high(id1), ut.low(id1));
 		}
 
-		private SqueezeEquivCache squeezeEquivCache = new SqueezeEquivCache(20);
-
 		@Override
 		public BDD squeezeEquiv(EquivalenceRelation r) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				squeezeEquivCache.clear();
-				return new BDDImpl(squeezeEquiv(id, r, squeezeEquivCache));
+				return new BDDImpl(new EquivalenceSqueezer(r).squeezedId);
 			}
 			finally {
 				lock.unlock();
+			}
+		}
+
+		private class EquivalenceSqueezer {
+			private final SqueezeEquivCache cache = new SqueezeEquivCache();
+			private final EquivalenceRelation equivalenceRelation;
+			private final int squeezedId;
+
+			private EquivalenceSqueezer(EquivalenceRelation equivalenceRelation) {
+				this.equivalenceRelation = equivalenceRelation;
+				this.squeezedId = squeezeEquiv(id);
+			}
+
+			private int squeezeEquiv(int bdd) {
+				if (bdd < FIRST_NODE_NUM) {
+					return bdd;
+				}
+				int cached = cache.get(bdd);
+				if (cached >= 0) {
+					return cached;
+				}
+
+				int var = ut.var(bdd);
+				if (equivalenceRelation.getLeader(var) == var) {
+					int res = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
+					cache.put(bdd, res);
+					return res;
+				}
+
+				if (ut.high(bdd) == 0)
+					return squeezeEquiv(ut.low(bdd));
+				else
+					return squeezeEquiv(ut.high(bdd));
 			}
 		}
 
@@ -1253,35 +1283,13 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				squeezeEquivCache.clear();
-				setId(squeezeEquiv(id, r, squeezeEquivCache));
+				setId(new EquivalenceSqueezer(r).squeezedId);
 			}
 			finally {
 				lock.unlock();
 			}
 			
 			return this;
-		}
-
-		private int squeezeEquiv(int bdd, EquivalenceRelation equivalenceRelation, SqueezeEquivCache cache) {
-			if (bdd < FIRST_NODE_NUM) {
-				return bdd;
-			}
-			int cached = cache.get(bdd);
-			if (cached >= 0) {
-				return cached;
-			}
-
-			int var = ut.var(bdd);
-			if (equivalenceRelation.getLeader(var) == var) {
-				int res = MK(var, squeezeEquiv(ut.low(bdd), equivalenceRelation, cache), squeezeEquiv(ut.high(bdd), equivalenceRelation, cache));
-				cache.put(bdd, res);
-				return res;
-			}
-			if (ut.high(bdd) == 0) {
-				return squeezeEquiv(ut.low(bdd), equivalenceRelation, cache);
-			}
-			return squeezeEquiv(ut.high(bdd), equivalenceRelation, cache);
 		}
 
 		@Override
@@ -1401,10 +1409,11 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			try {
 				RenameWithLeaderCache cache = ut.getRWLCache();
 				int cached = cache.get(id, r);
-				if (cached >= 0) {
+				if (cached >= 0)
 					return new BDDImpl(cached);
-				}
-				int rwl = renameWithLeader(id, r, 0, new BitSet());
+
+				//System.out.println();
+				int rwl = new RenamerWithLeader(id, r, 0, new BitSet()).resultId;
 				cache.put(id, r, rwl);
 				return new BDDImpl(rwl);
 			}
@@ -1413,36 +1422,50 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 		}
 
-		private int renameWithLeader(int f, EquivalenceRelation r, int c, BitSet t) {
-			int var = ut.var(f);
-			int maxVar = r.maxVar();
-			if (maxVar < var || f < FIRST_NODE_NUM) {
-				return f;
+		private class RenamerWithLeader {
+			private final EquivalenceRelation equivalenceRelations;
+			private final int resultId;
+			private final int maxVar;
+
+			RenamerWithLeader(int bdd, EquivalenceRelation equivalenceRelations, int c, BitSet t) {
+				this.equivalenceRelations = equivalenceRelations;
+				this.maxVar = equivalenceRelations.maxVar();
+
+				resultId = renameWithLeader(bdd, c, t);
 			}
-			BitSet augmented = new BitSet();
-			augmented.or(t);
-			int minLeader = r.minLeader(c);
-			if (minLeader >= c && minLeader < var) {
-				augmented.set(minLeader);
-				c = minLeader;
-				return MK(minLeader, renameWithLeader(f, r, c + 1, t),
-						renameWithLeader(f, r, c + 1, augmented));
+
+			private int renameWithLeader(int bdd, int c, BitSet t) {
+				//System.out.println(bdd + ":" + c + ":" + t.hashCode());
+				if (bdd < FIRST_NODE_NUM)
+					return bdd;
+
+				int var = ut.var(bdd);
+				if (maxVar < var)
+					return bdd;
+
+				int minLeader = equivalenceRelations.minLeader(c);
+				if (minLeader >= c && minLeader < var) {
+					BitSet augmented = (BitSet) t.clone();
+					augmented.set(minLeader);
+					return MK(minLeader, renameWithLeader(bdd, minLeader + 1, t),
+							renameWithLeader(bdd, minLeader + 1, augmented));
+				}
+				if (!equivalenceRelations.containsVar(var)) {
+					return MK(var, renameWithLeader(ut.low(bdd), var + 1, t),
+							renameWithLeader(ut.high(bdd), var + 1, t));
+				}
+				int l = equivalenceRelations.getLeader(var);
+				if (l == var) {
+					BitSet augmented = (BitSet) t.clone();
+					augmented.set(var);
+					return MK(var, renameWithLeader(ut.low(bdd), var + 1, t), 
+							renameWithLeader(ut.high(bdd), var + 1, augmented));
+				}
+				if (t.get(l))
+					return renameWithLeader(ut.high(bdd), var + 1, t);
+				else
+					return renameWithLeader(ut.low(bdd), var + 1, t);
 			}
-			c = var;
-			if (!r.containsVar(var)) {
-				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t),
-						renameWithLeader(ut.high(f), r, c + 1, t));
-			}
-			int l = r.getLeader(var);
-			if (l == var) {
-				augmented.set(c);
-				return MK(var, renameWithLeader(ut.low(f), r, c + 1, t),
-						renameWithLeader(ut.high(f), r, c + 1, augmented));
-			}
-			if (t.get(l)) {
-				return renameWithLeader(ut.high(f), r, c + 1, t);
-			}
-			return renameWithLeader(ut.low(f), r, c + 1, t);
 		}
 
 		@Override
@@ -1501,10 +1524,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				entailed.and(eTrue);
 				disentailed.and(dFalse);
 				equiv.retainAll(equivFalse);
-				BitSet n = (BitSet) eTrue.clone();
-				n.and(dFalse);
-				if (n.cardinality() > 0) {
-					equiv.add(new Pair(var, n.length() - 1));
+				eTrue.and(dFalse);
+				if (eTrue.cardinality() > 0) {
+					equiv.add(new Pair(var, eTrue.length() - 1));
 				}
 			}
 			return equiv;
