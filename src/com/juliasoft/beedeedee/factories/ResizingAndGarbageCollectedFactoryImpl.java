@@ -1495,106 +1495,10 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				EquivCache equivCache = ut.getEquivCache();
-				Set<Pair> cached = equivCache.get(id);
-				if (cached != null) {
-					return cached;
-				}
-				Set<Pair> ev = new EquivVarsCalculator().result;
-				equivCache.put(id, ev);
-				return ev;
-			} finally {
+				return new EquivVarsCalculator(id).result;
+			}
+			finally {
 				lock.unlock();
-			}
-		}
-
-		private class EquivVarsCalculator {
-			private class Result {
-				private final BitSet entailed;
-				private final BitSet disentailed;
-				private final Set<Pair> equiv;
-
-				private Result() {
-					this(new BitSet(), new BitSet(), new HashSet<Pair>());
-				}
-
-				private Result(Result parent) {
-					this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), new HashSet<Pair>(parent.equiv));
-				}
-
-				private Result(BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
-					this.entailed = entailed;
-					this.disentailed = disentailed;
-					this.equiv = equiv;
-				}
-			}
-
-			private final Set<Pair> result;
-			private final static int CACHE_SIZE = 200;
-			private final int bdds[] = new int[CACHE_SIZE];
-			private final Result[] results = new Result[CACHE_SIZE];
-
-			private EquivVarsCalculator() {
-				Arrays.fill(bdds, -1);
-				this.result = equivVars(id).equiv;
-			}
-
-			private Result equivVars(int bdd) {
-				if (bdd < FIRST_NODE_NUM)
-					return new Result();
-
-				int hash = bdd % CACHE_SIZE;
-				if (bdds[hash] == bdd)
-					return results[hash];
-
-				Result result;
-				int var = ut.var(bdd);
-
-				if (ut.high(bdd) == ZERO) {
-					if (ut.low(bdd) != ONE) {
-						result = new Result(equivVars(ut.low(bdd)));
-						result.disentailed.set(var);
-						int maxd = result.disentailed.length() - 1;
-						if (var != maxd)
-							result.equiv.add(new Pair(var, maxd));
-					}
-					else {
-						result = new Result();
-						result.disentailed.set(var);
-					}
-				}
-				else if (ut.low(bdd) == ZERO) {
-					if (ut.high(bdd) != ONE) {
-						result = new Result(equivVars(ut.high(bdd)));
-						result.entailed.set(var);
-						int maxe = result.entailed.length() - 1;
-						if (var != maxe)
-							result.equiv.add(new Pair(var, maxe));
-					}
-					else {
-						result = new Result();
-						result.entailed.set(var);
-					}
-				}
-				else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
-					Result result1 = equivVars(ut.high(bdd));
-					Result result2 = equivVars(ut.low(bdd));
-					result = new Result(result1);
-					result.entailed.and(result2.entailed);
-					result.disentailed.and(result2.disentailed);
-					result.equiv.retainAll(result2.equiv);
-					BitSet intersection = (BitSet) result1.entailed.clone();
-					intersection.and(result2.disentailed);
-					if (intersection.cardinality() > 0)
-						result.equiv.add(new Pair(var, intersection.length() - 1));
-				}
-				else
-					result = new Result();
-
-				bdds[hash] = bdd;
-				results[hash] = result;
-
-				return result;
 			}
 		}
 	}
@@ -1602,6 +1506,92 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 	@Override
 	public int getMaxVar() {
 		return maxVar;
+	}
+
+	public static class EquivResult {
+		private final BitSet entailed;
+		private final BitSet disentailed;
+		private final Set<Pair> equiv;
+		private final static EquivResult emptyEquivResult = new EquivResult();
+
+		protected EquivResult() {
+			this(new BitSet(), new BitSet(), new HashSet<Pair>());
+		}
+
+		private EquivResult(EquivResult parent) {
+			this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), new HashSet<Pair>(parent.equiv));
+		}
+
+		private EquivResult(BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+			this.entailed = entailed;
+			this.disentailed = disentailed;
+			this.equiv = equiv;
+		}
+	}
+
+	private class EquivVarsCalculator {
+		private final EquivCache equivCache = ut.getEquivCache();
+		private final Set<Pair> result;
+
+		private EquivVarsCalculator(int id) {
+			this.result = equivVars(id).equiv;
+		}
+
+		private EquivResult equivVars(int bdd) {
+			if (bdd < FIRST_NODE_NUM)
+				return EquivResult.emptyEquivResult;
+
+			EquivResult result = equivCache.get(bdd);
+			if (result != null)
+				return result;
+
+			int var = ut.var(bdd);
+
+			if (ut.high(bdd) == ZERO) {
+				if (ut.low(bdd) != ONE) {
+					result = new EquivResult(equivVars(ut.low(bdd)));
+					result.disentailed.set(var);
+					int maxd = result.disentailed.length() - 1;
+					if (var != maxd)
+						result.equiv.add(new Pair(var, maxd));
+				}
+				else {
+					result = new EquivResult();
+					result.disentailed.set(var);
+				}
+			}
+			else if (ut.low(bdd) == ZERO) {
+				if (ut.high(bdd) != ONE) {
+					result = new EquivResult(equivVars(ut.high(bdd)));
+					result.entailed.set(var);
+					int maxe = result.entailed.length() - 1;
+					if (var != maxe)
+						result.equiv.add(new Pair(var, maxe));
+				}
+				else {
+					result = new EquivResult();
+					result.entailed.set(var);
+				}
+			}
+			else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
+				EquivResult result1 = equivVars(ut.high(bdd));
+				EquivResult result2 = equivVars(ut.low(bdd));
+				result = new EquivResult(result1);
+				result.entailed.and(result2.entailed);
+				result.disentailed.and(result2.disentailed);
+				result.equiv.retainAll(result2.equiv);
+				BitSet intersection = (BitSet) result1.entailed.clone();
+				intersection.and(result2.disentailed);
+				if (intersection.cardinality() > 0)
+					result.equiv.add(new Pair(var, intersection.length() - 1));
+			}
+			else
+				result = EquivResult.emptyEquivResult;
+
+			equivCache.put(bdd, result);
+
+			return result;
+		}
 	}
 
 	private class AssignmentImpl implements Assignment {

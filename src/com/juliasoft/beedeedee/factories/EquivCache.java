@@ -1,47 +1,37 @@
 package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
 
-import com.juliasoft.beedeedee.er.Pair;
+import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl.EquivResult;
 
-@SuppressWarnings("rawtypes")
 class EquivCache {
-
-	private int size;
-	private int[] cache;
-	private Set[] results;
+	private final int[] bdds;
+	private final EquivResult[] results;
 
 	EquivCache(int size) {
-		this.size = size;
-		cache = new int[size];
-		Arrays.fill(cache, -1);
-		results = new Set[size];
+		this.bdds = new int[size];
+		this.results = new EquivResult[size];
+		clear();
 	}
 
 	void clear() {
-		Arrays.fill(cache, -1);
+		Arrays.fill(bdds, -1);
 	}
 
-	@SuppressWarnings("unchecked")
-	public Set<Pair> get(int bdd) {
+	public EquivResult get(int bdd) {
 		int pos = hash(bdd);
 
-		if (cache[pos] == bdd) {
-			return results[pos];
-		}
-		return null;
+		return bdds[pos] == bdd ? results[pos] : null;
 	}
 
-	public void put(int bdd, Set<Pair> result) {
+	public void put(int bdd, EquivResult result) {
 		int pos = hash(bdd);
 
-		cache[pos] = bdd;
-		results[pos] = new HashSet<>(result);
+		bdds[pos] = bdd;
+		results[pos] = result;
 	}
 
 	private int hash(int bdd) {
-		return Math.abs(bdd % size);
+		return Math.abs(bdd % bdds.length);
 	}
 }
