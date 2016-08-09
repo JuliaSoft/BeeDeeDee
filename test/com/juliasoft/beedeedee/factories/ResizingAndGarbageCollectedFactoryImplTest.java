@@ -3,6 +3,7 @@ package com.juliasoft.beedeedee.factories;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 
 import org.junit.Before;
@@ -29,7 +30,7 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		// terminal are always alive
 		expected[0] = true;
 		expected[1] = true;
-		assertArrayEquals(expected, aliveNodes);
+		assertTrue(Arrays.equals(expected, aliveNodes));
 	}
 
 	@Test
@@ -45,7 +46,7 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		expected[1] = true;
 		// var 5 is alive
 		expected[2] = true;
-		assertArrayEquals(expected, aliveNodes);
+		assertTrue(Arrays.equals(expected, aliveNodes));
 	}
 
 	@Test
@@ -63,7 +64,7 @@ public class ResizingAndGarbageCollectedFactoryImplTest {
 		expected[1] = true;
 		// var 7 is alive
 		expected[3] = true;
-		assertArrayEquals(expected, aliveNodes);
+		assertTrue(Arrays.equals(expected, aliveNodes));
 	}
 
 	@Test
