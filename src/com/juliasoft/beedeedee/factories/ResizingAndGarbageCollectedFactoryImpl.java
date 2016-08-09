@@ -1438,7 +1438,6 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				this.equivalenceRelations = equivalenceRelations;
 				this.maxVar = equivalenceRelations.maxVar();
 				Arrays.fill(bdds, -1);
-				Arrays.fill(cs, -1);
 				Arrays.fill(minLeaderGreaterThanOrEqual, -1);
 
 				this.resultId = renameWithLeader(id, 0, new BitSet());
@@ -1514,67 +1513,88 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				private final BitSet entailed;
 				private final BitSet disentailed;
 				private final Set<Pair> equiv;
-				private final Set<Pair> result;
 
-				private Result(BitSet entailed, BitSet disentailed, Set<Pair> equiv, Set<Pair> result) {
+				private Result() {
+					this(new BitSet(), new BitSet(), new HashSet<Pair>());
+				}
+
+				private Result(Result parent) {
+					this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), new HashSet<Pair>(parent.equiv));
+				}
+
+				private Result(BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
 					this.entailed = entailed;
 					this.disentailed = disentailed;
 					this.equiv = equiv;
-					this.result = result;
 				}
 			}
 
 			private final Set<Pair> result;
+			private final static int CACHE_SIZE = 200;
+			private final int bdds[] = new int[CACHE_SIZE];
+			private final Result[] results = new Result[CACHE_SIZE];
 
 			private EquivVarsCalculator() {
-				this.result = equivVars(id, new BitSet(), new BitSet(), new HashSet<Pair>());
+				Arrays.fill(bdds, -1);
+				this.result = equivVars(id).equiv;
 			}
 
-			private Set<Pair> equivVars(int bdd, BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+			private Result equivVars(int bdd) {
 				if (bdd < FIRST_NODE_NUM)
-					return equiv;
+					return new Result();
 
+				int hash = bdd % CACHE_SIZE;
+				if (bdds[hash] != -1)
+					return results[hash];
+
+				Result result;
 				int var = ut.var(bdd);
 
 				if (ut.high(bdd) == ZERO) {
 					if (ut.low(bdd) != ONE) {
-						equivVars(ut.low(bdd), entailed, disentailed, equiv);
-						disentailed.set(var);
-						int maxd = disentailed.length() - 1;
-						if (var != maxd) {
-							equiv.add(new Pair(var, maxd));
-						}
+						result = new Result(equivVars(ut.low(bdd)));
+						result.disentailed.set(var);
+						int maxd = result.disentailed.length() - 1;
+						if (var != maxd)
+							result.equiv.add(new Pair(var, maxd));
 					}
-					else
-						disentailed.set(var);
+					else {
+						result = new Result();
+						result.disentailed.set(var);
+					}
 				}
 				else if (ut.low(bdd) == ZERO) {
 					if (ut.high(bdd) != ONE) {
-						equivVars(ut.high(bdd), entailed, disentailed, equiv);
-						entailed.set(var);
-						int maxe = entailed.length() - 1;
-						if (var != maxe) {
-							equiv.add(new Pair(var, maxe));
-						}
+						result = new Result(equivVars(ut.high(bdd)));
+						result.entailed.set(var);
+						int maxe = result.entailed.length() - 1;
+						if (var != maxe)
+							result.equiv.add(new Pair(var, maxe));
 					}
-					else
-						entailed.set(var);
+					else {
+						result = new Result();
+						result.entailed.set(var);
+					}
 				}
 				else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
-					BitSet eTrue = new BitSet();
-					BitSet dFalse = new BitSet();
-					Set<Pair> equivFalse = new HashSet<>();
-					equivVars(ut.high(bdd), eTrue, disentailed, equiv);
-					equivVars(ut.low(bdd), entailed, dFalse, equivFalse);
-					entailed.and(eTrue);
-					disentailed.and(dFalse);
-					equiv.retainAll(equivFalse);
-					eTrue.and(dFalse);
-					if (eTrue.cardinality() > 0)
-						equiv.add(new Pair(var, eTrue.length() - 1));
+					Result result1 = equivVars(ut.high(bdd));
+					Result result2 = equivVars(ut.low(bdd));
+					result = new Result(result1);
+					result.entailed.and(result2.entailed);
+					result.disentailed.and(result2.disentailed);
+					result.equiv.retainAll(result2.equiv);
+					BitSet intersection = (BitSet) result1.entailed.clone();
+					intersection.and(result2.disentailed);
+					if (intersection.cardinality() > 0)
+						result.equiv.add(new Pair(var, intersection.length() - 1));
 				}
+				else
+					result = new Result();
 
-				return equiv;
+				bdds[hash] = bdd;
+				results[hash] = result;
+
+				return result;
 			}
 		}
 	}
