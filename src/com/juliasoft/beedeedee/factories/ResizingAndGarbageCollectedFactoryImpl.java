@@ -1544,7 +1544,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 					return new Result();
 
 				int hash = bdd % CACHE_SIZE;
-				if (bdds[hash] != -1)
+				if (bdds[hash] == bdd)
 					return results[hash];
 
 				Result result;
