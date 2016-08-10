@@ -67,8 +67,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 	public EquivalenceRelation intersection(EquivalenceRelation other) {
 		List<BitSet> intersection = new ArrayList<>();
-		for (BitSet set1 : equivalenceClasses) {
-			for (BitSet set2 : other.equivalenceClasses) {
+		for (BitSet set1: equivalenceClasses) {
+			for (BitSet set2: other.equivalenceClasses) {
 				BitSet element = new BitSet();
 				element.or(set1);
 				element.and(set2);
@@ -100,7 +100,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 */
 	public List<Pair> pairs() {
 		ArrayList<Pair> pairs = new ArrayList<>();
-		for (BitSet bs : equivalenceClasses)
+		for (BitSet bs: equivalenceClasses)
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
 				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
 					pairs.add(new Pair(i, j));
@@ -117,18 +117,17 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	public List<Pair> pairsInDifference(EquivalenceRelation other) {
 		List<Pair> myPairs = pairs();
 		List<Pair> otherPairs = other.pairs();
+
 		BitSet toRemove = new BitSet();
-		List<Pair> result = new ArrayList<>();
-		for (Pair pair : myPairs) {
-			if (otherPairs.contains(pair)) {
+		for (Pair pair: myPairs)
+			if (otherPairs.contains(pair))
 				toRemove.set(pair.second);
-			}
-		}
-		for (Pair pair : myPairs) {
-			if (!toRemove.get(pair.first) && !toRemove.get(pair.second)) {
+
+		List<Pair> result = new ArrayList<>();
+		for (Pair pair: myPairs)
+			if (!toRemove.get(pair.first) && !toRemove.get(pair.second))
 				result.add(pair);
-			}
-		}
+
 		return result;
 	}
 
@@ -153,41 +152,43 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param pair the pair to add
 	 */
-	// TODO ugly code! use union-find data structure?
-	private static boolean addPair(Pair pair, List<BitSet> where) {
-		BitSet c1 = findClass(pair.first, where);
-		BitSet c2 = findClass(pair.second, where);
+	private static void addPair(Pair pair, List<BitSet> where) {
+		int pos1 = findClass(pair.first, where);
+		int pos2 = findClass(pair.second, where);
 
-		if (c1 != null) {
-			if (c2 != null) {
+		if (pos1 >= 0) {
+			if (pos2 >= 0) {
+				BitSet c1 = where.get(pos1);
+				BitSet c2 = where.get(pos2);
+
 				if (!c1.equals(c2)) {
-					// join classes
+					c1 = (BitSet) c1.clone();
 					c1.or(c2);
-					where.remove(c2);
-					return true;
+					where.set(pos1, c1);
+					where.remove(pos2);
 				}
-				else
-					return false;
 			}
 			else {
+				BitSet c1 = (BitSet) where.get(pos1).clone();
 				c1.set(pair.second);
-				return true;
+				where.set(pos1, c1);
 			}
 		}
 		else
-			if (c2 != null) {
+			if (pos2 >= 0) {
+				BitSet c2 = (BitSet) where.get(pos2).clone();
 				c2.set(pair.first);
-				return true;
+				where.set(pos2, c2);
 			}
 			else {
 				BitSet eqClass = new BitSet();
 				eqClass.set(pair.first);
 				eqClass.set(pair.second);
 				where.add(eqClass);
-				return true;
 			}
 	}
 
+	// TODO side effects
 	public EquivalenceRelation addClasses(EquivalenceRelation other) {
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
@@ -233,12 +234,16 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		return null;
 	}
 
-	private static BitSet findClass(int n, List<BitSet> where) {
-		for (BitSet eqClass: where)
+	private static int findClass(int n, List<BitSet> where) {
+		int pos = 0;
+		for (BitSet eqClass: where) {
 			if (eqClass.get(n))
-				return eqClass;
+				return pos;
 
-		return null;
+			pos++;
+		}
+
+		return -1;
 	}
 
 	@Override
@@ -303,6 +308,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			a.put(i, value);
 	}
 
+	// TODO: side effects
 	public EquivalenceRelation removeVar(int var) {
 		BitSet c = findClass(var, equivalenceClasses);
 		if (c != null)
@@ -332,11 +338,12 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		while (excludedVars.get(leader) || leader == var) {
 			leader = c.nextSetBit(leader + 1);
 			if (leader < 0)
-				break;
+				return -1;
 		}
 		return leader;
 	}
 
+	// TODO side-effect
 	public void replace(Map<Integer, Integer> renaming) {
 		for (Integer i: renaming.keySet()) {
 			BitSet c = findClass(i, equivalenceClasses);
