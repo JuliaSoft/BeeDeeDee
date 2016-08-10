@@ -63,8 +63,8 @@ public class ER {
 	public ER and(ER other) {
 		BDD and = n.and(other.n);
 		EquivalenceRelation e = new EquivalenceRelation();
-		e.addPairs(l.pairs());
-		e.addPairs(other.l.pairs());
+		e = new EquivalenceRelation(l); //.addPairs(l.pairs());
+		e.addClasses(other.l);
 		ER andGer = new ER(and, e);
 		ER result = andGer.normalize();
 		andGer.free();
@@ -179,21 +179,21 @@ public class ER {
 	public ER normalize() {
 		EquivalenceRelation eNew = l.copy();
 		BDD nNew = n.copy();
-		EquivalenceRelation eOld;
 		BDD nOld = null;
+		boolean eChanged;
+
 		do {
-			eOld = eNew.copy();
 			if (nOld != null)
 				nOld.free();
 
-			nOld = nNew;//.copy();
-			eNew.addPairs(nNew.equivVars());
-//			LeaderFunction leaderFunctionNew = new LeaderFunction(eNew);
-//			nNew.squeezeEquivWith(leaderFunctionNew);
-			nNew = nNew.renameWithLeader(eNew.copy());
-		} while (!nNew.isEquivalentTo(nOld) || !eNew.equals(eOld));
+			nOld = nNew;
+			eChanged = eNew.addPairs(nNew.equivVars());
+			nNew = nNew.renameWithLeader(eNew);
+		}
+		while (eChanged || !nNew.isEquivalentTo(nOld));
 
-		nOld.free();
+		if (nOld != nNew)
+			nOld.free();
 
 		return new ER(nNew, eNew);
 	}

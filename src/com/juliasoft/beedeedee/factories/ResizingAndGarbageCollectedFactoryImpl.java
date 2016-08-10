@@ -1460,15 +1460,16 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if ((var = ut.var(bdd)) > maxVar)
 					return bdd;
 
+				Filter filter = new UsefulLeaders(bdd);
 				// we further filter here, since some equivalence class might be irrelevant
 				// from the residual bdd, but not for the whole bdd
-				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(level, var, new UsefulLeaders(bdd)), result, leader;
+				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(level, var, filter), result, leader;
 				if (minLeader >= 0) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(minLeader);
 					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
 				}
-				else if ((leader = equivalenceRelations.getLeaderOfNonSingleton(var)) < 0)
+				else if ((leader = equivalenceRelations.getLeaderOfNonSingleton(var, filter)) < 0)
 					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
 				else if (leader == var) {
 					BitSet augmented = (BitSet) t.clone();

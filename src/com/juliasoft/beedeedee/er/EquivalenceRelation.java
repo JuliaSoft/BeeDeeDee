@@ -22,6 +22,10 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.equivalenceClasses = equivalenceClasses;
 	}
 
+	public EquivalenceRelation(EquivalenceRelation parent) {
+		this.equivalenceClasses = new ArrayList<>(parent.equivalenceClasses);
+	}
+
 	public EquivalenceRelation(EquivalenceRelation parent, Filter filter) {
 		this.equivalenceClasses = new ArrayList<>();
 		
@@ -135,10 +139,12 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param pairs the pairs to add
 	 */
-	void addPairs(Iterable<Pair> pairs) {
-		for (Pair pair : pairs) {
-			addPair(pair);
-		}
+	boolean addPairs(Iterable<Pair> pairs) {
+		boolean changed = false;
+		for (Pair pair : pairs)
+			changed |= addPair(pair);
+
+		return changed;
 	}
 
 	/**
@@ -147,7 +153,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @param pair the pair to add
 	 */
 	// TODO ugly code! use union-find data structure?
-	void addPair(Pair pair) {
+	boolean addPair(Pair pair) {
 		BitSet c1 = findClass(pair.first);
 		BitSet c2 = findClass(pair.second);
 
@@ -157,17 +163,59 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 					// join classes
 					c1.or(c2);
 					equivalenceClasses.remove(c2);
+					return true;
 				}
-			} else {
-				c1.set(pair.second);
+				else
+					return false;
 			}
-		} else {
-			if (c2 != null) {
-				c2.set(pair.first);
-			} else {
-				addClass(pair.first, pair.second);
+			else {
+				c1.set(pair.second);
+				return true;
 			}
 		}
+		else
+			if (c2 != null) {
+				c2.set(pair.first);
+				return true;
+			}
+			else {
+				BitSet eqClass = new BitSet();
+				eqClass.set(pair.first);
+				eqClass.set(pair.second);
+				equivalenceClasses.add(eqClass);
+				return true;
+			}
+	}
+
+	void addClasses(EquivalenceRelation other) {
+		for (BitSet added: other.equivalenceClasses)
+			addClass(added);
+	}
+
+	private void addClass(BitSet added) {
+		BitSet intersected = null;
+		List<BitSet> toRemove = new ArrayList<>();
+
+		for (int pos = 0; pos < equivalenceClasses.size(); pos++) {
+			BitSet cursor = equivalenceClasses.get(pos);
+
+			if (cursor.intersects(added)) {
+				if (intersected == null) {
+					equivalenceClasses.set(pos, intersected = (BitSet) cursor.clone());
+					intersected.or(added);
+				}
+				else {
+					intersected.or(cursor);
+					toRemove.add(cursor);
+				}
+			}
+		}
+
+		if (intersected == null)
+			equivalenceClasses.add((BitSet) added.clone());
+		else
+			for (BitSet merged: toRemove)
+				equivalenceClasses.remove(merged);
 	}
 
 	private BitSet findClass(int n) {
@@ -295,9 +343,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		return var;
 	}
 
-	public int getLeaderOfNonSingleton(int var) {
+	public int getLeaderOfNonSingleton(int var, Filter filter) {
 		for (BitSet eqClass : equivalenceClasses) {
-			if (eqClass.get(var)) {
+			if (eqClass.get(var) && filter.accept(eqClass)) {
 				return eqClass.nextSetBit(0);
 			}
 		}

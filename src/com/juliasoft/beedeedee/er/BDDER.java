@@ -433,7 +433,7 @@ public class BDDER implements BDD {
 		return er.getFullBDD().equivVars();
 	}
 
-	public boolean isNormalized() {
+	boolean isNormalized() {
 		ER norm = er.normalize();
 		return norm.getEquiv().equals(er.getEquiv()) && norm.getN().isEquivalentTo(er.getN());
 	}
