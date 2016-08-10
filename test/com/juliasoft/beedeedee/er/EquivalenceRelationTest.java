@@ -197,14 +197,14 @@ public class EquivalenceRelationTest {
 	@Test
 	public void testRemoveVar1() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}});
-		e.removeVar(1);
+		e = e.removeVar(1);
 		assertTrue(e.isEmpty()); // a class must contain at least 2 elements
 	}
 
 	@Test
 	public void testRemoveVar2() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		e.removeVar(1);
+		e = e.removeVar(1);
 		List<Pair> pairs = e.pairs();
 		assertEquals(1, pairs.size());
 		assertEquals(pairs.get(0), new Pair(2, 3));
@@ -214,7 +214,7 @@ public class EquivalenceRelationTest {
 	public void testRemoveVar3() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		EquivalenceRelation copy = e.copy();
-		e.removeVar(4);
+		e = e.removeVar(4);
 		assertEquals(copy, e);
 	}
 

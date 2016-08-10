@@ -62,9 +62,8 @@ public class ER {
 	 */
 	public ER and(ER other) {
 		BDD and = n.and(other.n);
-		EquivalenceRelation e = new EquivalenceRelation();
-		e = new EquivalenceRelation(l); //.addPairs(l.pairs());
-		e.addClasses(other.l);
+		EquivalenceRelation e = new EquivalenceRelation(l);
+		e = e.addClasses(other.l);
 		ER andGer = new ER(and, e);
 		ER result = andGer.normalize();
 		andGer.free();
@@ -283,7 +282,7 @@ public class ER {
 
 	public ER exist(int var) {
 		EquivalenceRelation lNew = l.copy();
-		lNew.removeVar(var);
+		lNew = lNew.removeVar(var);
 		BDD exist;
 		if (l.containsVar(var)) {
 			int nextLeader = l.nextLeader(var);
@@ -314,7 +313,7 @@ public class ER {
 			} else {
 				quantifiedVars.set(i);
 			}
-			lNew.removeVar(i);
+			lNew = lNew.removeVar(i);
 		}
 
 		BDD exist = n;
