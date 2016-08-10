@@ -23,6 +23,10 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			this.equivalenceClasses[pos++] = eqClass;
 	}
 
+	private EquivalenceRelation(BitSet[] equivalenceClasses) {
+		this.equivalenceClasses = equivalenceClasses;
+	}
+
 	public EquivalenceRelation() {
 		this.equivalenceClasses = new BitSet[0];
 	}
@@ -365,15 +369,27 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		return leader;
 	}
 
-	// TODO side-effect
-	public void replace(Map<Integer, Integer> renaming) {
+	public EquivalenceRelation replace(Map<Integer, Integer> renaming) {
+		BitSet[] where = null;
+
 		for (Integer i: renaming.keySet()) {
-			BitSet c = findClass(i);
-			if (c != null) {
+			int pos = findIndexOfClass(i);
+			if (pos >= 0) {
+				if (where == null)
+					where = equivalenceClasses.clone();
+
+				BitSet c = where[pos];
+				c = (BitSet) c.clone();
 				c.clear(i);
 				c.set(renaming.get(i));
+				where[pos] = c;
 			}
 		}
+
+		if (where == null)
+			return this;
+		else
+			return new EquivalenceRelation(where);
 	}
 
 	public boolean containsVar(int var) {

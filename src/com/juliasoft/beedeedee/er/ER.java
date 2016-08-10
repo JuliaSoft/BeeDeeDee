@@ -331,11 +331,9 @@ public class ER {
 
 	public ER replace(Map<Integer, Integer> renaming) {
 		BitSet nVars = n.vars();
-		for (Integer v : renaming.values()) {
-			if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v)) {
+		for (Integer v: renaming.values())
+			if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v))
 				throw new ReplacementWithExistingVarException(v);
-			}
-		}
 
 		BDD nNew;
 		nNew = n.replace(renaming);
@@ -344,8 +342,8 @@ public class ER {
 		renaming = new HashMap<>(renaming);
 		Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
 		EquivalenceRelation eNew = l.copy();
-		eNew.replace(varsOnTheRighSide);	// these renamings need to be performed first
-		eNew.replace(renaming);
+		eNew = eNew.replace(varsOnTheRighSide);	// these renamings need to be performed first
+		eNew = eNew.replace(renaming);
 
 		BDD old = nNew;
 		nNew = nNew.renameWithLeader(eNew);
