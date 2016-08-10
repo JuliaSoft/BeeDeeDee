@@ -49,7 +49,7 @@ import com.juliasoft.julia.checkers.nullness.NonNull;
 public class JavaBDDAdapterFactory extends BDDFactory {
 
 	// this is non-null since it is definitely initialized by the static pseudo-constructor
-	private @NonNull ERFactory factory;
+	private @NonNull ResizingAndGarbageCollectedFactory factory;
 	private int bddVarNum;
 
 	private JavaBDDAdapterFactory() {}
@@ -72,8 +72,8 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 	@Override
 	protected void initialize(int nodenum, int cachesize) {
-		//factory = Factory.mkResizingAndGarbageCollected(nodenum, cachesize);
-		factory = new ERFactory(nodenum, cachesize);
+		factory = Factory.mkResizingAndGarbageCollected(nodenum, cachesize);
+		//factory = new ERFactory(nodenum, cachesize);
 		// we set the default call-backs
 
 		try {

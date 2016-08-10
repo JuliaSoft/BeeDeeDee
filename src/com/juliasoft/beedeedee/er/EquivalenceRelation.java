@@ -18,7 +18,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.equivalenceClasses = new ArrayList<>();
 	}
 
-	public EquivalenceRelation(List<BitSet> equivalenceClasses) {
+	private EquivalenceRelation(List<BitSet> equivalenceClasses) {
 		this.equivalenceClasses = equivalenceClasses;
 	}
 
@@ -34,19 +34,15 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				equivalenceClasses.add(eqClass);
 	}
 
-	private List<BitSet> intersect(List<BitSet> equiv1, List<BitSet> equiv2) {
-		List<BitSet> intersection = new ArrayList<>();
-		for (BitSet set1 : equiv1) {
-			for (BitSet set2 : equiv2) {
-				BitSet partialIntersection = new BitSet();
-				partialIntersection.or(set1);
-				partialIntersection.and(set2);
-				if (partialIntersection.cardinality() > 1) {
-					intersection.add(partialIntersection);
-				}
-			}
+	public EquivalenceRelation(int[][] classes) {
+		this.equivalenceClasses = new ArrayList<>();
+		for (int[] clazz: classes) {
+			BitSet added = new BitSet();
+			for (int i: clazz)
+				added.set(i);
+
+			equivalenceClasses.add(added);
 		}
-		return intersection;
 	}
 
 	/**
@@ -55,17 +51,20 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @param other the other set
 	 * @return the resulting set
 	 */
-	public EquivalenceRelation intersect(EquivalenceRelation other) {
-		return new EquivalenceRelation(intersect(equivalenceClasses, other.equivalenceClasses));
-	}
 
-	/**
-	 * Adds an integer equivalence class to this set.
-	 * 
-	 * @param equivalenceClass the class to add
-	 */
-	private void add(BitSet equivalenceClass) {
-		equivalenceClasses.add(equivalenceClass);
+	public EquivalenceRelation intersection(EquivalenceRelation other) {
+		List<BitSet> intersection = new ArrayList<>();
+		for (BitSet set1 : equivalenceClasses) {
+			for (BitSet set2 : other.equivalenceClasses) {
+				BitSet element = new BitSet();
+				element.or(set1);
+				element.and(set2);
+				if (element.cardinality() > 1)
+					intersection.add(element);
+			}
+		}
+
+		return new EquivalenceRelation(intersection);
 	}
 
 	public boolean isEmpty() {
@@ -87,13 +86,11 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 */
 	public List<Pair> pairs() {
 		ArrayList<Pair> pairs = new ArrayList<>();
-		for (BitSet bs : equivalenceClasses) {
-			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1)) {
-				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1)) {
+		for (BitSet bs : equivalenceClasses)
+			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
 					pairs.add(new Pair(i, j));
-				}
-			}
-		}
+
 		return pairs;
 	}
 
@@ -103,7 +100,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @param other the other set
 	 * @return the list of the pairs of this set not contained in the other
 	 */
-	public List<Pair> subtract(EquivalenceRelation other) {
+	public List<Pair> pairsInDifference(EquivalenceRelation other) {
 		List<Pair> myPairs = pairs();
 		List<Pair> otherPairs = other.pairs();
 		BitSet toRemove = new BitSet();
@@ -119,19 +116,6 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			}
 		}
 		return result;
-	}
-
-	/**
-	 * Adds an equivalence class (set of integers) to this set.
-	 * 
-	 * @param integers the integers forming the equivalence class
-	 */
-	void addClass(int... integers) {
-		BitSet class1 = new BitSet();
-		for (int i : integers) {
-			class1.set(i);
-		}
-		add(class1);
 	}
 
 	/**
@@ -242,9 +226,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 */
 	public EquivalenceRelation copy() {
 		EquivalenceRelation e = new EquivalenceRelation();
-		for (BitSet eqClass : equivalenceClasses) {
-			e.add((BitSet) eqClass.clone());
-		}
+		for (BitSet eqClass : equivalenceClasses)
+			equivalenceClasses.add((BitSet) eqClass.clone());
+
 		return e;
 	}
 

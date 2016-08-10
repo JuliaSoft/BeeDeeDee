@@ -37,8 +37,7 @@ public class ERTest {
 		bdd.biimpWith(factory.makeVar(2));
 
 		// construct a set of equivalence classes
-		EquivalenceRelation e = new EquivalenceRelation();
-		e.addClass(1, 2);
+		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}});
 
 		ER ger = new ER(bdd, e);
 		BDD n = ger.getSqueezedBDD();
@@ -56,8 +55,7 @@ public class ERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		EquivalenceRelation e = new EquivalenceRelation();
-		e.addClass(1, 2);
+		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}});
 
 		ER ger = new ER(bdd, e);
 		BDD n = ger.getSqueezedBDD();
@@ -145,12 +143,10 @@ public class ERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		EquivalenceRelation e1 = new EquivalenceRelation();
-		e1.addClass(1, 2);
+		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
 		ER ger1 = new ER(bdd1, e1);
 
-		EquivalenceRelation e2 = new EquivalenceRelation();
-		e2.addClass(1, 2, 3);
+		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		ER ger2 = new ER(bdd2, e2);
 
 		ER and = ger1.and(ger2);
@@ -186,12 +182,10 @@ public class ERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		EquivalenceRelation e1 = new EquivalenceRelation();
-		e1.addClass(1, 2);
+		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
 		ER ger1 = new ER(bdd1, e1);
 
-		EquivalenceRelation e2 = new EquivalenceRelation();
-		e2.addClass(1, 3);
+		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 3}});
 		ER ger2 = new ER(bdd2, e2);
 
 		ER or = ger1.or(ger2);
@@ -218,12 +212,10 @@ public class ERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		EquivalenceRelation e1 = new EquivalenceRelation();
-		e1.addClass(1, 2);
+		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
 		ER ger1 = new ER(bdd1, e1);
 
-		EquivalenceRelation e2 = new EquivalenceRelation();
-		e2.addClass(1, 2, 3);
+		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		ER ger2 = new ER(bdd2, e2);
 
 		ER or = ger1.or(ger2);
@@ -258,12 +250,10 @@ public class ERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		EquivalenceRelation e1 = new EquivalenceRelation();
-		e1.addClass(1, 2);
+		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
 		ER ger1 = new ER(bdd1, e1);
 
-		EquivalenceRelation e2 = new EquivalenceRelation();
-		e2.addClass(1, 2, 3);
+		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		ER ger2 = new ER(bdd2, e2);
 
 		ER or = ger1.or(ger2);
@@ -296,12 +286,10 @@ public class ERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		EquivalenceRelation e1 = new EquivalenceRelation();
-		e1.addClass(1, 2);
+		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
 		ER ger1 = new ER(bdd1, e1);
 
-		EquivalenceRelation e2 = new EquivalenceRelation();
-		e2.addClass(1, 3);
+		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 3}});
 		ER ger2 = new ER(bdd2, e2);
 
 		ER xor = ger1.xor(ger2);
@@ -467,8 +455,7 @@ public class ERTest {
 		BDD bdd = factory.makeVar(2);
 		bdd.andWith(factory.makeVar(3));
 
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
@@ -482,8 +469,7 @@ public class ERTest {
 	public void testRenameWithLeader2() {
 		BDD bdd = factory.makeVar(2);
 
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
@@ -496,8 +482,7 @@ public class ERTest {
 	public void testRenameWithLeader3() {
 		BDD bdd = factory.makeVar(1);
 
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(2, 3);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{2, 3}});
 		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
@@ -510,8 +495,7 @@ public class ERTest {
 	public void testRenameWithLeader4() {
 		BDD bdd = factory.makeVar(1);
 
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(2, 3);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{2, 3}});
 		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
@@ -529,9 +513,7 @@ public class ERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd.andWith(temp);
 
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
-		l.addClass(6, 7);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}, {6, 7}});
 		BDD n = bdd.renameWithLeader(l);
 
 		BDD expected = factory.makeVar(1);
@@ -558,8 +540,8 @@ public class ERTest {
 	public void testSatCount1() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2); // 1 value - bound to leader's value in bdd (var 1)
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
+		// 1 value - bound to leader's value in bdd (var 1)
 		ER ger = new ER(bdd, l);
 
 		assertEquals(2, ger.satCount());
@@ -569,9 +551,8 @@ public class ERTest {
 	public void testSatCount2() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
-		l.addClass(3, 4); // 2 values for this - no constraints
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4}});
+		// 2 values for this - no constraints
 		ER ger = new ER(bdd, l);
 
 		assertEquals(4, ger.satCount());
@@ -581,9 +562,9 @@ public class ERTest {
 	public void testSatCount3() {
 		// x1 XOR x2 - satCount = 2
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(2, 3); // 2 values for this...
-		l.addClass(4, 5, 6, 7); // times 2 values for this
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{2, 3}, {4, 5, 6, 7}});
+		// 2 values for this...
+		// times 2 values for this
 		ER ger = new ER(bdd, l);
 
 		assertEquals(8, ger.satCount());
@@ -618,8 +599,7 @@ public class ERTest {
 		EquivalenceRelation equiv = biimp.getEquiv();
 
 		assertTrue(n.isEquivalentTo(factory.makeOne()));
-		EquivalenceRelation expectedEquiv = new EquivalenceRelation();
-		expectedEquiv.addClass(1, 2);
+		EquivalenceRelation expectedEquiv = new EquivalenceRelation(new int[][] {{1, 2}});
 		assertEquals(expectedEquiv, equiv);
 
 		// assertEquals(4, factory.bddCount());
@@ -660,8 +640,7 @@ public class ERTest {
 
 	@Test(expected = ReplacementWithExistingVarException.class)
 	public void testReplace2() {
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = factory.makeVar(3);
 
 		ER ger = new ER(n, l);
@@ -673,14 +652,12 @@ public class ERTest {
 
 	@Test
 	public void testReplace3() {
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = factory.makeVar(3);
 
 		ER ger = new ER(n, l);
 
-		EquivalenceRelation l2 = new EquivalenceRelation();
-		l2.addClass(2, 4);
+		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{2, 4}});
 		ER expected = new ER(n.copy(), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
@@ -692,14 +669,12 @@ public class ERTest {
 
 	@Test
 	public void testReplace4() {
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(1, 2, 3);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		BDD n = factory.makeVar(1);
 
 		ER ger = new ER(n, l);
 
-		EquivalenceRelation l2 = new EquivalenceRelation();
-		l2.addClass(2, 3, 4);
+		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{2, 3, 4}});
 		ER expected = new ER(factory.makeVar(2), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
@@ -711,14 +686,12 @@ public class ERTest {
 
 	@Test
 	public void testReplace5() {
-		EquivalenceRelation l = new EquivalenceRelation();
-		l.addClass(6, 9);
+		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{6, 9}});
 		BDD n = factory.makeVar(8);
 
 		ER ger = new ER(n, l);
 
-		EquivalenceRelation l2 = new EquivalenceRelation();
-		l2.addClass(3, 9);
+		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{3, 9}});
 		ER expected = new ER(factory.makeVar(8), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();

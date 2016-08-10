@@ -74,7 +74,7 @@ public class ER {
 	/**
 	 * Computes disjunction of this ER with another. The resulting E is the
 	 * intersection of the two E's, in the sense detailed in
-	 * {@link EquivalenceRelation#intersect(EquivalenceRelation)}. The resulting bdd (n) is the disjunction of the
+	 * {@link EquivalenceRelation#intersection(EquivalenceRelation)}. The resulting bdd (n) is the disjunction of the
 	 * two input "squeezed" bdds, each enriched (in 'and') with biimplications
 	 * expressing pairs not present in the other bdd.
 	 * 
@@ -88,14 +88,14 @@ public class ER {
 		BDD or = n1.or(n2);
 		n1.free();
 		n2.free();
-		EquivalenceRelation equiv = l.intersect(other.l);
+		EquivalenceRelation equiv = l.intersection(other.l);
 
 		return new ER(or, equiv);
 	}
 
 	private BDD computeNforOr(ER er1, ER er2) {
 		BDD squeezedBDD = er1.getSqueezedBDD();
-		List<Pair> subtract = er1.l.subtract(er2.l);
+		List<Pair> subtract = er1.l.pairsInDifference(er2.l);
 		for (Pair pair : subtract) {
 			BDD biimp = squeezedBDD.getFactory().makeVar(pair.first);
 			biimp.biimpWith(squeezedBDD.getFactory().makeVar(pair.second));
