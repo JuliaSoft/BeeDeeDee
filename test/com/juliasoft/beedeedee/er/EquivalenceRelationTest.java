@@ -213,7 +213,7 @@ public class EquivalenceRelationTest {
 	@Test
 	public void testRemoveVar3() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		EquivalenceRelation copy = e.copy();
+		EquivalenceRelation copy = e;
 		e = e.removeVar(4);
 		assertEquals(copy, e);
 	}

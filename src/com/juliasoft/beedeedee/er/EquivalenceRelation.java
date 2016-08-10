@@ -11,10 +11,13 @@ import java.util.Map;
 import com.juliasoft.beedeedee.bdd.Assignment;
 
 /**
- * A set of equivalence classes.
+ * A set of equivalence classes. This is an immutable class
+ * and can be shared safely.
  */
+
 public class EquivalenceRelation implements Iterable<BitSet> {
 	private final BitSet[] equivalenceClasses;
+	private final static BitSet[] empty = new BitSet[0];
 
 	private EquivalenceRelation(List<BitSet> equivalenceClasses) {
 		this.equivalenceClasses = new BitSet[equivalenceClasses.size()];
@@ -28,14 +31,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	}
 
 	public EquivalenceRelation() {
-		this.equivalenceClasses = new BitSet[0];
-	}
-
-	public EquivalenceRelation(EquivalenceRelation parent) {
-		int length = parent.equivalenceClasses.length;
-		this.equivalenceClasses = new BitSet[length];
-		for (int pos = 0; pos < length; pos++)
-			this.equivalenceClasses[pos] = (BitSet) parent.equivalenceClasses[pos].clone();
+		this.equivalenceClasses = empty;
 	}
 
 	public EquivalenceRelation(EquivalenceRelation parent, Filter filter) {
@@ -74,8 +70,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		List<BitSet> intersection = new ArrayList<>();
 		for (BitSet set1: equivalenceClasses) {
 			for (BitSet set2: other.equivalenceClasses) {
-				BitSet element = new BitSet();
-				element.or(set1);
+				BitSet element = (BitSet) set1.clone();
 				element.and(set2);
 				if (element.cardinality() > 1)
 					intersection.add(element);
@@ -144,7 +139,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	public EquivalenceRelation addPairs(Iterable<Pair> pairs) {
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
-			newEquivalenceClasses.add((BitSet) eqClass.clone());
+			newEquivalenceClasses.add(eqClass);
 
 		for (Pair pair: pairs)
 			addPair(pair, newEquivalenceClasses);
@@ -196,7 +191,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	public EquivalenceRelation addClasses(EquivalenceRelation other) {
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
-			newEquivalenceClasses.add((BitSet) eqClass.clone());
+			newEquivalenceClasses.add(eqClass);
 
 		for (BitSet added: other.equivalenceClasses)
 			addClass(added, newEquivalenceClasses);
@@ -271,17 +266,6 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		return Arrays.hashCode(equivalenceClasses);
 	}
 
-	/**
-	 * @return a copy of this set.
-	 */
-	public EquivalenceRelation copy() {
-		List<BitSet> equivalenceClasses = new ArrayList<>();
-		for (BitSet eqClass: this.equivalenceClasses)
-			equivalenceClasses.add((BitSet) eqClass.clone());
-
-		return new EquivalenceRelation(equivalenceClasses);
-	}
-
 	@Override
 	public String toString() {
 		return equivalenceClasses.toString();
@@ -327,17 +311,11 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		if (pos >= 0) {
 			BitSet c = equivalenceClasses[pos];
 			if (c.cardinality() > 2) {
-				List<BitSet> newEquivalenceClasses = new ArrayList<>();
-
-				for (int i = 0; i < equivalenceClasses.length; i++) {
-					BitSet eqClass = equivalenceClasses[i];
-					if (i == pos) {
-						eqClass = (BitSet) eqClass.clone();
-						eqClass.clear(var);
-					}
-
-					newEquivalenceClasses.add(eqClass);
-				}
+				BitSet[] newEquivalenceClasses = equivalenceClasses.clone();
+				
+				BitSet eqClass = (BitSet) c.clone();
+				eqClass.clear(var);
+				newEquivalenceClasses[pos] = eqClass;
 
 				return new EquivalenceRelation(newEquivalenceClasses);
 			}

@@ -8,6 +8,8 @@ import java.util.Map;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.factories.Factory;
+import com.sun.org.apache.bcel.internal.util.Objects;
 
 /**
  * A representation for Boolean functions separating information on equivalent
@@ -62,9 +64,7 @@ public class ER {
 	 */
 	public ER and(ER other) {
 		BDD and = n.and(other.n);
-		EquivalenceRelation e = new EquivalenceRelation(l);
-		e = e.addClasses(other.l);
-		ER andGer = new ER(and, e);
+		ER andGer = new ER(and, l.addClasses(other.l));
 		ER result = andGer.normalize();
 		andGer.free();
 		return result;
@@ -84,12 +84,9 @@ public class ER {
 		BDD n1 = computeNforOr(this, other);
 		BDD n2 = computeNforOr(other, this);
 
-		BDD or = n1.or(n2);
-		n1.free();
+		n1.orWith(n2);
 		n2.free();
-		EquivalenceRelation equiv = l.intersection(other.l);
-
-		return new ER(or, equiv);
+		return new ER(n1, l.intersection(other.l));
 	}
 
 	private BDD computeNforOr(ER er1, ER er2) {
@@ -115,9 +112,10 @@ public class ER {
 	 */
 	public ER not() {
 		BDD not = n.not();
-		for (Pair pair : l.pairs()) {
-			BDD eq = not.getFactory().makeVar(pair.first);
-			eq.biimpWith(not.getFactory().makeVar(pair.second));
+		Factory factory = not.getFactory();
+		for (Pair pair: l.pairs()) {
+			BDD eq = factory.makeVar(pair.first);
+			eq.biimpWith(factory.makeVar(pair.second));
 			eq.notWith();
 			not.orWith(eq);
 		}
@@ -147,7 +145,7 @@ public class ER {
 		return result;
 	}
 
-	public EquivalenceRelation getEquiv() {
+	EquivalenceRelation getEquiv() {
 		return l;
 	}
 
@@ -157,7 +155,7 @@ public class ER {
 	 * 
 	 * @return the squeezed bdd
 	 */
-	public BDD getSqueezedBDD() {
+	BDD getSqueezedBDD() {
 		return n.squeezeEquiv(l);
 	}
 
@@ -175,8 +173,8 @@ public class ER {
 	 * 
 	 * @return a normalized version of this ER.
 	 */
-	public ER normalize() {
-		EquivalenceRelation eNew = l.copy(), eOld;
+	ER normalize() {
+		EquivalenceRelation eNew = l, eOld;
 		BDD nNew = n.copy();
 		BDD nOld = null;
 
@@ -202,37 +200,38 @@ public class ER {
 	 */
 	public BDD getFullBDD() {
 		BDD full = n.copy();
-		for (Pair pair : l.pairs()) {
-			BDD biimp = n.getFactory().makeVar(pair.first);
-			biimp.biimpWith(n.getFactory().makeVar(pair.second));
+		Factory factory = n.getFactory();
+		for (Pair pair: l.pairs()) {
+			BDD biimp = factory.makeVar(pair.first);
+			biimp.biimpWith(factory.makeVar(pair.second));
 			full.andWith(biimp);
 		}
 		return full;
 	}
 
 	public ER copy() {
-		return new ER(n.copy(), l.copy());
+		return new ER(n.copy(), l);
 	}
 
 	public long satCount() {
 		BitSet vars = n.vars();
 		int c = 1;
-		for (BitSet eqClass : l) {
+		for (BitSet eqClass: l) {
 			int leader = eqClass.nextSetBit(0);
-			if (vars.get(leader)) {
+			if (vars.get(leader))
 				continue;
-			}
+
 			c *= 2;
 		}
+
 		return c * n.satCount(vars.cardinality() - 1);
 	}
 
-	public BitSet vars() {
-		BitSet res = new BitSet();
-		for (BitSet eqClass : l) {
+	BitSet vars() {
+		BitSet res = n.vars();
+		for (BitSet eqClass: l)
 			res.or(eqClass);
-		}
-		res.or(n.vars());
+
 		return res;
 	}
 
@@ -281,51 +280,53 @@ public class ER {
 	}
 
 	public ER exist(int var) {
-		EquivalenceRelation lNew = l.copy();
-		lNew = lNew.removeVar(var);
 		BDD exist;
 		if (l.containsVar(var)) {
 			int nextLeader = l.nextLeader(var);
 			Map<Integer, Integer> renaming = new HashMap<>();
 			renaming.put(var, nextLeader);
 			exist = n.replace(renaming);	// requires normalized representation
-		} else {
-			exist = n.exist(var);
 		}
-		ER existEr = new ER(exist, lNew);
+		else
+			exist = n.exist(var);
+
+		ER existEr = new ER(exist, l.removeVar(var));
 		ER normalized = existEr.normalize();
 		existEr.free();
+
 		return normalized;
 	}
 
 	public ER exist(BitSet vars) {
-		EquivalenceRelation lNew = l.copy();
+		EquivalenceRelation lNew = l;
 		BitSet quantifiedVars = new BitSet();
 		Map<Integer, Integer> renaming = new HashMap<>();
+
 		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
 			if (l.containsVar(i)) {
 				int nextLeader = l.nextLeader(i, vars);
-				if (nextLeader < 0) {
+				if (nextLeader < 0)
 					quantifiedVars.set(i);
-				} else {
+				else
 					renaming.put(i, nextLeader);
-				}
-			} else {
-				quantifiedVars.set(i);
 			}
+			else
+				quantifiedVars.set(i);
+
 			lNew = lNew.removeVar(i);
 		}
 
 		BDD exist = n;
-		if (!renaming.isEmpty()) {
+		if (!renaming.isEmpty())
 			exist = exist.replace(renaming);	// requires normalized representation
-		}
-		if (!quantifiedVars.isEmpty()) {
+
+		if (!quantifiedVars.isEmpty())
 			exist = exist.exist(quantifiedVars);
-		}
+
 		ER existEr = new ER(exist, lNew);
 		ER normalized = existEr.normalize();
 		existEr.free();
+
 		return normalized;
 	}
 
@@ -335,14 +336,12 @@ public class ER {
 			if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v))
 				throw new ReplacementWithExistingVarException(v);
 
-		BDD nNew;
-		nNew = n.replace(renaming);
+		BDD nNew = n.replace(renaming);
 
 		// perform "simultaneous" substitution
 		renaming = new HashMap<>(renaming);
 		Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
-		EquivalenceRelation eNew = l.copy();
-		eNew = eNew.replace(varsOnTheRighSide);	// these renamings need to be performed first
+		EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
 		eNew = eNew.replace(renaming);
 
 		BDD old = nNew;
@@ -351,6 +350,7 @@ public class ER {
 		ER replaceEr = new ER(nNew, eNew);
 		ER normalized = replaceEr.normalize();
 		replaceEr.free();
+
 		return normalized;
 	}
 
@@ -366,43 +366,41 @@ public class ER {
 	private Map<Integer, Integer> splitRenaming(Map<Integer, Integer> renaming) {
 		Map<Integer, Integer> varsOnTheRighSide = new HashMap<>();
 		ArrayList<Integer> values = new ArrayList<>(renaming.values());
-		for (Integer i : values) {
+
+		for (Integer i: values)
 			if (renaming.keySet().contains(i)) {
 				varsOnTheRighSide.put(i, renaming.get(i));
 				renaming.remove(i);
 			}
-		}
+
 		return varsOnTheRighSide;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((l == null) ? 0 : l.hashCode());
-		result = prime * result + ((n == null) ? 0 : n.hashCodeAux());
-		return result;
+		int result = 31 + ((l == null) ? 0 : l.hashCode());
+		return 31 * result + ((n == null) ? 0 : n.hashCodeAux());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (obj == null)
+		else if (obj == null)
 			return false;
-		if (getClass() != obj.getClass())
+		else if (getClass() != obj.getClass())
 			return false;
-		ER other = (ER) obj;
-		if (l == null) {
-			if (other.l != null)
+		else {
+			ER otherAsER = (ER) obj;
+
+			if (n == null && otherAsER.n != null)
 				return false;
-		} else if (!l.equals(other.l))
-			return false;
-		if (n == null) {
-			if (other.n != null)
+			else if (n != null && otherAsER.n == null)
 				return false;
-		} else if (!n.isEquivalentTo(other.n))
-			return false;
-		return true;
+			else if (n != null && otherAsER.n != null && !n.isEquivalentTo(otherAsER.n))
+				return false;
+			else
+				return Objects.equals(l, otherAsER.l);
+		}
 	}
 }
