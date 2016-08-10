@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -202,7 +203,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 	private static void addClass(BitSet added, List<BitSet> where) {
 		BitSet intersected = null;
-		List<BitSet> toRemove = new ArrayList<>();
+		LinkedList<Integer> toRemove = new LinkedList<>();
 
 		for (int pos = 0; pos < where.size(); pos++) {
 			BitSet cursor = where.get(pos);
@@ -214,7 +215,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				}
 				else {
 					intersected.or(cursor);
-					toRemove.add(cursor);
+					toRemove.addFirst(pos);
 				}
 			}
 		}
@@ -222,8 +223,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		if (intersected == null)
 			where.add((BitSet) added.clone());
 		else
-			for (BitSet merged: toRemove)
-				where.remove(merged);
+			for (Integer pos: toRemove)
+				where.remove((int) pos);
 	}
 
 	private static BitSet findClass(int n, BitSet[] where) {
