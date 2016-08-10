@@ -107,7 +107,7 @@ public class EquivalenceRelationTest {
 	public void testAddPair1() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4}});
 
-		e.addPair(new Pair(5, 6));
+		e = e.addPairs(Arrays.asList(new Pair(5, 6)));
 
 		// new class {(5, 6)} was created
 		assertEquals(3, e.size());
@@ -117,7 +117,7 @@ public class EquivalenceRelationTest {
 	public void testAddPair2() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4}});
 
-		e.addPair(new Pair(4, 5));
+		e = e.addPairs(Arrays.asList(new Pair(4, 5)));
 
 		// 5 was added to 4's class
 		assertEquals(2, e.size());
@@ -137,7 +137,7 @@ public class EquivalenceRelationTest {
 	public void testAddPair3() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4}});
 
-		e.addPair(new Pair(2, 3));
+		e = e.addPairs(Arrays.asList(new Pair(2, 3)));
 
 		// eq. classes were joined
 		assertEquals(1, e.size());
@@ -154,7 +154,7 @@ public class EquivalenceRelationTest {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{0, 2, 9, 11}});
 
 		// [(1, 2), (7, 10), (7, 11), (10, 11)]
-		e.addPairs(Arrays.asList(new Pair(1, 2), new Pair(7, 10), new Pair(7, 11), new Pair(10, 11)));
+		e = e.addPairs(Arrays.asList(new Pair(1, 2), new Pair(7, 10), new Pair(7, 11), new Pair(10, 11)));
 
 		// KO [{0, 1, 2, 9, 11}, {0, 1, 2, 7, 9, 10, 11}]
 

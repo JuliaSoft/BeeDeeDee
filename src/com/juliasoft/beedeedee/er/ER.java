@@ -177,20 +177,20 @@ public class ER {
 	 * @return a normalized version of this ER.
 	 */
 	public ER normalize() {
-		EquivalenceRelation eNew = l.copy();
+		EquivalenceRelation eNew = l.copy(), eOld;
 		BDD nNew = n.copy();
 		BDD nOld = null;
-		boolean eChanged;
 
 		do {
 			if (nOld != null)
 				nOld.free();
 
 			nOld = nNew;
-			eChanged = eNew.addPairs(nNew.equivVars());
+			eOld = eNew;
+			eNew = eNew.addPairs(nNew.equivVars());
 			nNew = nNew.renameWithLeader(eNew);
 		}
-		while (eChanged || !nNew.isEquivalentTo(nOld));
+		while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
 
 		if (nOld != nNew)
 			nOld.free();
