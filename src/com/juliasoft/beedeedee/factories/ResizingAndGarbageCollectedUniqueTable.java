@@ -426,6 +426,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		private final ReplaceCache replaceCache;
 		private final EquivCache equivCache;
 		private final RenameWithLeaderCache rwlCache;
+		private final SqueezeEquivCache squeezeEquivCache;
 
 		private ResizeData(ResizingAndGarbageCollectedUniqueTable table) {
 			start = System.currentTimeMillis();
@@ -444,12 +445,14 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			Arrays.fill(newH, -1);
 			newUt = new int[newSize * getNodeSize()];
 
+			int sizeOfSmallCaches = Math.max(1, newCacheSize / 20);
 			computationCache = new ComputationCache(newCacheSize);
-			restrictCache = new RestrictCache(Math.max(1, newCacheSize / 20));
-			replaceCache = new ReplaceCache(Math.max(1, newCacheSize / 20));
-			quantCache = new QuantCache(Math.max(1, newCacheSize / 20));
-			equivCache = new EquivCache(Math.max(1, newCacheSize / 20));
-			rwlCache = new RenameWithLeaderCache(Math.max(1, newCacheSize / 20));
+			restrictCache = new RestrictCache(sizeOfSmallCaches);
+			replaceCache = new ReplaceCache(sizeOfSmallCaches);
+			quantCache = new QuantCache(sizeOfSmallCaches);
+			equivCache = new EquivCache(sizeOfSmallCaches);
+			rwlCache = new RenameWithLeaderCache(sizeOfSmallCaches);
+			squeezeEquivCache = new SqueezeEquivCache(sizeOfSmallCaches);
 		}
 	}
 
@@ -465,6 +468,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		this.quantCache = data.quantCache;
 		this.equivCache = data.equivCache;
 		this.rwlCache = data.rwlCache;
+		this.squeezeEquivCache = data.squeezeEquivCache;
 
 		updateHashTable();
 	}
@@ -558,6 +562,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		quantCache.clear();
 		equivCache.clear();
 		rwlCache.clear();
+		squeezeEquivCache.clear();
 
 		return collected;
 	}
@@ -577,5 +582,9 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	public RenameWithLeaderCache getRWLCache() {
 		return rwlCache;
+	}
+
+	public SqueezeEquivCache getSqueezeEquivCache() {
+		return squeezeEquivCache;
 	}
 }

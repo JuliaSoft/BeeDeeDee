@@ -2,29 +2,39 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
+import com.juliasoft.beedeedee.er.EquivalenceRelation;
+
 public class SqueezeEquivCache {
-	private final int[] cacheAndResults;
-	private final static int SIZE = 100;
+	private final int[] bdds;
+	private EquivalenceRelation[] ers;
+	private final int[] results;
 
-	SqueezeEquivCache() {
-		this.cacheAndResults = new int[SIZE * 2];
-		Arrays.fill(cacheAndResults, -1);
+	SqueezeEquivCache(int size) {
+		this.bdds = new int[size];
+		this.ers = new EquivalenceRelation[size];
+		this.results = new int[size];
+		clear();
 	}
 
-	public int get(int bdd) {
-		int pos = hash(bdd);
-
-		return cacheAndResults[pos] == bdd ? cacheAndResults[SIZE + pos] : -1;
+	public void clear() {
+		Arrays.fill(bdds, -1);
 	}
 
-	public void put(int bdd, int res) {
+	public int get(int bdd, EquivalenceRelation er) {
 		int pos = hash(bdd);
 
-		cacheAndResults[pos] = bdd;
-		cacheAndResults[SIZE + pos] = res;
+		return bdds[pos] == bdd && ers[pos].equals(er) ? results[pos] : -1;
+	}
+
+	public void put(int bdd, EquivalenceRelation er, int res) {
+		int pos = hash(bdd);
+
+		ers[pos] = er;
+		results[pos] = res;
+		bdds[pos] = bdd;
 	}
 
 	private int hash(int bdd) {
-		return Math.abs(bdd % SIZE);
+		return Math.abs(bdd % bdds.length);
 	}
 }

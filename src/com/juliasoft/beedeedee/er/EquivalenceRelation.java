@@ -114,7 +114,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param integers the integers forming the equivalence class
 	 */
-	public void addClass(int... integers) {
+	void addClass(int... integers) {
 		BitSet class1 = new BitSet();
 		for (int i : integers) {
 			class1.set(i);
@@ -127,7 +127,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param pairs the pairs to add
 	 */
-	public void addPairs(Iterable<Pair> pairs) {
+	void addPairs(Iterable<Pair> pairs) {
 		for (Pair pair : pairs) {
 			addPair(pair);
 		}
@@ -139,7 +139,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @param pair the pair to add
 	 */
 	// TODO ugly code! use union-find data structure?
-	public void addPair(Pair pair) {
+	void addPair(Pair pair) {
 		BitSet c1 = findClass(pair.first);
 		BitSet c2 = findClass(pair.second);
 
@@ -203,15 +203,6 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			max = Math.max(max, eqClass.length() - 1);
 		}
 		return max;
-	}
-
-	public boolean containsVar(int i) {
-		for (BitSet eqClass : equivalenceClasses) {
-			if (eqClass.get(i)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	/**
@@ -278,6 +269,15 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		}
 	}
 
+	public boolean containsVar(int var) {
+		for (BitSet eqClass : equivalenceClasses) {
+			if (eqClass.get(var)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public int getLeader(int var) {
 		for (BitSet eqClass : equivalenceClasses) {
 			if (eqClass.get(var)) {
@@ -285,6 +285,15 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			}
 		}
 		return var;
+	}
+
+	public int getLeaderOfNonSingleton(int var) {
+		for (BitSet eqClass : equivalenceClasses) {
+			if (eqClass.get(var)) {
+				return eqClass.nextSetBit(0);
+			}
+		}
+		return -1;
 	}
 
 	/**
@@ -298,6 +307,18 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		for (BitSet eqClass : equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);
 			if (leader >= c && leader < min) {
+				min = leader;
+			}
+		}
+
+		return min;
+	}
+
+	public int minLeaderGreaterOrEqualtTo(int c, int var) {
+		int min = Integer.MAX_VALUE;
+		for (BitSet eqClass : equivalenceClasses) {
+			int leader = eqClass.nextSetBit(0);
+			if (leader >= c && leader < min && eqClass.get(var)) {
 				min = leader;
 			}
 		}

@@ -21,7 +21,6 @@ package com.juliasoft.beedeedee.factories;
 import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
@@ -1247,7 +1246,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		}
 
 		private class EquivalenceSqueezer {
-			private final SqueezeEquivCache cache = new SqueezeEquivCache();
+			private final SqueezeEquivCache cache = ut.getSqueezeEquivCache();
 			private final EquivalenceRelation equivalenceRelation;
 			private final int squeezedId;
 
@@ -1260,22 +1259,20 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if (bdd < FIRST_NODE_NUM) {
 					return bdd;
 				}
-				int cached = cache.get(bdd);
-				if (cached >= 0) {
+				int cached = cache.get(bdd, equivalenceRelation);
+				if (cached >= 0)
 					return cached;
-				}
 
-				int var = ut.var(bdd);
-				if (equivalenceRelation.getLeader(var) == var) {
-					int res = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
-					cache.put(bdd, res);
-					return res;
-				}
-
-				if (ut.high(bdd) == 0)
-					return squeezeEquiv(ut.low(bdd));
+				int var = ut.var(bdd), result;
+				if (equivalenceRelation.getLeader(var) == var)
+					result = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
+				else if (ut.high(bdd) == 0)
+					result = squeezeEquiv(ut.low(bdd));
 				else
-					return squeezeEquiv(ut.high(bdd));
+					result = squeezeEquiv(ut.high(bdd));
+
+				cache.put(bdd, equivalenceRelation, result);
+				return result;
 			}
 		}
 
@@ -1423,45 +1420,33 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			private final EquivalenceRelation equivalenceRelations;
 			private final int resultId;
 			private final int maxVar;
-			private final static int CACHE_SIZE = 2000;
-			private final int[] minLeaderGreaterThanOrEqual = new int[CACHE_SIZE];
 
 			private RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
 				this.equivalenceRelations = equivalenceRelations;
 				this.maxVar = equivalenceRelations.maxVar();
-				Arrays.fill(minLeaderGreaterThanOrEqual, -1);
-
 				this.resultId = renameWithLeader(id, 0, new BitSet());
 			}
 
 			private int renameWithLeader(final int bdd, final int c, final BitSet t) {
-				int var, l;
+				int var;
 				if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
 					return bdd;
 
-				int result, minLeader;
-				
-				if (c < minLeaderGreaterThanOrEqual.length) {
-					minLeader = minLeaderGreaterThanOrEqual[c];
-					if (minLeader == -1)
-						minLeaderGreaterThanOrEqual[c] = minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c);
-				}
-				else
-					minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c);
+				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c, var), result, leader;
 
 				if (minLeader < var) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(minLeader);
 					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
 				}
-				else if (!equivalenceRelations.containsVar(var))
+				else if ((leader = equivalenceRelations.getLeaderOfNonSingleton(var)) < 0)
 					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
-				else if ((l = equivalenceRelations.getLeader(var)) == var) {
+				else if (leader == var) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(var);
 					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, augmented));
 				}
-				else if (t.get(l))
+				else if (t.get(leader))
 					result = renameWithLeader(ut.high(bdd), var + 1, t);
 				else
 					result = renameWithLeader(ut.low(bdd), var + 1, t);

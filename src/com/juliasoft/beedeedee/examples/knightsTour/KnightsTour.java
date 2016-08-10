@@ -89,7 +89,7 @@ public class KnightsTour {
 	}
 
 	private static void initFactory() {
-//		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize, 0);
+		//factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize, 0);
 		factory = new ERFactory(utSize, cacheSize);
 /*
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {

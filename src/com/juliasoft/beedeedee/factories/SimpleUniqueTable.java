@@ -41,6 +41,7 @@ class SimpleUniqueTable implements UniqueTable {
 	protected QuantCache quantCache;
 	protected EquivCache equivCache;
 	protected RenameWithLeaderCache rwlCache;
+	protected SqueezeEquivCache squeezeEquivCache;
 
 	private final int[] hitCounters = new int[Operator.values().length];
 	private final int[] opCounters = new int[Operator.values().length];
@@ -56,6 +57,7 @@ class SimpleUniqueTable implements UniqueTable {
 		this.quantCache = new QuantCache(Math.max(1, cacheSize / 20));
 		this.equivCache = new EquivCache(Math.max(1, cacheSize / 20));
 		this.rwlCache = new RenameWithLeaderCache(Math.max(1, cacheSize / 20));
+		this.squeezeEquivCache = new SqueezeEquivCache(Math.max(1, cacheSize / 20));
 
 		Arrays.fill(H, -1);
 	}
