@@ -35,6 +35,7 @@ import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.er.EquivalenceRelation;
+import com.juliasoft.beedeedee.er.EquivalenceRelation.Filter;
 import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
@@ -1404,8 +1405,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 		public BDD renameWithLeader(EquivalenceRelation equivalenceRelations) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
+
 			try {
 				RenameWithLeaderCache cache = ut.getRWLCache();
+				Filter filter = new Filter() {
+
+					@Override
+					public boolean accept(BitSet eqClass) {
+						return accept(eqClass, id);
+					}
+
+					private boolean accept(BitSet eqClass, int bdd) {
+						if (bdd < FIRST_NODE_NUM)
+							return false;
+						else
+							return eqClass.get(ut.var(bdd)) || accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
+					}
+				};
+
+				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, filter);
 				int result = cache.get(id, equivalenceRelations);
 				if (result >= 0)
 					return new BDDImpl(result);
@@ -1432,9 +1450,25 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
 					return bdd;
 
-				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c, var), result, leader;
+				// we further filter here, since some equivalence class might be irrelevant
+				// from the residual bdd, but not for the whole bdd
+				Filter filter = new Filter() {
 
-				if (minLeader < var) {
+					@Override
+					public boolean accept(BitSet eqClass) {
+						return accept(eqClass, bdd);
+					}
+
+					private boolean accept(BitSet eqClass, int bdd) {
+						if (bdd < FIRST_NODE_NUM)
+							return false;
+						else
+							return eqClass.get(ut.var(bdd)) || accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
+					}
+				};
+
+				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c, var, filter), result, leader;
+				if (minLeader >= 0) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(minLeader);
 					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));

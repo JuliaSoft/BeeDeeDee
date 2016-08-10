@@ -15,11 +15,19 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	private final List<BitSet> equivalenceClasses;
 
 	public EquivalenceRelation() {
-		equivalenceClasses = new ArrayList<>();
+		this.equivalenceClasses = new ArrayList<>();
 	}
 
-	private EquivalenceRelation(List<BitSet> equivalenceClasses) {
+	public EquivalenceRelation(List<BitSet> equivalenceClasses) {
 		this.equivalenceClasses = equivalenceClasses;
+	}
+
+	public EquivalenceRelation(EquivalenceRelation parent, Filter filter) {
+		this.equivalenceClasses = new ArrayList<>();
+		
+		for (BitSet eqClass: parent)
+			if (filter.accept(eqClass))
+				equivalenceClasses.add(eqClass);
 	}
 
 	private List<BitSet> intersect(List<BitSet> equiv1, List<BitSet> equiv2) {
@@ -306,21 +314,23 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		int min = Integer.MAX_VALUE;
 		for (BitSet eqClass : equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);
-			if (leader >= c && leader < min) {
+			if (leader >= c && leader < min)
 				min = leader;
-			}
 		}
 
 		return min;
 	}
 
-	public int minLeaderGreaterOrEqualtTo(int c, int var) {
-		int min = Integer.MAX_VALUE;
+	public static interface Filter {
+		public boolean accept(BitSet eqClass);
+	}
+
+	public int minLeaderGreaterOrEqualtTo(int c, int var, Filter filter) {
+		int min = -1;
 		for (BitSet eqClass : equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);
-			if (leader >= c && leader < min && eqClass.get(var)) {
+			if (leader >= c && (min < 0 || leader < min) && leader < var && (filter == null || filter.accept(eqClass)))
 				min = leader;
-			}
 		}
 
 		return min;
