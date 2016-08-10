@@ -1401,6 +1401,28 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			return maxVar;
 		}
 
+		private class UsefulLeaders implements Filter {
+			private final int bdd;
+			private UsefulLeaders(int bdd) {
+				this.bdd = bdd;
+			}
+
+			@Override
+			public boolean accept(BitSet eqClass) {
+				return accept(eqClass, bdd);
+			}
+
+			private boolean accept(BitSet eqClass, int bdd) {
+				if (bdd < FIRST_NODE_NUM)
+					return false;
+				else {
+					int var = ut.var(bdd);
+					return (eqClass.nextSetBit(0) != var && eqClass.get(var))
+						|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
+				}
+			}
+		};
+
 		@Override
 		public BDD renameWithLeader(EquivalenceRelation equivalenceRelations) {
 			ReentrantLock lock = ut.getGCLock();
@@ -1408,22 +1430,7 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 
 			try {
 				RenameWithLeaderCache cache = ut.getRWLCache();
-				Filter filter = new Filter() {
-
-					@Override
-					public boolean accept(BitSet eqClass) {
-						return accept(eqClass, id);
-					}
-
-					private boolean accept(BitSet eqClass, int bdd) {
-						if (bdd < FIRST_NODE_NUM)
-							return false;
-						else
-							return eqClass.get(ut.var(bdd)) || accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
-					}
-				};
-
-				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, filter);
+				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, new UsefulLeaders(id));
 				int result = cache.get(id, equivalenceRelations);
 				if (result >= 0)
 					return new BDDImpl(result);
@@ -1445,29 +1452,17 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 				this.resultId = renameWithLeader(id, 0, new BitSet());
 			}
 
-			private int renameWithLeader(final int bdd, final int c, final BitSet t) {
+			private int renameWithLeader(final int bdd, final int level, final BitSet t) {
 				int var;
-				if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
+				if (bdd < FIRST_NODE_NUM)
+					return bdd;
+
+				if ((var = ut.var(bdd)) > maxVar)
 					return bdd;
 
 				// we further filter here, since some equivalence class might be irrelevant
 				// from the residual bdd, but not for the whole bdd
-				Filter filter = new Filter() {
-
-					@Override
-					public boolean accept(BitSet eqClass) {
-						return accept(eqClass, bdd);
-					}
-
-					private boolean accept(BitSet eqClass, int bdd) {
-						if (bdd < FIRST_NODE_NUM)
-							return false;
-						else
-							return eqClass.get(ut.var(bdd)) || accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
-					}
-				};
-
-				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(c, var, filter), result, leader;
+				int minLeader = equivalenceRelations.minLeaderGreaterOrEqualtTo(level, var, new UsefulLeaders(bdd)), result, leader;
 				if (minLeader >= 0) {
 					BitSet augmented = (BitSet) t.clone();
 					augmented.set(minLeader);
