@@ -315,7 +315,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 	@Override
 	public String toString() {
-		return equivalenceClasses.toString();
+		return Arrays.toString(equivalenceClasses);
 	}
 
 	public int maxVar() {

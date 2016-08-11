@@ -358,10 +358,20 @@ public class BDDER implements BDD {
 	@Override
 	public boolean isEquivalentTo(BDD other) {
 		if (!(other instanceof BDDER)) {
-			return other.isEquivalentTo(er.getFullBDD());
+			return equivalentBDDs(other, er.getFullBDD());
 		}
 		BDDER o = (BDDER) other;
 		return er.getEquiv().equals(o.er.getEquiv()) && er.getN().isEquivalentTo(o.er.getN());
+	}
+
+	private boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
+		if (bdd1.isOne()) {
+			return bdd2.isOne();
+		}
+		if (bdd1.isZero()) {
+			return bdd2.isZero();
+		}
+		return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
 	}
 
 	@Override
