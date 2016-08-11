@@ -23,8 +23,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 	private static Comparator<BitSet> bitSetOrder = new Comparator<BitSet>() {
 		public int compare(BitSet lhs, BitSet rhs) {
-			if (lhs.equals(rhs))
+			if (lhs == rhs)
 				return 0;
+
 			BitSet xor = (BitSet) lhs.clone();
 			xor.xor(rhs);
 			int firstDifferent = xor.length() - 1;
