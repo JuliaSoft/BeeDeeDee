@@ -1257,9 +1257,9 @@ class ResizingAndGarbageCollectedFactoryImpl extends ResizingAndGarbageCollected
 			}
 
 			private int squeezeEquiv(int bdd) {
-				if (bdd < FIRST_NODE_NUM) {
+				if (bdd < FIRST_NODE_NUM)
 					return bdd;
-				}
+
 				int cached = cache.get(bdd, equivalenceRelation);
 				if (cached >= 0)
 					return cached;

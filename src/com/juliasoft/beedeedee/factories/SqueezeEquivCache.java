@@ -21,20 +21,20 @@ public class SqueezeEquivCache {
 	}
 
 	public int get(int bdd, EquivalenceRelation er) {
-		int pos = hash(bdd);
+		int pos = hash(bdd, er);
 
 		return bdds[pos] == bdd && ers[pos].equals(er) ? results[pos] : -1;
 	}
 
 	public void put(int bdd, EquivalenceRelation er, int res) {
-		int pos = hash(bdd);
+		int pos = hash(bdd, er);
 
 		ers[pos] = er;
 		results[pos] = res;
 		bdds[pos] = bdd;
 	}
 
-	private int hash(int bdd) {
-		return Math.abs(bdd % bdds.length);
+	private int hash(int bdd, EquivalenceRelation er) {
+		return Math.abs((bdd ^ er.hashCode()) % bdds.length);
 	}
 }
