@@ -200,14 +200,25 @@ class SimpleUniqueTable implements UniqueTable {
 	}
 
 	protected final int hash(int var, int low, int high, int size) {
+		int temp = (low ^ (high << 1) ^ var) % size;
+		if (temp < 0) {
+			temp = -temp;
+		
+			if (temp > size)
+				return size - 1;
+		}
+		
+		return temp;
+/*
 		int num = low;
 
 		while (low > 0) {
-			low >>= 1;
+			low >>>= 1;
 			high <<= 1;
 		}
 
 		return (num |= high) >= 0 ? num % size : (-num) % size;
+		*/
 	}
 
 	@Override

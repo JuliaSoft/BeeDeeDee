@@ -98,5 +98,4 @@ public class ERFactory extends Factory {
 	public void setResizeListener(ResizeListener listener) {
 		factory.setResizeListener(listener);
 	}
-
 }
