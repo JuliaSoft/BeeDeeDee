@@ -22,21 +22,16 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	private final int hashCode;
 
 	private static Comparator<BitSet> bitSetOrder = new Comparator<BitSet>() {
-	
-		@Override
-		public int compare(BitSet set1, BitSet set2) {
-			// we order wrt to the leftmost distinct bit set
-			int pos1, pos2;
-			for (pos1 = set1.nextSetBit(0), pos2 = set2.nextSetBit(0); pos1 >= 0 && pos2 >= 0; pos1 = set1.nextSetBit(pos1 + 1), pos2 = set2.nextSetBit(pos2 + 1))
-				if (pos1 != pos2)
-					return pos1 - pos2;
-	
-			if (pos1 >= 0)
-				return 1;
-			else if (pos2 >= 0)
-				return -1;
-			else
+		public int compare(BitSet lhs, BitSet rhs) {
+			if (lhs.equals(rhs))
 				return 0;
+			BitSet xor = (BitSet) lhs.clone();
+			xor.xor(rhs);
+			int firstDifferent = xor.length() - 1;
+			if (firstDifferent == -1)
+				return 0;
+
+			return rhs.get(firstDifferent) ? 1 : -1;
 		}
 	};
 
