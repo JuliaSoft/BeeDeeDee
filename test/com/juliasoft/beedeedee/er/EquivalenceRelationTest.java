@@ -40,7 +40,6 @@ public class EquivalenceRelationTest {
 		assertEquals(2, (int) next.nextSetBit(2));
 	}
 
-	// FIXME fails with Java 8
 	@Test
 	public void testIntersect3() {
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4, 6}});
@@ -53,10 +52,13 @@ public class EquivalenceRelationTest {
 		Iterator<BitSet> it = intersection.iterator();
 		BitSet class1 = it.next();
 		BitSet class2 = it.next();
-		assertEquals(1, (int) class1.nextSetBit(0));
-		assertEquals(2, (int) class1.nextSetBit(2));
-		assertEquals(4, (int) class2.nextSetBit(0));
-		assertEquals(6, (int) class2.nextSetBit(5));
+		BitSet expected1 = new BitSet();
+		BitSet expected2 = new BitSet();
+		expected1.set(1, 3);
+		expected2.set(4);
+		expected2.set(6);
+		assertTrue((expected1.equals(class1) && expected2.equals(class2))
+				|| (expected1.equals(class2) && expected2.equals(class1)));
 	}
 
 	@Test
@@ -146,8 +148,6 @@ public class EquivalenceRelationTest {
 		assertEquals(expected, e.iterator().next());
 	}
 
-	// FIXME red if equivalenceClasses is a HashSet, green if it is an ArrayList
-	// (is HashSet.remove() working?)
 	@Test
 	public void testAddPair4() {
 		// bug exhibited in Julia analyzer

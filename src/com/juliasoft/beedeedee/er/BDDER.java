@@ -1,21 +1,26 @@
 package com.juliasoft.beedeedee.er;
 
+import java.util.ArrayList;
 import java.util.BitSet;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
+import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.factories.Factory;
 
 /**
- * A wrapper for a ER representation using the {@link BDD} interface.
+ * A {@link BDD} implementation that separates information on equivalent
+ * variables from a robdd.
  */
 public class BDDER implements BDD {
 
-	private ER er;
+	private BDD n;
+	private EquivalenceRelation l;
 
 	/**
 	 * Constructs a BDDER by normalizing the given bdd.
@@ -24,30 +29,69 @@ public class BDDER implements BDD {
 	 *            (same as) normalized
 	 */
 	BDDER(BDD bdd) {
-		ER temp = new ER(bdd);
-		er = temp.normalize();
-		if (!bdd.equals(er.getN())) {
-			temp.free();
+		n = bdd;
+		l = new EquivalenceRelation();
+		BDDER normalized = normalize();
+		if (!bdd.equals(normalized.n)) {
+			bdd.free();
 		}
+		n = normalized.n;
+		l = normalized.l;
 	}
 
-	private BDDER(ER er) {
-		this.er = er;
+	/**
+	 * Non-normalizing constructor.
+	 * 
+	 * @param n the BDD
+	 * @param l the equivalence relation
+	 */
+	BDDER(BDD n, EquivalenceRelation l) {
+		this.n = n;
+		this.l = l;
+	}
+
+	/**
+	 * Produces a normalized version of this BDDER.
+	 * 
+	 * @return a normalized version of this BDDER.
+	 */
+	BDDER normalize() {
+		EquivalenceRelation eNew = l, eOld;
+		BDD nNew = n.copy();
+		BDD nOld = null;
+
+		do {
+			if (nOld != null)
+				nOld.free();
+
+			nOld = nNew;
+			eOld = eNew;
+			eNew = eNew.addPairs(nNew.equivVars());
+			nNew = nNew.renameWithLeader(eNew);
+		}
+		while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+
+		if (nOld != nNew)
+			nOld.free();
+
+		return new BDDER(nNew, eNew);
 	}
 
 	@Override
 	public void free() {
-		er.free();
+		n.free();
+		n = null;
+		l = null;
 	}
 
 	@Override
 	public boolean isZero() {
-		return er.getN().isZero();
+		return n.isZero();
 	}
 
 	@Override
 	public boolean isOne() {
-		return er.getN().isOne() && er.getEquiv().isEmpty();
+		return n.isOne() && l.isEmpty();
 	}
 
 	@Override
@@ -57,9 +101,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER orGer = er.or(otherBddGer.er);
-
-		return new BDDER(orGer);
+		return or_(otherBddGer);
 	}
 
 	@Override
@@ -69,12 +111,53 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER orGer = er.or(otherBddGer.er);
+		BDDER or_ = or_(otherBddGer);
 		free();
-		otherBddGer.er.free();
-		er = orGer;
+		n = or_.n;
+		l = or_.l;
+		otherBddGer.free();
 
 		return this;
+	}
+
+	/**
+	 * Computes disjunction of this BDDER with another. The resulting l is the
+	 * intersection of the two l's, in the sense detailed in
+	 * {@link EquivalenceRelation#intersection(EquivalenceRelation)}. The resulting bdd (n) is the disjunction of the
+	 * two input "squeezed" bdds, each enriched (in 'and') with biimplications
+	 * expressing pairs not present in the other bdd.
+	 * 
+	 * @param other the other BDDER
+	 * @return the disjunction
+	 */
+	BDDER or_(BDDER other) {
+		BDD n1 = computeNforOr(this, other);
+		BDD n2 = computeNforOr(other, this);
+
+		n1.orWith(n2);
+		n2.free();
+		return new BDDER(n1, l.intersection(other.l));
+	}
+
+	private BDD computeNforOr(BDDER er1, BDDER er2) {
+		BDD squeezedBDD = er1.getSqueezedBDD();
+		List<Pair> subtract = er1.l.pairsInDifference(er2.l);
+		for (Pair pair : subtract) {
+			BDD biimp = squeezedBDD.getFactory().makeVar(pair.first);
+			biimp.biimpWith(squeezedBDD.getFactory().makeVar(pair.second));
+			squeezedBDD.andWith(biimp);
+		}
+		return squeezedBDD;
+	}
+
+	/**
+	 * Computes the "squeezed" version of the bdd. This version doesn't contain
+	 * equivalent variables, see {@link BDD#squeezeEquiv(LeaderFunction)}.
+	 * 
+	 * @return the squeezed bdd
+	 */
+	BDD getSqueezedBDD() {
+		return n.squeezeEquiv(l);
 	}
 
 	@Override
@@ -83,10 +166,8 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER andGer = er.and(otherBddGer.er);
-
-		return new BDDER(andGer);
+		BDDER otherBddEr = (BDDER) other;
+		return and_(otherBddEr);
 	}
 
 	@Override
@@ -95,13 +176,32 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER andGer = er.and(otherBddGer.er);
+		BDDER otherBddEr = (BDDER) other;
+		BDDER and_ = and_(otherBddEr);
 		free();
-		otherBddGer.er.free();
-		er = andGer;
+		n = and_.n;
+		l = and_.l;
+		otherBddEr.free();
 
 		return this;
+	}
+
+	/**
+	 * Computes conjunction of this BDDER with another. The resulting BDDER is the
+	 * normalized version of that having as l the union of the two l's, and as n
+	 * the conjunction of the two bdds.
+	 * The result is normalized.
+	 * 
+	 * @param other the other ER
+	 * @return the conjunction
+	 */
+	BDDER and_(BDDER other) {
+		BDD and = n.and(other.n);
+		EquivalenceRelation ln = l.addClasses(other.l);
+		BDDER andEr = new BDDER(and, ln);
+		BDDER result = andEr.normalize();
+		andEr.free();
+		return result;
 	}
 
 	@Override
@@ -111,9 +211,7 @@ public class BDDER implements BDD {
 			throw new NotBDDGerException();
 		}
 		BDDER otherBddGer = (BDDER) other;
-		ER xorGer = er.xor(otherBddGer.er);
-
-		return new BDDER(xorGer);
+		return xor_(otherBddGer);
 	}
 
 	@Override
@@ -122,13 +220,52 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER xorGer = er.xor(otherBddGer.er);
+		BDDER otherBddEr = (BDDER) other;
+		BDDER xor_ = xor_(otherBddEr);
 		free();
-		otherBddGer.er.free();
-		er = xorGer;
+		n = xor_.n;
+		l = xor_.l;
+		otherBddEr.free();
 
 		return this;
+	}
+
+	/**
+	 * Computes XOR of this BDDER with another. It uses the identity g1 x g2 = (g1
+	 * | g2) & !(g1 & g2). The result is normalized.
+	 * 
+	 * TODO use another identity?
+	 * 
+	 * @param other the other BDDER
+	 * @return the xor
+	 */
+	public BDDER xor_(BDDER other) {
+		BDDER or = or_(other);
+		BDDER and = and_(other);
+		BDDER notAnd = and.not_();
+		BDDER result = or.and_(notAnd);
+		or.free();
+		and.free();
+		notAnd.free();
+		return result;
+	}
+
+	/**
+	 * Computes negation of this ER. It uses the identity !(L & n) = !L | !n =
+	 * !p1 | !p2 | ... | !pn | !n. The result is normalized.
+	 * 
+	 * @return the negation
+	 */
+	BDDER not_() {
+		BDD not = n.not();
+		Factory factory = not.getFactory();
+		for (Pair pair : l.pairs()) {
+			BDD eq = factory.makeVar(pair.first);
+			eq.biimpWith(factory.makeVar(pair.second));
+			eq.notWith();
+			not.orWith(eq);
+		}
+		return new BDDER(not);
 	}
 
 	@Override
@@ -137,12 +274,12 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER andGer = er.and(otherBddGer.er);
-		ER not = andGer.not();
-		andGer.free();
+		BDDER otherBddEr = (BDDER) other;
+		BDDER and_ = and_(otherBddEr);
+		BDDER not_ = and_.not_();
+		and_.free();
 
-		return new BDDER(not);
+		return not_;
 	}
 
 	@Override
@@ -151,26 +288,30 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER andGer = er.and(otherBddGer.er);
+
+		BDDER otherBddEr = (BDDER) other;
+		BDDER and_ = and_(otherBddEr);
+		BDDER not_ = and_.not_();
+		and_.free();
 		free();
-		otherBddGer.er.free();
-		er = andGer.not();
-		andGer.free();
+		n = not_.n;
+		l = not_.l;
+		otherBddEr.free();
 
 		return this;
 	}
 
 	@Override
 	public BDD not() {
-		return new BDDER(er.not());
+		return not_();
 	}
 
 	@Override
 	public BDD notWith() {
-		ER notGer = er.not();
+		BDDER not_ = not_();
 		free();
-		er = notGer;
+		n = not_.n;
+		l = not_.l;
 
 		return this;
 	}
@@ -181,10 +322,8 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER impGer = er.imp(otherBddGer.er);
-
-		return new BDDER(impGer);
+		BDDER otherBddEr = (BDDER) other;
+		return imp_(otherBddEr);
 	}
 
 	@Override
@@ -193,13 +332,28 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER impGer = er.imp(otherBddGer.er);
+		BDDER otherBddEr = (BDDER) other;
+		BDDER imp_ = imp_(otherBddEr);
 		free();
-		otherBddGer.er.free();
-		er = impGer;
+		n = imp_.n;
+		l = imp_.l;
+		otherBddEr.free();
 
 		return this;
+	}
+
+	/**
+	 * Computes the implication of this BDDER with another. It uses the identity
+	 * g1 -> g2 = !g1 | g2.
+	 * 
+	 * @param other the other BDDER
+	 * @return the implication
+	 */
+	BDDER imp_(BDDER other) {
+		BDDER notG1 = not_();
+		BDDER or_ = notG1.or_(other);
+		notG1.free();
+		return or_;
 	}
 
 	@Override
@@ -208,10 +362,8 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER biimpGer = er.biimp(otherBddGer.er);
-
-		return new BDDER(biimpGer);
+		BDDER otherBddEr = (BDDER) other;
+		return biimp_(otherBddEr);
 	}
 
 	@Override
@@ -220,25 +372,50 @@ public class BDDER implements BDD {
 			// TODO or convert transparently to BDDGer?
 			throw new NotBDDGerException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		ER biimpGer = er.biimp(otherBddGer.er);
+		BDDER otherBddEr = (BDDER) other;
+		BDDER biimp_ = biimp_(otherBddEr);
 		free();
-		otherBddGer.er.free();
-		er = biimpGer;
+		n = biimp_.n;
+		l = biimp_.l;
+		otherBddEr.free();
 
 		return this;
 	}
 
+	/**
+	 * Computes the biimplication of this BDDER with another. It uses the identity
+	 * g1 <-> g2 = (!g1 | g2) & (!g2 | g1).
+	 * 
+	 * TODO use another identity?
+	 * 
+	 * @param other the other BDDER
+	 * @return the biimplication
+	 */
+	BDDER biimp_(BDDER other) {
+		BDDER notG1 = not_();
+		BDDER notG2 = other.not_();
+
+		BDDER or1 = notG1.or_(other);
+		BDDER or2 = notG2.or_(this);
+
+		BDDER and = or1.and_(or2);
+
+		notG1.free();
+		notG2.free();
+		or1.free();
+		or2.free();
+		return and;
+	}
+
 	@Override
 	public BDD copy() {
-		return new BDDER(er.copy());
+		return new BDDER(n.copy(), l);
 	}
 
 	@Override
 	public Assignment anySat() throws UnsatException {
-		Assignment anySat = er.getN().anySat();
-		EquivalenceRelation equiv = er.getEquiv();
-		equiv.updateAssignment(anySat);
+		Assignment anySat = n.anySat();
+		l.updateAssignment(anySat);
 		return anySat;
 	}
 
@@ -249,13 +426,28 @@ public class BDDER implements BDD {
 
 	@Override
 	public long satCount() {
-		return er.satCount();
+		return satCount_();
 	}
+
+	long satCount_() {
+		BitSet vars = n.vars();
+		int c = 1;
+		for (BitSet eqClass : l) {
+			int leader = eqClass.nextSetBit(0);
+			if (vars.get(leader))
+				continue;
+
+			c *= 2;
+		}
+
+		return c * n.satCount(vars.cardinality() - 1);
+	}
+
 
 	@Override
 	public long satCount(int maxVar) {
 		// TODO FIXME check this
-		return er.satCount();
+		return satCount_();
 	}
 
 	@Override
@@ -275,23 +467,68 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD exist(int var) {
-		ER existGer = er.exist(var);
-
-		return new BDDER(existGer);
+		return exist_(var);
 	}
 
 	@Override
 	public BDD exist(BDD var) {
-		ER existGer = er.exist(var.vars());
-
-		return new BDDER(existGer);
+		return exist_(var.vars());
 	}
 
 	@Override
 	public BDD exist(BitSet var) {
-		ER existGer = er.exist(var);
+		return exist_(var);
+	}
 
-		return new BDDER(existGer);
+	BDDER exist_(int var) {
+		BDD exist;
+		if (l.containsVar(var)) {
+			int nextLeader = l.nextLeader(var);
+			Map<Integer, Integer> renaming = new HashMap<>();
+			renaming.put(var, nextLeader);
+			exist = n.replace(renaming);	// requires normalized representation
+		}
+		else
+			exist = n.exist(var);
+
+		BDDER existEr = new BDDER(exist, l.removeVar(var));
+		BDDER normalized = existEr.normalize();
+		existEr.free();
+
+		return normalized;
+	}
+
+	BDDER exist_(BitSet vars) {
+		EquivalenceRelation lNew = l;
+		BitSet quantifiedVars = new BitSet();
+		Map<Integer, Integer> renaming = new HashMap<>();
+
+		for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
+			if (l.containsVar(i)) {
+				int nextLeader = l.nextLeader(i, vars);
+				if (nextLeader < 0)
+					quantifiedVars.set(i);
+				else
+					renaming.put(i, nextLeader);
+			}
+			else
+				quantifiedVars.set(i);
+
+			lNew = lNew.removeVar(i);
+		}
+
+		BDD exist = n;
+		if (!renaming.isEmpty())
+			exist = exist.replace(renaming);	// requires normalized representation
+
+		if (!quantifiedVars.isEmpty())
+			exist = exist.exist(quantifiedVars);
+
+		BDDER existEr = new BDDER(exist, lNew);
+		BDDER normalized = existEr.normalize();
+		existEr.free();
+
+		return normalized;
 	}
 
 	@Override
@@ -316,23 +553,68 @@ public class BDDER implements BDD {
 
 	@Override
 	public int nodeCount() {
-		return er.getN().nodeCount();
+		return n.nodeCount();
 	}
 
 	@Override
 	public BDD replace(Map<Integer, Integer> renaming) {
-		ER replace = er.replace(renaming);
-		return new BDDER(replace);
+		return replace_(renaming);
 	}
 
 	@Override
 	public BDD replaceWith(Map<Integer, Integer> renaming) {
-		ER replaceGer = er.replace(renaming);
+		BDDER replaceEr = replace_(renaming);
 		free();
-		er = replaceGer.normalize();
-		replaceGer.free();
+		n = replaceEr.n;
+		l = replaceEr.l;
 
 		return this;
+	}
+
+	BDDER replace_(Map<Integer, Integer> renaming) {
+		BitSet nVars = n.vars();
+		for (Integer v : renaming.values())
+			if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v))
+				throw new ReplacementWithExistingVarException(v);
+
+		BDD nNew = n.replace(renaming);
+
+		// perform "simultaneous" substitution
+		renaming = new HashMap<>(renaming);
+		Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
+		EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
+		eNew = eNew.replace(renaming);
+
+		BDD old = nNew;
+		nNew = nNew.renameWithLeader(eNew);
+		old.free();
+		BDDER replaceEr = new BDDER(nNew, eNew);
+		BDDER normalized = replaceEr.normalize();
+		replaceEr.free();
+
+		return normalized;
+	}
+
+	/**
+	 * Separates renamings affecting variables on the right side of some renaming.
+	 * The original renaming map is modified.
+	 * 
+	 * @param renaming the original renaming map. After the execution of this method
+	 * it does not contain mappings present in the returned map
+	 * @return a map containing mappings renaming variables present on the right side
+	 * of some other mapping
+	 */
+	private Map<Integer, Integer> splitRenaming(Map<Integer, Integer> renaming) {
+		Map<Integer, Integer> varsOnTheRighSide = new HashMap<>();
+		ArrayList<Integer> values = new ArrayList<>(renaming.values());
+
+		for (Integer i : values)
+			if (renaming.keySet().contains(i)) {
+				varsOnTheRighSide.put(i, renaming.get(i));
+				renaming.remove(i);
+			}
+
+		return varsOnTheRighSide;
 	}
 
 	@Override
@@ -358,30 +640,45 @@ public class BDDER implements BDD {
 	@Override
 	public boolean isEquivalentTo(BDD other) {
 		if (!(other instanceof BDDER)) {
-			return equivalentBDDs(other, er.getFullBDD());
+			return equivalentBDDs(other, getFullBDD());
 		}
 		BDDER o = (BDDER) other;
-		return er.getEquiv().equals(o.er.getEquiv()) && er.getN().isEquivalentTo(o.er.getN());
+		return l.equals(o.l) && n.isEquivalentTo(o.n);
 	}
 
-	private boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
+	/**
+	 * @return the full BDD, containing also equivalence constraints in l.
+	 */
+	public BDD getFullBDD() {
+		BDD full = n.copy();
+		Factory factory = n.getFactory();
+		for (Pair pair : l.pairs()) {
+			BDD biimp = factory.makeVar(pair.first);
+			biimp.biimpWith(factory.makeVar(pair.second));
+			full.andWith(biimp);
+		}
+		return full;
+	}
+
+	boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
 		if (bdd1.isOne()) {
 			return bdd2.isOne();
 		}
 		if (bdd1.isZero()) {
 			return bdd2.isZero();
 		}
-		return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
+		return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low())
+				&& equivalentBDDs(bdd1.high(), bdd2.high());
 	}
 
 	@Override
 	public int hashCodeAux() {
-		return er.getN().hashCodeAux() ^ er.getEquiv().hashCode();
+		return n.hashCodeAux() ^ l.hashCode();
 	}
 
 	@Override
 	public int var() {
-		BDD fullBDD = er.getFullBDD();
+		BDD fullBDD = getFullBDD();
 		int var = fullBDD.var();
 		fullBDD.free();
 		return var;
@@ -389,7 +686,7 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD high() {
-		BDD fullBDD = er.getFullBDD();
+		BDD fullBDD = getFullBDD();
 		BDD high = fullBDD.high();
 		fullBDD.free();
 		return new BDDER(high);
@@ -397,7 +694,7 @@ public class BDDER implements BDD {
 
 	@Override
 	public BDD low() {
-		BDD fullBDD = er.getFullBDD();
+		BDD fullBDD = getFullBDD();
 		BDD low = fullBDD.low();
 		fullBDD.free();
 		return new BDDER(low);
@@ -420,31 +717,43 @@ public class BDDER implements BDD {
 
 	@Override
 	public String toString() {
-		return er.toString();
+		return l + System.lineSeparator() + n;
 	}
 
 	@Override
 	public BitSet vars() {
-		return er.vars();
+		BitSet res = n.vars();
+		for (BitSet eqClass : l)
+			res.or(eqClass);
+
+		return res;
 	}
 
 	@Override
 	public int maxVar() {
-		return er.maxVar();
+		return Math.max(l.maxVar(), n.maxVar());
 	}
 
 	@Override
 	public BDD renameWithLeader(EquivalenceRelation r) {
-		return new BDDER(er.getFullBDD().renameWithLeader(r));
+		return new BDDER(getFullBDD().renameWithLeader(r));
 	}
 
 	@Override
 	public Set<Pair> equivVars() {
-		return er.getFullBDD().equivVars();
+		return getFullBDD().equivVars();
 	}
 
 	boolean isNormalized() {
-		ER norm = er.normalize();
-		return norm.getEquiv().equals(er.getEquiv()) && norm.getN().isEquivalentTo(er.getN());
+		BDDER norm = normalize();
+		return norm.l.equals(l) && norm.n.isEquivalentTo(n);
+	}
+
+	BDD getN() {
+		return n;
+	}
+
+	EquivalenceRelation getEquiv() {
+		return l;
 	}
 }
