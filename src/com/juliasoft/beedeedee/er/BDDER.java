@@ -239,7 +239,7 @@ public class BDDER implements BDD {
 	 * @param other the other BDDER
 	 * @return the xor
 	 */
-	public BDDER xor_(BDDER other) {
+	BDDER xor_(BDDER other) {
 		BDDER or = or_(other);
 		BDDER and = and_(other);
 		BDDER notAnd = and.not_();
@@ -429,7 +429,7 @@ public class BDDER implements BDD {
 		return satCount_();
 	}
 
-	long satCount_() {
+	private long satCount_() {
 		BitSet vars = n.vars();
 		int c = 1;
 		for (BitSet eqClass : l) {
@@ -480,7 +480,7 @@ public class BDDER implements BDD {
 		return exist_(var);
 	}
 
-	BDDER exist_(int var) {
+	private BDDER exist_(int var) {
 		BDD exist;
 		if (l.containsVar(var)) {
 			int nextLeader = l.nextLeader(var);
@@ -498,7 +498,7 @@ public class BDDER implements BDD {
 		return normalized;
 	}
 
-	BDDER exist_(BitSet vars) {
+	private BDDER exist_(BitSet vars) {
 		EquivalenceRelation lNew = l;
 		BitSet quantifiedVars = new BitSet();
 		Map<Integer, Integer> renaming = new HashMap<>();

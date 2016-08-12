@@ -43,7 +43,7 @@ public class BDDERTest {
 		assertTrue(bddGer.low().isZero());
 		assertTrue(bddGer.high().isOne());
 
-//		assertEquals(5, factory.bddCount()); FIXME uncomment all
+//		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
@@ -565,7 +565,6 @@ public class BDDERTest {
 		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3}, {6, 7}}
 		assertEquals(2, equiv.size());
-		// FIXME order dependent
 		Iterator<BitSet> it = equiv.iterator();
 		BitSet class1 = it.next();
 		BitSet class2 = it.next();
