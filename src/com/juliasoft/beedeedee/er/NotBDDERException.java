@@ -1,7 +1,7 @@
 package com.juliasoft.beedeedee.er;
 
-public class NotBDDGerException extends RuntimeException {
-	public NotBDDGerException() {
+public class NotBDDERException extends RuntimeException {
+	public NotBDDERException() {
 		super("The method argument is not of class " + BDDER.class.getName());
 	}
 }

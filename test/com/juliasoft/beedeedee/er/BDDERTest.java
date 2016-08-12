@@ -488,11 +488,11 @@ public class BDDERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		BDDER ger1 = new BDDER(bdd1);
+		BDDER er1 = new BDDER(bdd1);
 
-		BDDER ger2 = new BDDER(bdd2);
+		BDDER er2 = new BDDER(bdd2);
 
-		BDDER and = ger1.and_(ger2);
+		BDDER and = er1.and_(er2);
 
 		BDD expectedN = factory.makeVar(4);
 		assertTrue(and.getN().isEquivalentTo(expectedN));
@@ -520,11 +520,11 @@ public class BDDERTest {
 		temp.biimpWith(factory.makeVar(3));
 		bdd2.andWith(temp);
 
-		BDDER ger1 = new BDDER(bdd1);
+		BDDER er1 = new BDDER(bdd1);
 
-		BDDER ger2 = new BDDER(bdd2);
+		BDDER er2 = new BDDER(bdd2);
 
-		BDDER and = ger1.and_(ger2);
+		BDDER and = er1.and_(er2);
 
 		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3, 4}}
@@ -555,12 +555,12 @@ public class BDDERTest {
 		bdd2.andWith(temp);
 
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		BDDER ger1 = new BDDER(bdd1, e1);
+		BDDER er1 = new BDDER(bdd1, e1);
 
 		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		BDDER ger2 = new BDDER(bdd2, e2);
+		BDDER er2 = new BDDER(bdd2, e2);
 
-		BDDER and = ger1.and_(ger2);
+		BDDER and = er1.and_(er2);
 
 		EquivalenceRelation equiv = and.getEquiv();
 		// {{1, 2, 3}, {6, 7}}
@@ -593,12 +593,12 @@ public class BDDERTest {
 		bdd2.andWith(factory.makeVar(4));
 
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		BDDER ger1 = new BDDER(bdd1, e1);
+		BDDER er1 = new BDDER(bdd1, e1);
 
 		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 3}});
-		BDDER ger2 = new BDDER(bdd2, e2);
+		BDDER er2 = new BDDER(bdd2, e2);
 
-		BDDER or = ger1.or_(ger2);
+		BDDER or = er1.or_(er2);
 
 		BDD n = or.getN();
 		BDD expectedN = bdd1.or(bdd2);
@@ -623,12 +623,12 @@ public class BDDERTest {
 		bdd2.andWith(temp);
 
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		BDDER ger1 = new BDDER(bdd1, e1);
+		BDDER er1 = new BDDER(bdd1, e1);
 
 		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		BDDER ger2 = new BDDER(bdd2, e2);
+		BDDER er2 = new BDDER(bdd2, e2);
 
-		BDDER or = ger1.or_(ger2);
+		BDDER or = er1.or_(er2);
 
 		EquivalenceRelation equiv = or.getEquiv();
 		// (1, 2)
@@ -661,12 +661,12 @@ public class BDDERTest {
 		bdd2.andWith(temp);
 
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		BDDER ger1 = new BDDER(bdd1, e1);
+		BDDER er1 = new BDDER(bdd1, e1);
 
 		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		BDDER ger2 = new BDDER(bdd2, e2);
+		BDDER er2 = new BDDER(bdd2, e2);
 
-		BDDER or = ger1.or_(ger2);
+		BDDER or = er1.or_(er2);
 
 		EquivalenceRelation equiv = or.getEquiv();
 		// (1, 2)
@@ -697,12 +697,12 @@ public class BDDERTest {
 		bdd2.andWith(factory.makeVar(4));
 
 		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		BDDER ger1 = new BDDER(bdd1, e1);
+		BDDER er1 = new BDDER(bdd1, e1);
 
 		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 3}});
-		BDDER ger2 = new BDDER(bdd2, e2);
+		BDDER er2 = new BDDER(bdd2, e2);
 
-		BDDER xor = ger1.xor_(ger2);
+		BDDER xor = er1.xor_(er2);
 
 		BDD n = xor.getN();
 		BDD expectedN = bdd1.xor(bdd2);
@@ -722,8 +722,8 @@ public class BDDERTest {
 		bdd.andWith(factory.makeVar(8));
 		BDD expected = bdd.not();
 
-		BDDER ger = new BDDER(bdd);
-		BDDER notGer = ger.not_();
+		BDDER er = new BDDER(bdd);
+		BDDER notGer = er.not_();
 
 		BDD full = notGer.getFullBDD();
 		assertTrue(expected.isEquivalentTo(full));
@@ -738,9 +738,9 @@ public class BDDERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		BDDER ger = new BDDER(bdd);
+		BDDER er = new BDDER(bdd);
 
-		assertEquals(3, ger.maxVar());
+		assertEquals(3, er.maxVar());
 	}
 
 	@Test
@@ -750,9 +750,9 @@ public class BDDERTest {
 		bdd.biimpWith(factory.makeVar(6));
 		bdd.andWith(factory.makeVar(3));
 
-		BDDER ger = new BDDER(bdd);
+		BDDER er = new BDDER(bdd);
 
-		assertEquals(6, ger.maxVar());
+		assertEquals(6, er.maxVar());
 	}
 
 	@Test
@@ -811,8 +811,8 @@ public class BDDERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 
-		BDDER ger = new BDDER(bdd, new EquivalenceRelation());	// non-normalizing constructor
-		BDDER normalized = ger.normalize();
+		BDDER er = new BDDER(bdd, new EquivalenceRelation());	// non-normalizing constructor
+		BDDER normalized = er.normalize();
 
 		List<Pair> pairs = normalized.getEquiv().pairs();
 		assertEquals(1, pairs.size());
@@ -832,8 +832,8 @@ public class BDDERTest {
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(3));
 
-		BDDER ger = new BDDER(bdd, new EquivalenceRelation());	// non-normalizing constructor
-		BDDER normalized = ger.normalize();
+		BDDER er = new BDDER(bdd, new EquivalenceRelation());	// non-normalizing constructor
+		BDDER normalized = er.normalize();
 
 		List<Pair> pairs = normalized.getEquiv().pairs();
 		assertEquals(1, pairs.size());
@@ -926,10 +926,10 @@ public class BDDERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		BDDER ger = new BDDER(bdd.copy());
-		BDD full = ger.getFullBDD();
+		BDDER er = new BDDER(bdd.copy());
+		BDD full = er.getFullBDD();
 
-		assertTrue(ger.equivalentBDDs(full, bdd));
+		assertTrue(er.equivalentBDDs(full, bdd));
 
 //		assertEquals(3, factory.bddCount());
 	}
@@ -940,9 +940,9 @@ public class BDDERTest {
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		// 1 value - bound to leader's value in bdd (var 1)
-		BDDER ger = new BDDER(bdd, l);
+		BDDER er = new BDDER(bdd, l);
 
-		assertEquals(2, ger.satCount());
+		assertEquals(2, er.satCount());
 	}
 
 	@Test
@@ -951,9 +951,9 @@ public class BDDERTest {
 		BDD bdd = factory.makeVar(0).xorWith(factory.makeVar(1));
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}, {3, 4}});
 		// 2 values for this - no constraints
-		BDDER ger = new BDDER(bdd, l);
+		BDDER er = new BDDER(bdd, l);
 
-		assertEquals(4, ger.satCount());
+		assertEquals(4, er.satCount());
 	}
 
 	@Test
@@ -963,9 +963,9 @@ public class BDDERTest {
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{2, 3}, {4, 5, 6, 7}});
 		// 2 values for this...
 		// times 2 values for this
-		BDDER ger = new BDDER(bdd, l);
+		BDDER er = new BDDER(bdd, l);
 
-		assertEquals(8, ger.satCount());
+		assertEquals(8, er.satCount());
 	}
 
 	@Test
@@ -974,9 +974,9 @@ public class BDDERTest {
 		BDD bdd = factory.makeVar(1);
 		bdd.biimpWith(factory.makeVar(2));
 		bdd.andWith(factory.makeVar(8));
-		BDDER ger = new BDDER(bdd);
+		BDDER er = new BDDER(bdd);
 
-		BitSet vars = ger.vars();
+		BitSet vars = er.vars();
 		assertEquals(3, vars.cardinality());
 		assertTrue(vars.get(1));
 		assertTrue(vars.get(2));
@@ -988,10 +988,10 @@ public class BDDERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		BDDER ger1 = new BDDER(x1);
-		BDDER ger2 = new BDDER(x2);
+		BDDER er1 = new BDDER(x1);
+		BDDER er2 = new BDDER(x2);
 
-		BDDER biimp = ger1.biimp_(ger2);
+		BDDER biimp = er1.biimp_(er2);
 
 		BDD n = biimp.getN();
 		EquivalenceRelation equiv = biimp.getEquiv();
@@ -1008,10 +1008,10 @@ public class BDDERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		BDDER ger1 = new BDDER(x1.copy());
-		BDDER ger2 = new BDDER(x2.copy());
+		BDDER er1 = new BDDER(x1.copy());
+		BDDER er2 = new BDDER(x2.copy());
 
-		BDDER imp = ger1.imp_(ger2);
+		BDDER imp = er1.imp_(er2);
 
 		BDD fullBDD = imp.getFullBDD();
 		BDD expected = x1.imp(x2);
@@ -1026,12 +1026,12 @@ public class BDDERTest {
 		BDD x1 = factory.makeVar(1);
 		BDD x2 = factory.makeVar(2);
 
-		BDDER ger = new BDDER(x1);
+		BDDER er = new BDDER(x1);
 		BDDER expected = new BDDER(x2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 2);
-		BDDER replace = ger.replace_(renaming);
+		BDDER replace = er.replace_(renaming);
 
 		assertTrue(replace.equivalentBDDs(expected, replace));
 	}
@@ -1041,11 +1041,11 @@ public class BDDERTest {
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = factory.makeVar(3);
 
-		BDDER ger = new BDDER(n, l);
+		BDDER er = new BDDER(n, l);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 2);
-		ger.replace(renaming);
+		er.replace(renaming);
 	}
 
 	@Test
@@ -1053,14 +1053,14 @@ public class BDDERTest {
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2}});
 		BDD n = factory.makeVar(3);
 
-		BDDER ger = new BDDER(n, l);
+		BDDER er = new BDDER(n, l);
 
 		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{2, 4}});
 		BDDER expected = new BDDER(n.copy(), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 4);
-		BDDER replace = ger.replace_(renaming);
+		BDDER replace = er.replace_(renaming);
 
 		assertTrue(replace.equivalentBDDs(expected, replace));
 	}
@@ -1070,14 +1070,14 @@ public class BDDERTest {
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		BDD n = factory.makeVar(1);
 
-		BDDER ger = new BDDER(n, l);
+		BDDER er = new BDDER(n, l);
 
 		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{2, 3, 4}});
 		BDDER expected = new BDDER(factory.makeVar(2), l2);
 
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(1, 4);
-		BDDER replace = ger.replace_(renaming);
+		BDDER replace = er.replace_(renaming);
 
 		assertTrue(replace.equivalentBDDs(expected, replace));
 	}
@@ -1087,7 +1087,7 @@ public class BDDERTest {
 		EquivalenceRelation l = new EquivalenceRelation(new int[][] {{6, 9}});
 		BDD n = factory.makeVar(8);
 
-		BDDER ger = new BDDER(n, l);
+		BDDER er = new BDDER(n, l);
 
 		EquivalenceRelation l2 = new EquivalenceRelation(new int[][] {{3, 9}});
 		BDDER expected = new BDDER(factory.makeVar(8), l2);
@@ -1095,7 +1095,7 @@ public class BDDERTest {
 		Map<Integer, Integer> renaming = new HashMap<>();
 		renaming.put(9, 3);	// this should be performed first
 		renaming.put(6, 9);
-		BDDER replace = ger.replace_(renaming);
+		BDDER replace = er.replace_(renaming);
 
 		assertTrue(replace.equivalentBDDs(expected, replace));
 	}

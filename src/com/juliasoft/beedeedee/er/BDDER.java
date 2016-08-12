@@ -97,25 +97,25 @@ public class BDDER implements BDD {
 	@Override
 	public BDD or(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		return or_(otherBddGer);
+		BDDER otherBddEr = (BDDER) other;
+		return or_(otherBddEr);
 	}
 
 	@Override
 	public BDD orWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		BDDER or_ = or_(otherBddGer);
+		BDDER otherBddEr = (BDDER) other;
+		BDDER or_ = or_(otherBddEr);
 		free();
 		n = or_.n;
 		l = or_.l;
-		otherBddGer.free();
+		otherBddEr.free();
 
 		return this;
 	}
@@ -163,8 +163,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD and(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		return and_(otherBddEr);
@@ -173,8 +173,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD andWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		BDDER and_ = and_(otherBddEr);
@@ -207,18 +207,18 @@ public class BDDER implements BDD {
 	@Override
 	public BDD xor(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
-		BDDER otherBddGer = (BDDER) other;
-		return xor_(otherBddGer);
+		BDDER otherBddEr = (BDDER) other;
+		return xor_(otherBddEr);
 	}
 
 	@Override
 	public BDD xorWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		BDDER xor_ = xor_(otherBddEr);
@@ -271,8 +271,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD nand(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		BDDER and_ = and_(otherBddEr);
@@ -285,8 +285,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD nandWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 
 		BDDER otherBddEr = (BDDER) other;
@@ -319,8 +319,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD imp(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		return imp_(otherBddEr);
@@ -329,8 +329,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD impWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		BDDER imp_ = imp_(otherBddEr);
@@ -359,8 +359,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD biimp(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		return biimp_(otherBddEr);
@@ -369,8 +369,8 @@ public class BDDER implements BDD {
 	@Override
 	public BDD biimpWith(BDD other) {
 		if (!(other instanceof BDDER)) {
-			// TODO or convert transparently to BDDGer?
-			throw new NotBDDGerException();
+			// TODO or convert transparently to BDDER?
+			throw new NotBDDERException();
 		}
 		BDDER otherBddEr = (BDDER) other;
 		BDDER biimp_ = biimp_(otherBddEr);
