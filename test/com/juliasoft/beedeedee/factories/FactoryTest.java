@@ -392,6 +392,8 @@ public class FactoryTest {
 
 	@Test
 	public void testMarkAliveNodes1() {
+		factory = new Factory(10, 10, 0);
+
 		boolean[] aliveNodes = new boolean[10];
 		factory.markAliveNodes(aliveNodes);
 
@@ -404,6 +406,8 @@ public class FactoryTest {
 
 	@Test
 	public void testMarkAliveNodes2() {
+		factory = new Factory(10, 10, 0);
+
 		factory.makeVar(5);
 
 		boolean[] aliveNodes = new boolean[10];
@@ -420,6 +424,8 @@ public class FactoryTest {
 
 	@Test
 	public void testMarkAliveNodes3() {
+		factory = new Factory(10, 10, 0);
+
 		BDD x5 = factory.makeVar(5);
 		factory.makeVar(7);
 		x5.free();
@@ -438,6 +444,8 @@ public class FactoryTest {
 
 	@Test
 	public void testUpdateIndicesOfAllBDDsCreatedSoFar() {
+		factory = new Factory(10, 10, 0);
+
 		factory.makeVar(5); // 2
 		factory.makeVar(7); // 3
 
@@ -454,11 +462,11 @@ public class FactoryTest {
 
 	@Test
 	public void testBddCount() {
-		assertEquals(0, factory.bddCount());
+		assertEquals(5, factory.bddCount());
 		BDD x2 = factory.makeVar(2);
-		assertEquals(1, factory.bddCount());
+		assertEquals(6, factory.bddCount());
 		x2.free();
-		assertEquals(0, factory.bddCount());
+		assertEquals(5, factory.bddCount());
 	}
 
 	@Test
