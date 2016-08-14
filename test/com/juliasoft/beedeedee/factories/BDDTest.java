@@ -8,11 +8,11 @@ import com.juliasoft.beedeedee.bdd.BDD;
 
 public class BDDTest {
 
-	private ResizingAndGarbageCollectedFactory factory;
+	private Factory factory;
 
 	@Before
 	public void setUp() {
-		factory = new ResizingAndGarbageCollectedFactoryImpl(2, 2);
+		factory = new Factory(2, 2);
 	}
 
 	@After

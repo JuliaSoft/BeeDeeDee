@@ -8,7 +8,7 @@ import java.util.zip.Checksum;
 /**
  * A factory with integrity check of BDD data.
  */
-public class IntegrityCheckFactory extends ResizingAndGarbageCollectedFactoryImpl {
+public class IntegrityCheckFactory extends Factory {
 
 	public IntegrityCheckFactory(int utSize, int cacheSize, boolean onlineCheck) {
 		this(utSize, cacheSize, DEFAULT_NUMBER_OF_PREALLOCATED_VARS, onlineCheck);

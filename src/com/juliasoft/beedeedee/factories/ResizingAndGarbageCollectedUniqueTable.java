@@ -22,8 +22,8 @@ import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.utils.concurrent.Executors;
 
 class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
@@ -55,7 +55,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	private volatile double minFreeNodes = 0.2;
 
-	private final ResizingAndGarbageCollectedFactoryImpl factory;
+	private final Factory factory;
 
 	private long totalResizeTime;
 
@@ -95,7 +95,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	private int nextGCLocks;
 
-	ResizingAndGarbageCollectedUniqueTable(int size, int cacheSize, ResizingAndGarbageCollectedFactoryImpl factory) {
+	ResizingAndGarbageCollectedUniqueTable(int size, int cacheSize, Factory factory) {
 		super(size, cacheSize);
 
 		for (int pos = 0; pos < getLocks.length; pos++)

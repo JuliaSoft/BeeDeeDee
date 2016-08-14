@@ -38,9 +38,8 @@ import net.sf.javabdd.BDDPairing;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.er.ERFactory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.julia.checkers.nullness.NonNull;
 
 /**
@@ -49,7 +48,7 @@ import com.juliasoft.julia.checkers.nullness.NonNull;
 public class JavaBDDAdapterFactory extends BDDFactory {
 
 	// this is non-null since it is definitely initialized by the static pseudo-constructor
-	private @NonNull ERFactory factory;
+	private @NonNull Factory factory;
 	private int bddVarNum;
 
 	private JavaBDDAdapterFactory() {}
@@ -73,7 +72,7 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 	@Override
 	protected void initialize(int nodenum, int cachesize) {
 		//factory = Factory.mkResizingAndGarbageCollected(nodenum, cachesize);
-		factory = new ERFactory(nodenum, cachesize);
+		factory = Factory.mkER(nodenum, cachesize);
 		// we set the default call-backs
 
 		try {

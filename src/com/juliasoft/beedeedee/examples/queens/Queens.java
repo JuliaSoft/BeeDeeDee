@@ -18,17 +18,11 @@
 */
 package com.juliasoft.beedeedee.examples.queens;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
-import com.juliasoft.beedeedee.er.ERFactory;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.IntegrityCheckFactory;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
-import com.juliasoft.utils.concurrent.Executors;
 
 public class Queens {
 
@@ -55,8 +49,8 @@ public class Queens {
 			cacheSize = Integer.parseInt(args[2]);
 		}
 
-//		Factory factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
-		Factory factory = new ERFactory(utSize, cacheSize);
+//		Factory factory = Factory.mk(utSize, cacheSize);
+		Factory factory = Factory.mkER(utSize, cacheSize);
 //		Factory factory = new IntegrityCheckFactory(utSize, cacheSize, true);
 		BDD queen = factory.makeOne();
 

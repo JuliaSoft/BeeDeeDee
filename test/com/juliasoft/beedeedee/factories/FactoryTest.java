@@ -3,7 +3,9 @@ package com.juliasoft.beedeedee.factories;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -19,11 +21,11 @@ import org.junit.Test;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
+import com.juliasoft.beedeedee.factories.Factory.BDDImpl;
 
 @SuppressWarnings("unused")
 public class FactoryTest {
 
-	private static final int INITIAL_NODE_NUM = 10;
 	private Factory factory;
 	private BDD x1;
 	private BDD x2;
@@ -34,7 +36,7 @@ public class FactoryTest {
 
 	@Before
 	public void setUp() {
-		factory = new ResizingAndGarbageCollectedFactoryImpl(INITIAL_NODE_NUM, 2);
+		factory = new Factory(10, 10, 0);
 		
 		x1 = factory.makeVar(1);
 		x2 = factory.makeVar(2);
@@ -387,4 +389,123 @@ public class FactoryTest {
 
 		assertTrue(ite.isEquivalentTo(expected));
 	}
+
+	@Test
+	public void testMarkAliveNodes1() {
+		boolean[] aliveNodes = new boolean[10];
+		factory.markAliveNodes(aliveNodes);
+
+		boolean[] expected = new boolean[10];
+		// terminal are always alive
+		expected[0] = true;
+		expected[1] = true;
+		assertTrue(Arrays.equals(expected, aliveNodes));
+	}
+
+	@Test
+	public void testMarkAliveNodes2() {
+		factory.makeVar(5);
+
+		boolean[] aliveNodes = new boolean[10];
+		factory.markAliveNodes(aliveNodes);
+
+		boolean[] expected = new boolean[10];
+		// terminal are always alive
+		expected[0] = true;
+		expected[1] = true;
+		// var 5 is alive
+		expected[2] = true;
+		assertTrue(Arrays.equals(expected, aliveNodes));
+	}
+
+	@Test
+	public void testMarkAliveNodes3() {
+		BDD x5 = factory.makeVar(5);
+		factory.makeVar(7);
+		x5.free();
+
+		boolean[] aliveNodes = new boolean[10];
+		factory.markAliveNodes(aliveNodes);
+
+		boolean[] expected = new boolean[10];
+		// terminal are always alive
+		expected[0] = true;
+		expected[1] = true;
+		// var 7 is alive
+		expected[3] = true;
+		assertTrue(Arrays.equals(expected, aliveNodes));
+	}
+
+	@Test
+	public void testUpdateIndicesOfAllBDDsCreatedSoFar() {
+		factory.makeVar(5); // 2
+		factory.makeVar(7); // 3
+
+		int[] newPositions = new int[10];
+		newPositions[2] = 4;
+		newPositions[3] = 6;
+		factory.updateIndicesOfAllBDDsCreatedSoFar(newPositions);
+
+		ArrayList<BDDImpl> allBDDsCreatedSoFarCopy = factory.getAllBDDsCreatedSoFarCopy();
+		for (BDDImpl bdd : allBDDsCreatedSoFarCopy) {
+			assertTrue(bdd.id == 4 || bdd.id == 6);
+		}
+	}
+
+	@Test
+	public void testBddCount() {
+		assertEquals(0, factory.bddCount());
+		BDD x2 = factory.makeVar(2);
+		assertEquals(1, factory.bddCount());
+		x2.free();
+		assertEquals(0, factory.bddCount());
+	}
+
+	@Test
+	public void testBddVars1() {
+		BDD x2 = factory.makeVar(2);
+		BitSet vars = x2.vars();
+		assertEquals(1, vars.cardinality());
+		assertTrue(vars.get(2));
+	}
+
+	@Test
+	public void testBddVars2() {
+		BDD bdd = factory.makeVar(2);
+		bdd.xorWith(factory.makeVar(3));
+
+		BitSet vars = bdd.vars();
+		assertEquals(2, vars.cardinality());
+		assertTrue(vars.get(2));
+		assertTrue(vars.get(3));
+	}
+
+	@Test
+	public void testMaxVar() {
+		BDD one = factory.makeOne();
+		assertEquals(-1, one.maxVar());
+		BDD zero = factory.makeZero();
+		assertEquals(-1, zero.maxVar());
+		// bdd for (x1 <-> x2) & x8
+		BDD bdd = factory.makeVar(1);
+		bdd.biimpWith(factory.makeVar(2));
+		bdd.andWith(factory.makeVar(8));
+		assertEquals(8, bdd.maxVar());
+	}
+
+	@Test
+	public void testExist() {
+		// (x1 <-> x2) & (x2 <-> x3) & (x1 OR x4)
+		BDD biimp1 = factory.makeVar(1).biimp(factory.makeVar(2));
+		BDD biimp2 = factory.makeVar(2).biimp(factory.makeVar(3));
+		BDD or = factory.makeVar(1).orWith(factory.makeVar(4));;
+		BDD bdd = biimp1.andWith(biimp2).andWith(or);
+
+		// x3 OR x4
+		BDD minterm = factory.makeVar(1).andWith(factory.makeVar(2));
+		BDD exist = bdd.exist(minterm);
+		BDD expected = factory.makeVar(3).orWith(factory.makeVar(4));
+		assertTrue(exist.isEquivalentTo(expected));
+	}
+
 }

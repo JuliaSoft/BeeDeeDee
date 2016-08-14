@@ -2,7 +2,7 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactoryImpl.EquivResult;
+import com.juliasoft.beedeedee.factories.Factory.EquivResult;
 
 class EquivCache {
 	private final int[] bdds;

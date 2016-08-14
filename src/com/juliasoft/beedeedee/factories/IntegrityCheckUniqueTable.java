@@ -9,7 +9,7 @@ public class IntegrityCheckUniqueTable extends ResizingAndGarbageCollectedUnique
 	protected static final int CHECKSUM_OFFSET = 5;
 	protected static final int NODE_SIZE = 6;
 
-	IntegrityCheckUniqueTable(int size, int cacheSize, ResizingAndGarbageCollectedFactoryImpl factory) {
+	IntegrityCheckUniqueTable(int size, int cacheSize, Factory factory) {
 		super(size, cacheSize, factory);
 		// TODO Auto-generated constructor stub
 	}

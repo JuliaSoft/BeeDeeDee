@@ -26,7 +26,7 @@ public class BDDERTest {
 
 	@Before
 	public void setUp() {
-		factory = Factory.mkResizingAndGarbageCollected(10, 10, 0);
+		factory = Factory.mk(10, 10, 0);
 		// x1 <-> x2
 		bddX1biX2 = factory.makeVar(1);
 		bddX1biX2.biimpWith(factory.makeVar(2));

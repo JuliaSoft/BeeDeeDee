@@ -23,9 +23,8 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.julia.checkers.nullness.NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
@@ -36,7 +35,7 @@ public class MultiQueens {
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
 	private static boolean parallel = false; // does each single queen solution must be computed in parallel
-	private static @NonNull ResizingAndGarbageCollectedFactory factory;
+	private static @NonNull Factory factory;
 
 	public static void main(String[] args) throws InterruptedException {
 		ArrayList<Integer> ens = processArgs(args);
@@ -87,7 +86,7 @@ public class MultiQueens {
 	}
 
 	private static void initFactory() {
-		factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize);
+		factory = Factory.mk(utSize, cacheSize);
 		
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 			@Override

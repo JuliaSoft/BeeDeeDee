@@ -11,11 +11,11 @@ import org.junit.Test;
 public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	private ResizingAndGarbageCollectedUniqueTable ut;
-	private ResizingAndGarbageCollectedFactoryImpl factoryMock;
+	private Factory factoryMock;
 
 	@Before
 	public void setUp() {
-		factoryMock = mock(ResizingAndGarbageCollectedFactoryImpl.class);
+		factoryMock = mock(Factory.class);
 		ut = new ResizingAndGarbageCollectedUniqueTable(10, 10, factoryMock);
 	}
 

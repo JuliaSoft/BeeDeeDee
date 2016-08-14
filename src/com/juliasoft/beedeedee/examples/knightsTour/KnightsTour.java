@@ -22,11 +22,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.juliasoft.beedeedee.er.ERFactory;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.GarbageCollectionListener;
-import com.juliasoft.beedeedee.factories.ResizingAndGarbageCollectedFactory.ResizeListener;
+import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
+import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.julia.checkers.nullness.NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
@@ -38,7 +36,7 @@ public class KnightsTour {
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
 	private static boolean parallel = false; // does each single tour problem must be solved in parallel
-	private static @NonNull ERFactory factory;
+	private static @NonNull Factory factory;
 
 	public static void main(String[] args) throws InterruptedException {
 		ArrayList<Integer> ens = processArgs(args);
@@ -89,8 +87,8 @@ public class KnightsTour {
 	}
 
 	private static void initFactory() {
-		//factory = Factory.mkResizingAndGarbageCollected(utSize, cacheSize, 0);
-		factory = new ERFactory(utSize, cacheSize);
+//		factory = Factory.mk(utSize, cacheSize, 0);
+		factory = Factory.mkER(utSize, cacheSize);
 
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 			@Override
@@ -103,7 +101,7 @@ public class KnightsTour {
 				System.out.println(" Done. Size:" + size + ". Free:" + free + ". Time:" + time + "/" + totalTime);
 			}
 		});
-	
+
 		factory.setResizeListener(new ResizeListener() {
 			@Override
 			public void onStart(int num, int oldSize, int newSize, long totalTime) {
@@ -115,7 +113,7 @@ public class KnightsTour {
 				System.out.println(" Done. Old size:" + oldSize + ". New size:" + newSize + ". Time:" + time + "/" + totalTime);
 			}
 		});
-		
+
 		factory.setCacheRatio(0);
 		factory.setMaxIncrease(10000000);
 	}
