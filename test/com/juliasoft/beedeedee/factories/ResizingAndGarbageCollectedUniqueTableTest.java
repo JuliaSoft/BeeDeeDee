@@ -85,6 +85,7 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	@Test
 	public void testUpdateHashTable2() {
+		redefineHashInTestDouble(10);
 		ut.get(3, 0, 1);
 		// hash(...) considers only low and high, so these should have the same hash (same chain)
 		ut.get(4, 10, 1);
@@ -99,6 +100,25 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 
 		// should be restored by updateHashTable
 		assertEquals(2, ut.next(1));
+	}
+
+	/**
+	 * Redefine hash to use only low and high.
+	 */
+	private void redefineHashInTestDouble(int size) {
+		ut = new ResizingAndGarbageCollectedUniqueTable(size, 10, factoryMock) {
+			@Override
+			protected int hash(int var, int low, int high, int size) {
+				int num = low;
+
+				while (low > 0) {
+					low >>>= 1;
+					high <<= 1;
+				}
+
+				return (num |= high) >= 0 ? num % size : (-num) % size;
+			}
+		};
 	}
 
 	@Test
@@ -116,7 +136,6 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 	@Test
 	public void testExpandTableTwoNodesSameHash() {
 		int pos = ut.hash(13, 20, 41);
-		// hash(...) considers only low and high, so these should have the same hash (same chain)
 		int node1 = ut.expandTable(13, 20, 41, null, pos);
 		int node2 = ut.expandTable(1024, 20, 41, null, pos);
 
@@ -125,7 +144,7 @@ public class ResizingAndGarbageCollectedUniqueTableTest {
 
 	@Test
 	public void testExpandTableDebugging() {
-		ut = new ResizingAndGarbageCollectedUniqueTable(2, 10, factoryMock);
+		redefineHashInTestDouble(2);
 		ut.get(1, 2, 3);
 		ut.get(2, 2, 3);
 		// this triggers resizing, hash changes in the middle of operation

@@ -199,7 +199,7 @@ class SimpleUniqueTable implements UniqueTable {
 		return hash(var, low, high, size);
 	}
 
-	protected final int hash(int var, int low, int high, int size) {
+	protected int hash(int var, int low, int high, int size) {
 		int temp = (low ^ (high << 1) ^ var) % size;
 		if (temp < 0) {
 			temp = -temp;
