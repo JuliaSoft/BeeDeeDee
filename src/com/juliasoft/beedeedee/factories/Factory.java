@@ -1554,10 +1554,12 @@ public class Factory {
 			private final EquivalenceRelation equivalenceRelations;
 			private final int resultId;
 			private final int maxVar;
+			private RenameWithLeaderInternalCache rwlic;
 
 			private RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
 				this.equivalenceRelations = equivalenceRelations;
 				this.maxVar = equivalenceRelations.maxVar();
+				this.rwlic = new RenameWithLeaderInternalCache(20);
 				this.resultId = renameWithLeader(id, 0, new BitSet());
 			}
 
@@ -1568,6 +1570,11 @@ public class Factory {
 
 				if ((var = ut.var(bdd)) > maxVar)
 					return bdd;
+
+				int cached = rwlic.get(bdd, level, t);
+				if (cached >= 0) {
+					return cached;
+				}
 
 				Filter filter = new UsefulLeaders(bdd);
 				// we further filter here, since some equivalence class might be irrelevant
@@ -1590,6 +1597,7 @@ public class Factory {
 				else
 					result = renameWithLeader(ut.low(bdd), var + 1, t);
 
+				rwlic.put(bdd, level, t, result);
 				return result;
 			}
 		}
