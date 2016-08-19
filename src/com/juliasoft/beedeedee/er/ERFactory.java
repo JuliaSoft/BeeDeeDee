@@ -318,34 +318,34 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD nand(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER and_ = and_(otherBddEr);
-			BDDER not_ = and_.not_();
-			and_.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER and_ = and_(otherBddEr);
+				BDDER not_ = and_.not_();
+				and_.free();
 
-			return not_;
+				return not_;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		@Override
 		public BDD nandWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER and_ = and_(otherBddEr);
+				otherBddEr.free();
+				BDDER not_ = and_.not_();
+				and_.free();
+				setId(((BDDImpl) not_).getId());
+				l = not_.l;
+				not_.free();
+
+				return this;
 			}
-
-			BDDER otherBddEr = (BDDER) other;
-			BDDER and_ = and_(otherBddEr);
-			BDDER not_ = and_.not_();
-			and_.free();
-			setId(((BDDImpl) not_).getId());
-			l = not_.l;
-			otherBddEr.free();
-
-			return this;
+			else
+				throw new NotBDDERException();
 		}
 
 		@Override
@@ -358,6 +358,7 @@ public class ERFactory extends Factory {
 			BDDER not_ = not_();
 			setId(((BDDImpl) not_).getId());
 			l = not_.l;
+			not_.free();
 
 			return this;
 		}
