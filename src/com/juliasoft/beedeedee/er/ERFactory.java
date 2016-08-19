@@ -213,26 +213,26 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD and(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
+			if (other instanceof BDDER)
+				return and_((BDDER) other);
+			else
 				throw new NotBDDERException();
-			}
-			return and_((BDDER) other);
 		}
 
 		@Override
 		public BDD andWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER and_ = and_(otherBddEr);
-			setId(and_.getId());
-			l = and_.l;
-			otherBddEr.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER and_ = and_(otherBddEr);
+				setId(and_.getId());
+				l = and_.l;
+				otherBddEr.free();
+				and_.free();
 
-			return this;
+				return this;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		/**
@@ -254,27 +254,26 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD xor(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
+			if (other instanceof BDDER)
+				return xor_((BDDER) other);
+			else
 				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			return xor_(otherBddEr);
 		}
 
 		@Override
 		public BDD xorWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER xor_ = xor_(otherBddEr);
-			setId(((BDDImpl) xor_).getId());
-			l = xor_.l;
-			otherBddEr.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER xor_ = xor_(otherBddEr);
+				setId(((BDDImpl) xor_).getId());
+				l = xor_.l;
+				otherBddEr.free();
+				xor_.free();
 
-			return this;
+				return this;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		/**
@@ -290,10 +289,11 @@ public class ERFactory extends Factory {
 			BDDER or = or_(other);
 			BDDER and = and_(other);
 			BDDER notAnd = and.not_();
+			and.free();
 			BDDER result = or.and_(notAnd);
 			or.free();
-			and.free();
 			notAnd.free();
+
 			return result;
 		}
 
