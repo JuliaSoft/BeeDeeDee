@@ -137,7 +137,7 @@ public class Factory {
 		public void onStop(int num, int oldSize, int newSize, long time, long totalTime);
 	}
 
-	private final static int FIRST_NODE_NUM = 2;
+	protected final static int FIRST_NODE_NUM = 2;
 	protected final int NUMBER_OF_PREALLOCATED_VARS;
 	protected final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
 	private final int NUM_OF_PREALLOCATED_NODES;
@@ -185,7 +185,7 @@ public class Factory {
 		Executors.shutdown();
 	}
 
-	private int MK(int var, int low, int high) {
+	protected final int MK(int var, int low, int high) {
 		return low == high ? low : ut.get(var, low, high);
 	}
 
@@ -354,6 +354,10 @@ public class Factory {
 			synchronized (allBDDsCreatedSoFar) {
 				allBDDsCreatedSoFar.add(this);
 			}
+		}
+
+		protected BDDImpl mdBDDImpl(int id) {
+			return new BDDImpl(id);
 		}
 
 		protected void setId(int id) {
@@ -1369,63 +1373,6 @@ public class Factory {
 					return MK(v2, compose(id1, ut.low(id2), var), compose(id1, ut.high(id2), var));
 			else
 				return ite(id2, ut.high(id1), ut.low(id1));
-		}
-
-		@Override
-		public BDD squeezeEquiv(EquivalenceRelation r) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
-				return new BDDImpl(new EquivalenceSqueezer(r).squeezedId);
-			}
-			finally {
-				lock.unlock();
-			}
-		}
-
-		private class EquivalenceSqueezer {
-			private final SqueezeEquivCache cache = ut.getSqueezeEquivCache();
-			private final EquivalenceRelation equivalenceRelation;
-			private final int squeezedId;
-
-			private EquivalenceSqueezer(EquivalenceRelation equivalenceRelation) {
-				this.equivalenceRelation = equivalenceRelation;
-				this.squeezedId = squeezeEquiv(id);
-			}
-
-			private int squeezeEquiv(int bdd) {
-				if (bdd < FIRST_NODE_NUM)
-					return bdd;
-
-				int cached = cache.get(bdd, equivalenceRelation);
-				if (cached >= 0)
-					return cached;
-
-				int var = ut.var(bdd), result;
-				if (equivalenceRelation.getLeader(var) == var)
-					result = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
-				else if (ut.high(bdd) == 0)
-					result = squeezeEquiv(ut.low(bdd));
-				else
-					result = squeezeEquiv(ut.high(bdd));
-
-				cache.put(bdd, equivalenceRelation, result);
-				return result;
-			}
-		}
-
-		@Override
-		public BDD squeezeEquivWith(EquivalenceRelation r) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
-				setId(new EquivalenceSqueezer(r).squeezedId);
-			}
-			finally {
-				lock.unlock();
-			}
-
-			return this;
 		}
 
 		@Override

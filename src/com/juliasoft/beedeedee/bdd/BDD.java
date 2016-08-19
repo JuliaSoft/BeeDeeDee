@@ -410,23 +410,6 @@ public interface BDD {
 	public BDD low();
 
 	/**
-	 * Squeezes equivalent variables from the BDD.
-	 * 
-	 * @param r the object containing information on equivalent variables
-	 * @return the resulting BDD
-	 */
-	public BDD squeezeEquiv(EquivalenceRelation r);
-
-	/**
-	 * Squeezes equivalent variables from the BDD, storing the result in this
-	 * BDD.
-	 * 
-	 * @param r the object containing information on equivalent variables
-	 * @return this
-	 */
-	public BDD squeezeEquivWith(EquivalenceRelation r);
-
-	/**
 	 * @return the factory which created this BDD
 	 */
 	public Factory getFactory();

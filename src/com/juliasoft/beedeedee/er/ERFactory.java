@@ -7,12 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.factories.SqueezeEquivCache;
 
 /**
  * A BDD factory using the ER representation.
@@ -170,7 +172,43 @@ public class ERFactory extends Factory {
 		 * @return the squeezed bdd
 		 */
 		BDD getSqueezedBDD() {
-			return super.squeezeEquiv(l);
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return mdBDDImpl(new EquivalenceSqueezer().squeezedId);
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+
+		private class EquivalenceSqueezer {
+			private final SqueezeEquivCache cache = ut.getSqueezeEquivCache();
+			private final int squeezedId;
+
+			private EquivalenceSqueezer() {
+				this.squeezedId = squeezeEquiv(id);
+			}
+
+			private int squeezeEquiv(int bdd) {
+				if (bdd < FIRST_NODE_NUM)
+					return bdd;
+
+				int cached = cache.get(bdd, l);
+				if (cached >= 0)
+					return cached;
+
+				int var = ut.var(bdd), result;
+				if (l.getLeader(var) == var)
+					result = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
+				else if (ut.high(bdd) == 0)
+					result = squeezeEquiv(ut.low(bdd));
+				else
+					result = squeezeEquiv(ut.high(bdd));
+
+				cache.put(bdd, l, result);
+				return result;
+			}
 		}
 
 		@Override
@@ -695,16 +733,6 @@ public class ERFactory extends Factory {
 			BDDER result = new BDDER(((BDDImpl) low).getId());
 			low.free();
 			return result;
-		}
-
-		@Override
-		public BDD squeezeEquiv(EquivalenceRelation r) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public BDD squeezeEquivWith(EquivalenceRelation r) {
-			throw new UnsupportedOperationException();
 		}
 
 		@Override
