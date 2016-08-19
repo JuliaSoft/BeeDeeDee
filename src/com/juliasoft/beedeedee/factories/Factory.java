@@ -267,13 +267,37 @@ public class Factory {
 		}
 	}
 
+	protected BDD makeVarBDDImpl(int i) {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+		try {
+			return mkOptimizedBDDImpl(i);
+		}
+		finally {
+			lock.unlock();
+		}
+	}
+
 	private BDDImpl mkOptimized(int v) {
+		updateMaxVar(v);
+
+		if (v >= NUMBER_OF_PREALLOCATED_VARS)
+			return mk(MK(v, ZERO, ONE));
+		else
+			return mk(vars[v]);
+	}
+
+	private BDDImpl mkOptimizedBDDImpl(int v) {
 		updateMaxVar(v);
 
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
 			return new BDDImpl(MK(v, ZERO, ONE));
 		else
 			return new BDDImpl(vars[v]);
+	}
+
+	protected BDDImpl mk(int id) {
+		return new BDDImpl(id);
 	}
 
 	/**
@@ -297,14 +321,14 @@ public class Factory {
 		updateMaxVar(v);
 
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
-			return new BDDImpl(MK(v, ONE, ZERO));
+			return mk(MK(v, ONE, ZERO));
 		else
-			return new BDDImpl(notVars[v]);
+			return mk(notVars[v]);
 	}
 
 	private int freedBDDsCounter;
 
-	class BDDImpl implements BDD {
+	public class BDDImpl implements BDD {
 
 		/**
 		 * The position of this BDD inside the table of BDD nodes.
@@ -324,7 +348,7 @@ public class Factory {
 
 		private int nodeCount;
 
-		private BDDImpl(int id) {
+		protected BDDImpl(int id) {
 			setId(id);
 
 			synchronized (allBDDsCreatedSoFar) {
@@ -332,10 +356,14 @@ public class Factory {
 			}
 		}
 
-		private void setId(int id) {
+		protected void setId(int id) {
 			this.id = id;
 			this.hashCode = ut.hashCodeAux(id);
 			this.nodeCount = -1;
+		}
+
+		public int getId() {
+			return id;
 		}
 
 		@Override
@@ -364,7 +392,7 @@ public class Factory {
 							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
 							allBDDsCreatedSoFar.clear();
 
-							for (BDDImpl bdd : copy) {
+							for (BDDImpl bdd: copy) {
 								if (bdd.id >= 0) {
 									allBDDsCreatedSoFar.add(bdd);									
 								}
@@ -1789,7 +1817,7 @@ public class Factory {
 		ReentrantLock lock = ut.getGCLock();
 		lock.lock();
 		try {
-			return new BDDImpl(ZERO);
+			return mk(ZERO);
 		}
 		finally {
 			lock.unlock();
@@ -1803,7 +1831,7 @@ public class Factory {
 		ReentrantLock lock = ut.getGCLock();
 		lock.lock();
 		try {
-			return new BDDImpl(ONE);
+			return mk(ONE);
 		}
 		finally {
 			lock.unlock();

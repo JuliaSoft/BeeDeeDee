@@ -15,7 +15,7 @@ import org.junit.Test;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.er.BDDER;
+import com.juliasoft.beedeedee.er.ERFactory.BDDER;
 import com.juliasoft.beedeedee.factories.Factory;
 
 public class BDDERTest {
@@ -38,7 +38,7 @@ public class BDDERTest {
 	@Test
 	public void testBasicMethods() {
 		BDD bdd = factory.makeVar(2);
-		BDD bddGer = new BDDER(bdd);
+		BDD bddGer = factory.new BDDER(bdd);
 		assertEquals(2, bddGer.var());
 		assertTrue(bddGer.low().isZero());
 		assertTrue(bddGer.high().isOne());
@@ -488,7 +488,7 @@ public class BDDERTest {
 		bdd2.biimpWith(factory.makeVar(3));
 		bdd2.andWith(factory.makeVar(4));
 
-		BDDER er1 = new BDDER(bdd1);
+		BDDER er1 = factory.new BDDER(bdd1);
 
 		BDDER er2 = new BDDER(bdd2);
 
