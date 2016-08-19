@@ -319,8 +319,7 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD nand(BDD other) {
 			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				BDDER and_ = and_(otherBddEr);
+				BDDER and_ = and_((BDDER) other);
 				BDDER not_ = and_.not_();
 				and_.free();
 
@@ -365,32 +364,30 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD imp(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
+			if (other instanceof BDDER)
+				return imp_((BDDER) other);
+			else
 				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			return imp_(otherBddEr);
 		}
 
 		@Override
 		public BDD impWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER imp_ = imp_(otherBddEr);
-			setId(((BDDImpl) imp_).getId());
-			l = imp_.l;
-			otherBddEr.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER imp_ = imp_(otherBddEr);
+				setId(((BDDImpl) imp_).getId());
+				l = imp_.l;
+				otherBddEr.free();
+				imp_.free();
 
-			return this;
+				return this;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		/**
-		 * Computes the implication of this BDDER with another. It uses the identity
-		 * g1 -> g2 = !g1 | g2.
+		 * Computes the implication of this BDDER with another. It uses the identity g1 -> g2 = !g1 | g2.
 		 * 
 		 * @param other the other BDDER
 		 * @return the implication
@@ -404,27 +401,26 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD biimp(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
+			if (other instanceof BDDER)
+				return biimp_((BDDER) other);
+			else
 				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			return biimp_(otherBddEr);
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER biimp_ = biimp_(otherBddEr);
-			setId(((BDDImpl) biimp_).getId());
-			l = biimp_.l;
-			otherBddEr.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER biimp_ = biimp_(otherBddEr);
+				setId(((BDDImpl) biimp_).getId());
+				l = biimp_.l;
+				otherBddEr.free();
+				biimp_.free();
 
-			return this;
+				return this;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		/**
@@ -442,13 +438,13 @@ public class ERFactory extends Factory {
 
 			BDDER or1 = notG1.or_(other);
 			BDDER or2 = notG2.or_(this);
-
-			BDDER and = or1.and_(or2);
-
 			notG1.free();
 			notG2.free();
+
+			BDDER and = or1.and_(or2);
 			or1.free();
 			or2.free();
+
 			return and;
 		}
 
