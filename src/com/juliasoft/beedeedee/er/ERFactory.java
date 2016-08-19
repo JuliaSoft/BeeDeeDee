@@ -74,30 +74,33 @@ public class ERFactory extends Factory {
 		BDDER(int id, EquivalenceRelation l, boolean shouldNormalize) {
 			super(id);
 
-			if (shouldNormalize) {
-				EquivalenceRelation eNew = l, eOld;
-				BDD nNew = super.copy();
-				BDD nOld = null;
+			this.l = l;
 
-				do {
-					if (nOld != null)
-						nOld.free();
+			if (shouldNormalize)
+				normalize();
+		}
 
-					nOld = nNew;
-					eOld = eNew;
-					eNew = eNew.addPairs(nNew.equivVars());
-					nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
-				}
-				while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+		private void normalize() {
+			EquivalenceRelation eNew = l, eOld;
+			BDD nNew = super.copy();
+			BDD nOld = null;
 
-				if (nOld != nNew)
+			do {
+				if (nOld != null)
 					nOld.free();
 
-				setId(((BDDImpl) nNew).getId());
-				this.l = eNew;
+				nOld = nNew;
+				eOld = eNew;
+				eNew = eNew.addPairs(nNew.equivVars());
+				nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
 			}
-			else
-				this.l = l;
+			while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+
+			if (nOld != nNew)
+				nOld.free();
+
+			setId(((BDDImpl) nNew).getId());
+			this.l = eNew;
 		}
 
 		@Override
@@ -113,8 +116,17 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD or(BDD other) {
-			if (other instanceof BDDER)
-				return or_((BDDER) other);
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDD n1 = computeNforOr(this, otherBddEr);
+				BDD n2 = computeNforOr(otherBddEr, this);
+
+				n1.orWith(n2);
+				n2.free();
+				BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(otherBddEr.l), false);
+				n1.free();
+				return result;
+			}
 			else
 				throw new NotBDDERException();
 		}
@@ -123,11 +135,15 @@ public class ERFactory extends Factory {
 		public BDD orWith(BDD other) {
 			if (other instanceof BDDER) {
 				BDDER otherBddEr = (BDDER) other;
-				BDDER or_ = or_(otherBddEr);
-				setId(or_.getId());
-				l = or_.l;
-				otherBddEr.free();
-				or_.free();
+				BDD n1 = computeNforOr(this, otherBddEr);
+				BDD n2 = computeNforOr(otherBddEr, this);
+
+				n1.orWith(n2);
+				n2.free();
+				setId(((BDDImpl) n1).getId());
+				this.l = l.intersection(otherBddEr.l);
+				n1.free();
+				other.free();
 
 				return this;
 			}
@@ -135,16 +151,6 @@ public class ERFactory extends Factory {
 				throw new NotBDDERException();
 		}
 
-		/**
-		 * Computes disjunction of this BDDER with another. The resulting l is the
-		 * intersection of the two l's, in the sense detailed in
-		 * {@link EquivalenceRelation#intersection(EquivalenceRelation)}. The resulting bdd (n) is the disjunction of the
-		 * two input "squeezed" bdds, each enriched (in 'and') with biimplications
-		 * expressing pairs not present in the other bdd.
-		 * 
-		 * @param other the other BDDER
-		 * @return the disjunction
-		 */
 		BDDER or_(BDDER other) {
 			BDD n1 = computeNforOr(this, other);
 			BDD n2 = computeNforOr(other, this);
@@ -599,20 +605,6 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD replace(Map<Integer, Integer> renaming) {
-			return replace_(renaming);
-		}
-
-		@Override
-		public BDD replaceWith(Map<Integer, Integer> renaming) {
-			BDDER replaceEr = replace_(renaming);
-			setId(((BDDImpl) replaceEr).getId());
-			l = replaceEr.l;
-			replaceEr.free();
-
-			return this;
-		}
-
-		BDDER replace_(Map<Integer, Integer> renaming) {
 			BitSet nVars = super.vars();
 			for (Integer v: renaming.values())
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
@@ -632,6 +624,32 @@ public class ERFactory extends Factory {
 			BDDER result = new BDDER(((BDDImpl) nNew).getId(), eNew, true);
 			nNew.free();
 			return result;
+		}
+
+		@Override
+		public BDD replaceWith(Map<Integer, Integer> renaming) {
+			BitSet nVars = super.vars();
+			for (Integer v: renaming.values())
+				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
+					throw new ReplacementWithExistingVarException(v);
+
+			BDD nNew = super.replace(renaming);
+
+			// perform "simultaneous" substitution
+			renaming = new HashMap<>(renaming);
+			Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
+			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
+			eNew = eNew.replace(renaming);
+
+			BDD old = nNew;
+			nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
+			old.free();
+
+			setId(((BDDImpl) nNew).getId());
+			l = eNew;
+			normalize();
+
+			return this;
 		}
 
 		/**
