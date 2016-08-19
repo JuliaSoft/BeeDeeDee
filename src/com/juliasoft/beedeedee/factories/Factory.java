@@ -35,8 +35,6 @@ import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.er.ERFactory;
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-import com.juliasoft.beedeedee.er.EquivalenceRelation.Filter;
 import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
@@ -142,7 +140,7 @@ public class Factory {
 	protected final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
 	private final int NUM_OF_PREALLOCATED_NODES;
 	protected ResizingAndGarbageCollectedUniqueTable ut;
-	private final List<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
+	private final ArrayList<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
 	protected int ZERO;
 	protected int ONE;
 	protected final int[] vars;
@@ -356,7 +354,7 @@ public class Factory {
 			}
 		}
 
-		protected BDDImpl mdBDDImpl(int id) {
+		protected final BDDImpl mkBDDImpl(int id) {
 			return new BDDImpl(id);
 		}
 
@@ -372,9 +370,9 @@ public class Factory {
 
 		@Override
 		public void free() {
-			if (id == -1) {
+			if (id == -1)
 				return;	// already freed, idempotent
-			}
+
 			if (id >= NUM_OF_PREALLOCATED_NODES) {
 				id = -1;
 				ut.scheduleGC();
@@ -393,16 +391,18 @@ public class Factory {
 				try {
 					synchronized (allBDDsCreatedSoFar) {
 						if (freedBDDsCounter > 100000) {
-							List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
+							long start = System.currentTimeMillis();
+							@SuppressWarnings("unchecked")
+							List<BDDImpl> copy = (List<BDDImpl>) allBDDsCreatedSoFar.clone();
 							allBDDsCreatedSoFar.clear();
 
-							for (BDDImpl bdd: copy) {
-								if (bdd.id >= 0) {
+							for (BDDImpl bdd: copy)
+								if (bdd.id >= 0)
 									allBDDsCreatedSoFar.add(bdd);									
-								}
-							}
 
 							freedBDDsCounter = 0;
+							time += (System.currentTimeMillis() - start);
+							System.out.println(time + " ms");
 						}
 					}
 				}
@@ -1485,98 +1485,6 @@ public class Factory {
 			return maxVar;
 		}
 
-		private class UsefulLeaders implements Filter {
-			private final int bdd;
-			private UsefulLeaders(int bdd) {
-				this.bdd = bdd;
-			}
-
-			@Override
-			public boolean accept(BitSet eqClass) {
-				return accept(eqClass, bdd);
-			}
-
-			private boolean accept(BitSet eqClass, int bdd) {
-				if (bdd < FIRST_NODE_NUM)
-					return false;
-				else {
-					int var = ut.var(bdd);
-					return (eqClass.nextSetBit(0) != var && eqClass.get(var))
-							|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
-				}
-			}
-		};
-
-		@Override
-		public BDD renameWithLeader(EquivalenceRelation equivalenceRelations) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-
-			try {
-				RenameWithLeaderCache cache = ut.getRWLCache();
-				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, new UsefulLeaders(id));
-				int result = cache.get(id, equivalenceRelations);
-				if (result >= 0)
-					return new BDDImpl(result);
-				return new BDDImpl(new RenamerWithLeader(equivalenceRelations).resultId);
-			}
-			finally {
-				lock.unlock();
-			}
-		}
-
-		private class RenamerWithLeader {
-			private final EquivalenceRelation equivalenceRelations;
-			private final int resultId;
-			private final int maxVar;
-			private RenameWithLeaderInternalCache rwlic;
-
-			private RenamerWithLeader(EquivalenceRelation equivalenceRelations) {
-				this.equivalenceRelations = equivalenceRelations;
-				this.maxVar = equivalenceRelations.maxVar();
-				this.rwlic = new RenameWithLeaderInternalCache(20);
-				this.resultId = renameWithLeader(id, 0, new BitSet());
-			}
-
-			private int renameWithLeader(final int bdd, final int level, final BitSet t) {
-				int var;
-				if (bdd < FIRST_NODE_NUM)
-					return bdd;
-
-				if ((var = ut.var(bdd)) > maxVar)
-					return bdd;
-
-				int cached = rwlic.get(bdd, level, t);
-				if (cached >= 0) {
-					return cached;
-				}
-
-				Filter filter = new UsefulLeaders(bdd);
-				// we further filter here, since some equivalence class might be irrelevant
-				// from the residual bdd, but not for the whole bdd
-				int minLeader = equivalenceRelations.getMinLeaderGreaterOrEqualtTo(level, var, filter), result, leader;
-				if (minLeader >= 0) {
-					BitSet augmented = (BitSet) t.clone();
-					augmented.set(minLeader);
-					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
-				}
-				else if ((leader = equivalenceRelations.getLeader(var, filter)) < 0)
-					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
-				else if (leader == var) {
-					BitSet augmented = (BitSet) t.clone();
-					augmented.set(var);
-					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, augmented));
-				}
-				else if (t.get(leader))
-					result = renameWithLeader(ut.high(bdd), var + 1, t);
-				else
-					result = renameWithLeader(ut.low(bdd), var + 1, t);
-
-				rwlic.put(bdd, level, t, result);
-				return result;
-			}
-		}
-
 		@Override
 		public Set<Pair> equivVars() {
 			ReentrantLock lock = ut.getGCLock();
@@ -1877,7 +1785,8 @@ public class Factory {
 		for (int pos = 0; pos < NUM_OF_PREALLOCATED_NODES; pos++)
 			aliveNodes[pos] = true;
 
-		List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
+		@SuppressWarnings("unchecked")
+		List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 		allBDDsCreatedSoFar.clear();
 
 		for (BDDImpl bdd: copy) {
@@ -1890,10 +1799,11 @@ public class Factory {
 
 	private void parallelMarkAliveNodes(final boolean[] aliveNodes) {
 		final int total = Runtime.getRuntime().availableProcessors();
-		final List<BDDImpl> copy = new ArrayList<BDDImpl>(allBDDsCreatedSoFar);
+		@SuppressWarnings("unchecked")
+		final List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 
 		class AliveNodesMarker implements Runnable {
-			private final List<BDDImpl> alive = new ArrayList<BDDImpl>();
+			private final List<BDDImpl> alive = new ArrayList<>();
 			private final int num;
 
 			private AliveNodesMarker(int num) {
@@ -1926,6 +1836,8 @@ public class Factory {
 		for (AliveNodesMarker slave: slaves)
 			allBDDsCreatedSoFar.addAll(slave.alive);
 	}
+
+	private long time;
 
 	private void markAsAlive(int node, boolean[] aliveNodes) {
 		if (node >= NUM_OF_PREALLOCATED_NODES && !aliveNodes[node]) {

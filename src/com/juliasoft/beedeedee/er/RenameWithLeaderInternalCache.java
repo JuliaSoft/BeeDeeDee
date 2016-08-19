@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.factories;
+package com.juliasoft.beedeedee.er;
 
 import java.util.Arrays;
 import java.util.BitSet;

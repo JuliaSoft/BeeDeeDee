@@ -427,15 +427,6 @@ public interface BDD {
 	public int maxVar();
 
 	/**
-	 * Renames each variable in this BDD with its leader (least member of
-	 * equivalence class) according to the given equivalence relation.
-	 * 
-	 * @param r the equivalence relation
-	 * @return the modified BDD
-	 */
-	public BDD renameWithLeader(EquivalenceRelation r);
-
-	/**
 	 * Finds pairs of equivalent variables in this BDD.
 	 * 
 	 * @return the list of equivalent pairs

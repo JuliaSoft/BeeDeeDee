@@ -357,7 +357,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	 */
 
 	protected void gcIfAlmostFull() {
-		if (gcRequired && getSize() - nodesCount() < getSize() * 0.02) // do we need to do gc?
+		if (gcRequired && size - nodesCount() < size * 0.02) // do we need to do gc?
 			gc();
 	}
 	
@@ -477,7 +477,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		long resizeTime = System.currentTimeMillis() - data.start;
 		totalResizeTime += resizeTime;
 		numOfResizes++;
-	
+
 		ResizeListener listener = resizeListener;
 		if (listener != null)
 			listener.onStop(numOfResizes, data.oldSize, data.newSize, resizeTime, totalResizeTime);
