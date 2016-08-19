@@ -70,8 +70,6 @@ public class ERFactory extends Factory {
 		BDDER(int id, EquivalenceRelation l, boolean shouldNormalize) {
 			super(id);
 
-			this.l = l;
-			
 			if (shouldNormalize) {
 				EquivalenceRelation eNew = l, eOld;
 				BDD nNew = super.copy();
@@ -94,6 +92,8 @@ public class ERFactory extends Factory {
 				setId(((BDDImpl) nNew).getId());
 				this.l = eNew;
 			}
+			else
+				this.l = l;
 		}
 
 		@Override
@@ -109,27 +109,26 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD or(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
+			if (other instanceof BDDER)
+				return or_((BDDER) other);
+			else
 				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			return or_(otherBddEr);
 		}
 
 		@Override
 		public BDD orWith(BDD other) {
-			if (!(other instanceof BDDER)) {
-				// TODO or convert transparently to BDDER?
-				throw new NotBDDERException();
-			}
-			BDDER otherBddEr = (BDDER) other;
-			BDDER or_ = or_(otherBddEr);
-			setId(or_.getId());
-			l = or_.l;
-			otherBddEr.free();
+			if (other instanceof BDDER) {
+				BDDER otherBddEr = (BDDER) other;
+				BDDER or_ = or_(otherBddEr);
+				setId(or_.getId());
+				l = or_.l;
+				otherBddEr.free();
+				or_.free();
 
-			return this;
+				return this;
+			}
+			else
+				throw new NotBDDERException();
 		}
 
 		/**
@@ -148,7 +147,9 @@ public class ERFactory extends Factory {
 
 			n1.orWith(n2);
 			n2.free();
-			return new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
+			BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
+			n1.free();
+			return result;
 		}
 
 		private BDD computeNforOr(BDDER er1, BDDER er2) {
