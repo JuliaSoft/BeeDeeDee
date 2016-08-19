@@ -532,7 +532,9 @@ public class ERFactory extends Factory {
 			else
 				exist = super.exist(var);
 
-			return new BDDER(((BDDImpl) exist).getId(), l.removeVar(var), true);
+			BDDER result = new BDDER(((BDDImpl) exist).getId(), l.removeVar(var), true);
+			exist.free();
+			return result;
 		}
 
 		private BDDER exist_(BitSet vars) {
@@ -558,14 +560,19 @@ public class ERFactory extends Factory {
 			if (!renaming.isEmpty()) {
 				exist = super.replace(renaming);	// requires normalized representation
 
-				if (!quantifiedVars.isEmpty())
+				if (!quantifiedVars.isEmpty()) {
+					BDD old = exist;
 					exist = exist.exist(quantifiedVars);
+					old.free();
+				}
 			}
 			else if (!quantifiedVars.isEmpty())
 				exist = super.exist(quantifiedVars);
 				
 
-			return new BDDER(((BDDImpl) exist).getId(), lNew, true);
+			BDDER result = new BDDER(((BDDImpl) exist).getId(), lNew, true);
+			exist.free();
+			return result;
 		}
 
 		@Override
@@ -598,6 +605,7 @@ public class ERFactory extends Factory {
 			BDDER replaceEr = replace_(renaming);
 			setId(((BDDImpl) replaceEr).getId());
 			l = replaceEr.l;
+			replaceEr.free();
 
 			return this;
 		}
@@ -605,7 +613,7 @@ public class ERFactory extends Factory {
 		BDDER replace_(Map<Integer, Integer> renaming) {
 			BitSet nVars = super.vars();
 			for (Integer v: renaming.values())
-				if ((l.containsVar(v) || nVars.get(v)) && !renaming.keySet().contains(v))
+				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
 			BDD nNew = super.replace(renaming);
@@ -619,7 +627,9 @@ public class ERFactory extends Factory {
 			BDD old = nNew;
 			nNew = nNew.renameWithLeader(eNew);
 			old.free();
-			return new BDDER(((BDDImpl) nNew).getId(), eNew, true);
+			BDDER result = new BDDER(((BDDImpl) nNew).getId(), eNew, true);
+			nNew.free();
+			return result;
 		}
 
 		/**
@@ -635,8 +645,8 @@ public class ERFactory extends Factory {
 			Map<Integer, Integer> varsOnTheRighSide = new HashMap<>();
 			ArrayList<Integer> values = new ArrayList<>(renaming.values());
 
-			for (Integer i : values)
-				if (renaming.keySet().contains(i)) {
+			for (Integer i: values)
+				if (renaming.containsKey(i)) {
 					varsOnTheRighSide.put(i, renaming.get(i));
 					renaming.remove(i);
 				}
@@ -666,14 +676,16 @@ public class ERFactory extends Factory {
 
 		@Override
 		public boolean isEquivalentTo(BDD other) {
-			if (!(other instanceof BDDER)) {
+			if (other instanceof BDDER) {
+				BDDER o = (BDDER) other;
+				return l.equals(o.l) && super.isEquivalentTo(o);
+			}
+			else {
 				BDD full = getFullBDD();
 				boolean result = equivalentBDDs(other, full);
 				full.free();
 				return result;
 			}
-			BDDER o = (BDDER) other;
-			return l.equals(o.l) && super.isEquivalentTo(o);
 		}
 
 		/**
@@ -690,13 +702,12 @@ public class ERFactory extends Factory {
 		}
 
 		boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
-			if (bdd1.isOne()) {
+			if (bdd1.isOne())
 				return bdd2.isOne();
-			}
-			if (bdd1.isZero()) {
+			else if (bdd1.isZero())
 				return bdd2.isZero();
-			}
-			return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
+			else
+				return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
 		}
 
 		@Override
