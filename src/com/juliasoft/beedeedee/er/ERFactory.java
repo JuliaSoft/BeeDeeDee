@@ -47,50 +47,53 @@ public class ERFactory extends Factory {
 		 *            (same as) normalized
 		 */
 		BDDER(int id) {
-			this(id, new EquivalenceRelation());
-
-			BDDER normalized = normalize();
-			setId(normalized.id);
-			l = normalized.l;
+			this(id, new EquivalenceRelation(), true);
 		}
 
 		/**
-		 * Non-normalizing constructor.
-		 * 
-		 * @param id the BDD
-		 * @param l the equivalence relation
+		 * Copy constructor.
 		 */
-		BDDER(int id, EquivalenceRelation l) {
+		private BDDER(BDDER parent) {
+			super(parent.id);
+
+			this.l = parent.l;
+		}
+
+		/**
+		 * Normalizing constructor.
+		 * 
+		 * @param id the BDD id
+		 * @param l the equivalence relation
+		 * @param shouldNormalize true if and only if normalization must be applied
+		 */
+
+		BDDER(int id, EquivalenceRelation l, boolean shouldNormalize) {
 			super(id);
 
 			this.l = l;
-		}
+			
+			if (shouldNormalize) {
+				EquivalenceRelation eNew = l, eOld;
+				BDD nNew = super.copy();
+				BDD nOld = null;
 
-		/**
-		 * Produces a normalized version of this BDDER.
-		 * 
-		 * @return a normalized version of this BDDER.
-		 */
-		BDDER normalize() {
-			EquivalenceRelation eNew = l, eOld;
-			BDD nNew = super.copy();
-			BDD nOld = null;
+				do {
+					if (nOld != null)
+						nOld.free();
 
-			do {
-				if (nOld != null)
+					nOld = nNew;
+					eOld = eNew;
+					eNew = eNew.addPairs(nNew.equivVars());
+					nNew = nNew.renameWithLeader(eNew);
+				}
+				while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+
+				if (nOld != nNew)
 					nOld.free();
 
-				nOld = nNew;
-				eOld = eNew;
-				eNew = eNew.addPairs(nNew.equivVars());
-				nNew = nNew.renameWithLeader(eNew);
+				setId(((BDDImpl) nNew).getId());
+				this.l = eNew;
 			}
-			while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
-
-			if (nOld != nNew)
-				nOld.free();
-
-			return new BDDER(((BDDImpl) nNew).getId(), eNew);
 		}
 
 		@Override
@@ -145,7 +148,7 @@ public class ERFactory extends Factory {
 
 			n1.orWith(n2);
 			n2.free();
-			return new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l));
+			return new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
 		}
 
 		private BDD computeNforOr(BDDER er1, BDDER er2) {
@@ -205,9 +208,8 @@ public class ERFactory extends Factory {
 		BDDER and_(BDDER other) {
 			BDD and = super.and(other);
 			EquivalenceRelation ln = l.addClasses(other.l);
-			BDDER andEr = new BDDER(((BDDImpl) and).getId(), ln);
-			BDDER result = andEr.normalize();
-			andEr.free();
+			BDDER result = new BDDER(((BDDImpl) and).getId(), ln, true);
+			and.free();
 			return result;
 		}
 
@@ -270,7 +272,9 @@ public class ERFactory extends Factory {
 				eq.notWith();
 				not.orWith(eq);
 			}
-			return new BDDER(((BDDImpl) not).getId());
+			BDDER result = new BDDER(((BDDImpl) not).getId());
+			not.free();
+			return result;
 		}
 
 		@Override
@@ -410,7 +414,7 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD copy() {
-			return new BDDER(((BDDImpl) super.copy()).getId(), l);
+			return new BDDER(this);
 		}
 
 		@Override
@@ -492,11 +496,7 @@ public class ERFactory extends Factory {
 			else
 				exist = super.exist(var);
 
-			BDDER existEr = new BDDER(((BDDImpl) exist).getId(), l.removeVar(var));
-			BDDER normalized = existEr.normalize();
-			existEr.free();
-
-			return normalized;
+			return new BDDER(((BDDImpl) exist).getId(), l.removeVar(var), true);
 		}
 
 		private BDDER exist_(BitSet vars) {
@@ -529,11 +529,7 @@ public class ERFactory extends Factory {
 				exist = super.exist(quantifiedVars);
 				
 
-			BDDER existEr = new BDDER(((BDDImpl) exist).getId(), lNew);
-			BDDER normalized = existEr.normalize();
-			existEr.free();
-
-			return normalized;
+			return new BDDER(((BDDImpl) exist).getId(), lNew, true);
 		}
 
 		@Override
@@ -587,11 +583,7 @@ public class ERFactory extends Factory {
 			BDD old = nNew;
 			nNew = nNew.renameWithLeader(eNew);
 			old.free();
-			BDDER replaceEr = new BDDER(((BDDImpl) nNew).getId(), eNew);
-			BDDER normalized = replaceEr.normalize();
-			replaceEr.free();
-
-			return normalized;
+			return new BDDER(((BDDImpl) nNew).getId(), eNew, true);
 		}
 
 		/**
@@ -639,7 +631,10 @@ public class ERFactory extends Factory {
 		@Override
 		public boolean isEquivalentTo(BDD other) {
 			if (!(other instanceof BDDER)) {
-				return equivalentBDDs(other, getFullBDD());
+				BDD full = getFullBDD();
+				boolean result = equivalentBDDs(other, full);
+				full.free();
+				return result;
 			}
 			BDDER o = (BDDER) other;
 			return l.equals(o.l) && super.isEquivalentTo(o);
@@ -665,8 +660,7 @@ public class ERFactory extends Factory {
 			if (bdd1.isZero()) {
 				return bdd2.isZero();
 			}
-			return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low())
-					&& equivalentBDDs(bdd1.high(), bdd2.high());
+			return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
 		}
 
 		@Override
@@ -687,7 +681,9 @@ public class ERFactory extends Factory {
 			BDD fullBDD = getFullBDD();
 			BDD high = fullBDD.high();
 			fullBDD.free();
-			return new BDDER(((BDDImpl) high).getId());
+			BDDER result = new BDDER(((BDDImpl) high).getId());
+			high.free();
+			return result;
 		}
 
 		@Override
@@ -695,7 +691,9 @@ public class ERFactory extends Factory {
 			BDD fullBDD = getFullBDD();
 			BDD low = fullBDD.low();
 			fullBDD.free();
-			return new BDDER(((BDDImpl) low).getId());
+			BDDER result = new BDDER(((BDDImpl) low).getId());
+			low.free();
+			return result;
 		}
 
 		@Override
@@ -734,17 +732,26 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD renameWithLeader(EquivalenceRelation r) {
-			return new BDDER(((BDDImpl) getFullBDD().renameWithLeader(r)).getId());
+			BDD full = getFullBDD();
+			BDD renamed = full.renameWithLeader(r);
+			full.free();
+			
+			BDD result = new BDDER(((BDDImpl) renamed).getId());
+			renamed.free();
+			return result;
 		}
 
 		@Override
 		public Set<Pair> equivVars() {
-			return getFullBDD().equivVars();
+			throw null;
+			//return getFullBDD().equivVars();
 		}
 
 		boolean isNormalized() {
-			BDDER norm = normalize();
-			return isEquivalentTo(norm);
+			BDDER norm = new BDDER(getId(), l, true);
+			boolean result = isEquivalentTo(norm);
+			norm.free();
+			return result;
 		}
 
 		EquivalenceRelation getEquiv() {
