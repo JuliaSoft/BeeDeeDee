@@ -414,7 +414,7 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD xor(BDD other) {
 			if (other instanceof BDDER)
-				return xor_((BDDER) other);
+				return xor_((BDDER) other, false);
 			else
 				throw new NotBDDERException();
 		}
@@ -423,11 +423,8 @@ public class ERFactory extends Factory {
 		public BDD xorWith(BDD other) {
 			if (other instanceof BDDER) {
 				BDDER otherBddEr = (BDDER) other;
-				BDDER xor_ = xor_(otherBddEr);
-				setId(((BDDImpl) xor_).getId());
-				l = xor_.l;
+				xor_(otherBddEr, true);
 				otherBddEr.free();
-				xor_.free();
 
 				return this;
 			}
@@ -444,14 +441,25 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the xor
 		 */
-		BDDER xor_(BDDER other) {
-			BDDER or = or_(other, false);
-			BDDER and = and_(other, false);
-			BDDER notAnd = and.not_(true);
-			or.and_(notAnd, true);
-			notAnd.free();
+		private BDDER xor_(BDDER other, boolean intoThis) {
+			if (intoThis) {
+				BDDER and = and_(other, false);
+				or_(other, true);
+				BDDER notAnd = and.not_(true);
+				and_(notAnd, true);
+				notAnd.free();
 
-			return or;
+				return this;
+			}
+			else {
+				BDDER and = and_(other, false);
+				BDDER or = or_(other, false);
+				BDDER notAnd = and.not_(true);
+				or.and_(notAnd, true);
+				notAnd.free();
+
+				return or;
+			}
 		}
 
 		@Override
