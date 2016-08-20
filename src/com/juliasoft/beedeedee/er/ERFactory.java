@@ -672,7 +672,7 @@ public class ERFactory extends Factory {
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
-			BDD nNew = super.replace(renaming);
+			int nNew = innerReplace(renaming, renaming.hashCode());
 
 			// perform "simultaneous" substitution
 			renaming = new HashMap<>(renaming);
@@ -680,12 +680,7 @@ public class ERFactory extends Factory {
 			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
 			eNew = eNew.replace(renaming);
 
-			BDD old = nNew;
-			int newId = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
-			old.free();
-			BDDER result = new BDDER(newId, eNew, true);
-			nNew.free();
-			return result;
+			return new BDDER(renameWithLeader(nNew, eNew), eNew, true);
 		}
 
 		@Override
@@ -695,7 +690,7 @@ public class ERFactory extends Factory {
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
-			BDD nNew = super.replace(renaming);
+			int nNew = innerReplace(renaming, renaming.hashCode());
 
 			// perform "simultaneous" substitution
 			renaming = new HashMap<>(renaming);
@@ -703,11 +698,7 @@ public class ERFactory extends Factory {
 			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
 			eNew = eNew.replace(renaming);
 
-			BDD old = nNew;
-			int newId = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
-			old.free();
-
-			setId(newId);
+			setId(renameWithLeader(nNew, eNew));
 			l = eNew;
 			normalize();
 

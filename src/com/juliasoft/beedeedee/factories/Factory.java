@@ -1224,7 +1224,7 @@ public class Factory {
 			assertNonNull(renaming);
 			if (id == ZERO)
 				return makeZero();
-			if (id == ONE)
+			else if (id == ONE)
 				return makeOne();
 
 			int hash = renaming.hashCode();
@@ -1232,7 +1232,7 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(replace(id, renaming, hash));
+				return new BDDImpl(innerReplace(renaming, hash));
 			}
 			finally {
 				lock.unlock();
@@ -1250,7 +1250,7 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(replace(id, renaming, hashCodeOfRenaming));
+				setId(innerReplace(renaming, hashCodeOfRenaming));
 			}
 			finally {
 				lock.unlock();
@@ -1259,7 +1259,11 @@ public class Factory {
 			return this;
 		}
 
-		private int replace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
+		protected final int innerReplace(Map<Integer, Integer> renaming, int hashOfRenaming) {
+			return innerReplace(id, renaming, hashOfRenaming);
+		}
+
+		private int innerReplace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
 			assertNonNull(renaming);
 			if (bdd < FIRST_NODE_NUM) // terminal node
 				return bdd;
@@ -1269,8 +1273,8 @@ public class Factory {
 				return result;
 
 			int oldLow = ut.low(bdd), oldHigh = ut.high(bdd);
-			int lowRenamed = replace(oldLow, renaming, hashOfRenaming);
-			int highRenamed = replace(oldHigh, renaming, hashOfRenaming);
+			int lowRenamed = innerReplace(oldLow, renaming, hashOfRenaming);
+			int highRenamed = innerReplace(oldHigh, renaming, hashOfRenaming);
 			int var = ut.var(bdd);
 			Integer newVar = renaming.get(var);
 			if (newVar == null)
