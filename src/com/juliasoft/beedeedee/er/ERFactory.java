@@ -203,19 +203,35 @@ public class ERFactory extends Factory {
 			return super.isOne() && l.isEmpty();
 		}
 
-		@Override
-		public BDD or(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				BDD n1 = computeNforOr(this, otherBddEr);
-				BDD n2 = computeNforOr(otherBddEr, this);
-
+		private BDDER or_(BDDER other, boolean intoThis) {
+			if (intoThis) {
+				BDD n1 = computeNforOr(this, other);
+				BDD n2 = computeNforOr(other, this);
+		
 				n1.orWith(n2);
 				n2.free();
-				BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(otherBddEr.l), false);
+				setId(((BDDImpl) n1).getId());
+				l = l.intersection(other.l);
+				n1.free();
+		
+				return this;
+			}
+			else {
+				BDD n1 = computeNforOr(this, other);
+				BDD n2 = computeNforOr(other, this);
+		
+				n1.orWith(n2);
+				n2.free();
+				BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
 				n1.free();
 				return result;
 			}
+		}
+
+		@Override
+		public BDD or(BDD other) {
+			if (other instanceof BDDER)
+				return or_((BDDER) other, false);
 			else
 				throw new NotBDDERException();
 		}
@@ -223,32 +239,12 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD orWith(BDD other) {
 			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				BDD n1 = computeNforOr(this, otherBddEr);
-				BDD n2 = computeNforOr(otherBddEr, this);
-
-				n1.orWith(n2);
-				n2.free();
-				setId(((BDDImpl) n1).getId());
-				this.l = l.intersection(otherBddEr.l);
-				n1.free();
+				or_((BDDER) other, true);
 				other.free();
-
 				return this;
 			}
 			else
 				throw new NotBDDERException();
-		}
-
-		BDDER or_(BDDER other) {
-			BDD n1 = computeNforOr(this, other);
-			BDD n2 = computeNforOr(other, this);
-
-			n1.orWith(n2);
-			n2.free();
-			BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
-			n1.free();
-			return result;
 		}
 
 		private BDD computeNforOr(BDDER er1, BDDER er2) {
@@ -317,7 +313,7 @@ public class ERFactory extends Factory {
 		 * @param other the other ER
 		 * @return the conjunction
 		 */
-		BDDER and_(BDDER other, boolean intoThis) {
+		private BDDER and_(BDDER other, boolean intoThis) {
 			if (intoThis) {
 				setId(innerAnd(other));
 				l = l.addClasses(other.l);
@@ -383,7 +379,7 @@ public class ERFactory extends Factory {
 		 * @return the xor
 		 */
 		BDDER xor_(BDDER other) {
-			BDDER or = or_(other);
+			BDDER or = or_(other, false);
 			BDDER and = and_(other, false);
 			BDDER notAnd = and.not_();
 			and.free();
@@ -489,7 +485,7 @@ public class ERFactory extends Factory {
 		 */
 		BDDER imp_(BDDER other) {
 			BDDER notG1 = not_();
-			BDDER or_ = notG1.or_(other);
+			BDDER or_ = notG1.or_(other, false);
 			notG1.free();
 			return or_;
 		}
@@ -530,12 +526,8 @@ public class ERFactory extends Factory {
 		BDDER biimp_(BDDER other) {
 			BDDER notG1 = not_();
 			BDDER notG2 = other.not_();
-
-			BDDER or1 = notG1.or_(other);
-			BDDER or2 = notG2.or_(this);
-			notG1.free();
-			notG2.free();
-
+			BDDER or1 = notG1.or_(other, true);
+			BDDER or2 = notG2.or_(this, true);
 			BDDER and = or1.and_(or2, true);
 			or2.free();
 
