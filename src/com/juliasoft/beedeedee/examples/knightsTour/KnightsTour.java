@@ -87,7 +87,7 @@ public class KnightsTour {
 	}
 
 	private static void initFactory() {
-//		factory = Factory.mk(utSize, cacheSize, 0);
+		//factory = Factory.mk(utSize, cacheSize, 0);
 		factory = Factory.mkER(utSize, cacheSize);
 
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {

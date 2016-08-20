@@ -20,6 +20,7 @@ package com.juliasoft.beedeedee.factories;
 
 import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 
+import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
@@ -146,6 +147,20 @@ public class Factory {
 	protected final int[] notVars;
 	private int maxVar;
 
+	protected class GCLock implements Closeable {
+		private final ReentrantLock lock;
+	
+		protected GCLock() {
+			this.lock = ut.getGCLock();
+			this.lock.lock();
+		}
+	
+		@Override
+		public void close() {
+			lock.unlock();
+		}
+	}
+
 	protected Factory(int utSize, int cacheSize) {
 		this(utSize, cacheSize, DEFAULT_NUMBER_OF_PREALLOCATED_VARS);
 	}
@@ -226,24 +241,14 @@ public class Factory {
 	 * @return the current number of nodes in the factory
 	 */
 	public int nodesCount() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return ut.nodesCount();
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
 	public void printStatistics() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			ut.printStatistics();
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -254,24 +259,14 @@ public class Factory {
 	 * @return the variable as a BDD object 
 	 */
 	public BDD makeVar(int i) {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return mkOptimized(i);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
 	protected BDD makeVarBDDImpl(int i) {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return mkOptimizedBDDImpl(i);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -304,13 +299,8 @@ public class Factory {
 	 * @return the negation of the variable as a BDD object 
 	 */
 	public BDD makeNotVar(int i) {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return mkOptmizedNot(i);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -324,13 +314,6 @@ public class Factory {
 	}
 
 	private int freedBDDsCounter;
-
-	protected ReentrantLock lockGC() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-
-		return lock;
-	}
 
 	public class BDDImpl implements BDD {
 
@@ -376,25 +359,20 @@ public class Factory {
 
 		@Override
 		public void free() {
-			if (id == -1)
-				return;	// already freed, idempotent
-
 			if (id >= NUM_OF_PREALLOCATED_NODES) {
 				id = -1;
 				ut.scheduleGC();
 				ut.gcIfAlmostFull();
 			}
-			else
+			else if (id >= 0) // already freed?
 				id = -1;
 
 			shrinkTheListOfAllBDDsIfTooLarge();
 		}
 
 		private void shrinkTheListOfAllBDDsIfTooLarge() {
-			if (++freedBDDsCounter > 100000) {
-				ReentrantLock lock = ut.getGCLock();
-				lock.lock();
-				try {
+			if (++freedBDDsCounter > 100000)
+				try (GCLock lock = new GCLock()) {
 					synchronized (allBDDsCreatedSoFar) {
 						if (freedBDDsCounter > 100000) {
 							@SuppressWarnings("unchecked")
@@ -409,10 +387,6 @@ public class Factory {
 						}
 					}
 				}
-				finally {
-					lock.unlock();
-				}
-			}
 		}
 
 		@Override
@@ -420,13 +394,8 @@ public class Factory {
 			if (id < 0)
 				return "[freed zombie BDD]";
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return "digraph G {\n" + toDot(id) + "}\n";
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -614,26 +583,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(applyOR(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD orWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			
+			try (GCLock lock = new GCLock()) {
 				setId(applyOR(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -646,26 +606,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerAnd(other));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD andWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				setId(innerAnd(other));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -682,26 +633,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(applyXOR(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD xorWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				setId(applyXOR(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -714,26 +656,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD nandWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				setId(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -745,25 +678,15 @@ public class Factory {
 		public BDD not() {
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerNot());
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD notWith() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				setId(innerNot());
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return this;
@@ -778,26 +701,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(applyIMP(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD impWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				setId(applyIMP(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -810,26 +724,17 @@ public class Factory {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(applyBIIMP(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				setId(applyBIIMP(id, ((BDDImpl) other).id));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			other.free();
@@ -841,13 +746,8 @@ public class Factory {
 		public BDD copy() {
 			ut.gcIfAlmostFull();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(id);
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -855,13 +755,8 @@ public class Factory {
 		public Assignment anySat() throws UnsatException {
 			AssignmentImpl assignment = new AssignmentImpl();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				anySat(id, assignment);
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return assignment;
@@ -884,13 +779,8 @@ public class Factory {
 
 		@Override
 		public List<Assignment> allSat() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return allSat(id);
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -904,11 +794,11 @@ public class Factory {
 					int var = ut.var(bdd);
 
 					List<Assignment> lowList = allSat(ut.low(bdd));
-					for (Assignment assignment : lowList)
+					for (Assignment assignment: lowList)
 						((AssignmentImpl) assignment).put(var, false);
 
 					List<Assignment> highList = allSat(ut.high(bdd));
-					for (Assignment assignment : highList)
+					for (Assignment assignment: highList)
 						((AssignmentImpl) assignment).put(var, true);
 
 					// join lists
@@ -928,13 +818,8 @@ public class Factory {
 		//TODO this should probably return a BigInteger
 		@Override
 		public long satCount(int maxVar) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return (long) (Math.pow(2, ut.var(id)) * count(id, maxVar));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -951,18 +836,13 @@ public class Factory {
 
 		@Override
 		public long pathCount() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return pathCount(id);
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		private long pathCount(int id) {
-			if (id < FIRST_NODE_NUM) // terminal node
+			if (id < FIRST_NODE_NUM)
 				return id;
 			else
 				return pathCount(ut.low(id)) + pathCount(ut.high(id));
@@ -971,9 +851,8 @@ public class Factory {
 		@Override
 		public BDD restrict(BDD var) {
 			assertNonNull(var);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				int res = id;
 				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
 					if (ut.low(varId) == ZERO)
@@ -983,17 +862,13 @@ public class Factory {
 
 				return new BDDImpl(res);
 			}
-			finally {
-				lock.unlock();
-			}
 		}
 
 		@Override
 		public BDD restrictWith(BDD var) {
 			assertNonNull(var);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				int res = id;
 				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId)) {
 					if (ut.low(varId) == ZERO)
@@ -1003,9 +878,6 @@ public class Factory {
 				}
 
 				setId(res);
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return this;
@@ -1017,13 +889,8 @@ public class Factory {
 
 		@Override
 		public BDD restrict(int var, boolean value) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerRestrict(var, value));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1056,13 +923,8 @@ public class Factory {
 
 		@Override
 		public BDD exist(int var) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerExist(var));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1094,15 +956,10 @@ public class Factory {
 
 		private BDD quantify(BitSet vars, boolean exist) {
 			assertNonNull(vars);
-
 			int hashCodeVars = vars.hashCode();
 
-			ReentrantLock lock = lockGC();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerQuantify(id, vars, exist, hashCodeVars));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1139,42 +996,33 @@ public class Factory {
 		@Override
 		public BDD simplify(BDD d) {
 			assertNonNull(d);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(simplify(((BDDImpl) d).id, id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		private int simplify(int d, int u) {
 			if (d == ZERO || u == ZERO)
 				return ZERO;
-
-			if (u == ONE)
+			else if (u == ONE)
 				return ONE;
 
 			int vu = ut.var(u), vd = ut.var(d);
 
 			if (d == ONE)
 				return MK(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
-
-			if (vd == vu) {
+			else if (vd == vu)
 				if (ut.low(d) == ZERO)
 					return simplify(ut.high(d), ut.high(u));
-
-				if (ut.high(d) == ZERO)
+				else if (ut.high(d) == ZERO)
 					return simplify(ut.low(d), ut.low(u));
-
-				return MK(vu, simplify(ut.low(d), ut.low(u)), simplify(ut.high(d), ut.high(u)));
-			}
-
-			if (vd < vu)
+				else
+					return MK(vu, simplify(ut.low(d), ut.low(u)), simplify(ut.high(d), ut.high(u)));
+			else if (vd < vu)
 				return MK(vd, simplify(ut.low(d), u), simplify(ut.high(d), u));
-
-			return MK(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
+			else
+				return MK(vu, simplify(d, ut.low(u)), simplify(d, ut.high(u)));
 		}
 
 		@Override
@@ -1191,13 +1039,8 @@ public class Factory {
 		public int[] varProfile() {
 			int[] varp = new int[maxVar + 1];
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				varProfile(id, varp, new HashSet<Integer>());
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return varp;
@@ -1219,13 +1062,8 @@ public class Factory {
 			if (nodeCount >= 0)
 				return nodeCount;
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return nodeCount = nodeCount(id, new HashSet<Integer>());
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1255,13 +1093,8 @@ public class Factory {
 
 			int hash = renaming.hashCode();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerReplace(renaming, hash));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1273,13 +1106,8 @@ public class Factory {
 
 			int hashCodeOfRenaming = renaming.hashCode();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				setId(innerReplace(renaming, hashCodeOfRenaming));
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return this;
@@ -1316,13 +1144,9 @@ public class Factory {
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
 			assertNonNull(thenBDD);
 			assertNonNull(elseBDD);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(ite(id, ((BDDImpl) thenBDD).id, ((BDDImpl) elseBDD).id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1376,13 +1200,9 @@ public class Factory {
 		@Override
 		public BDD compose(BDD other, int var) {
 			assertNonNull(other);
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(compose(id, ((BDDImpl) other).id, var));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1412,13 +1232,8 @@ public class Factory {
 
 			BDDImpl otherImpl = (BDDImpl) other;
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return id == otherImpl.id;
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1429,37 +1244,22 @@ public class Factory {
 
 		@Override
 		public int var() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return ut.var(id);
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDDImpl high() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(ut.high(id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		@Override
 		public BDDImpl low() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(ut.low(id));
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
@@ -1471,42 +1271,33 @@ public class Factory {
 		@Override
 		public BitSet vars() {
 			BitSet vars = new BitSet();
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+
+			try (GCLock lock = new GCLock()) {
 				updateVars(id, vars);
 			}
-			finally {
-				lock.unlock();
-			}
+
 			return vars;
 		}
 
 		private void updateVars(int id, BitSet vars) {
-			if (id < FIRST_NODE_NUM) {
-				return;
+			if (id >= FIRST_NODE_NUM) {
+				vars.set(ut.var(id));
+				updateVars(ut.low(id), vars);
+				updateVars(ut.high(id), vars);
 			}
-			vars.set(ut.var(id));
-			updateVars(ut.low(id), vars);
-			updateVars(ut.high(id), vars);
 		}
 
 		@Override
 		public int maxVar() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				return maxVar(id);
-			}
-			finally {
-				lock.unlock();
 			}
 		}
 
 		private int maxVar(int bdd) {
-			if (bdd < FIRST_NODE_NUM) {
+			if (bdd < FIRST_NODE_NUM)
 				return -1;
-			}
+
 			int low = ut.low(bdd);
 			int maxVar = Math.max(ut.var(bdd), maxVar(low));
 			int high = ut.high(bdd);
@@ -1523,7 +1314,6 @@ public class Factory {
 	}
 
 	private class AssignmentImpl implements Assignment {
-
 		private final Map<Integer, Boolean> truthTable;
 
 		private AssignmentImpl() {
@@ -1555,9 +1345,7 @@ public class Factory {
 			BDD res = makeOne();
 			Set<Integer> vars = truthTable.keySet();
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
+			try (GCLock lock = new GCLock()) {
 				for (int v: vars) {
 					BDD var = Factory.this.mkOptimized(v);
 					if (truthTable.get(v) == Boolean.FALSE)
@@ -1565,9 +1353,6 @@ public class Factory {
 
 					res.andWith(var);
 				}
-			}
-			finally {
-				lock.unlock();
 			}
 
 			return res;
@@ -1585,13 +1370,8 @@ public class Factory {
 	}
 
 	public void printNodeTable() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			System.out.println(ut);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -1599,13 +1379,8 @@ public class Factory {
 	 * @return a BDD object representing the constant zero
 	 */
 	public BDD makeZero() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return mk(ZERO);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -1613,13 +1388,8 @@ public class Factory {
 	 * @return a BDD object representing the constant one
 	 */
 	public BDD makeOne() {
-		ReentrantLock lock = ut.getGCLock();
-		lock.lock();
-		try {
+		try (GCLock lock = new GCLock()) {
 			return mk(ONE);
-		}
-		finally {
-			lock.unlock();
 		}
 	}
 
@@ -1790,17 +1560,10 @@ public class Factory {
 
 		for (BDD bdd: bdds) {
 			BDDImpl bddi = (BDDImpl) bdd;
-			if (bddi == null)
-				continue;
-
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
-				count += bddi.nodeCount(bddi.id, seen);
-			}
-			finally {
-				lock.unlock();
-			}
+			if (bddi != null)
+				try (GCLock lock = new GCLock()) {
+					count += bddi.nodeCount(bddi.id, seen);
+				}
 		}
 
 		return count;
