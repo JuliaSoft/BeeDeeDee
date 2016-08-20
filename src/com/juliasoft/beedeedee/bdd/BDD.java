@@ -21,10 +21,7 @@ package com.juliasoft.beedeedee.bdd;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.beedeedee.factories.Factory;
 
 /**
@@ -410,7 +407,7 @@ public interface BDD {
 	public BDD low();
 
 	/**
-	 * @return the factory which created this BDD
+	 * @return the factory that created this BDD
 	 */
 	public Factory getFactory();
 
@@ -425,11 +422,4 @@ public interface BDD {
 	 * @return the maximum variable index, -1 for terminal nodes
 	 */
 	public int maxVar();
-
-	/**
-	 * Finds pairs of equivalent variables in this BDD.
-	 * 
-	 * @return the list of equivalent pairs
-	 */
-	public Set<Pair> equivVars();
 }
