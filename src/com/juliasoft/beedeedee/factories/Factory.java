@@ -390,7 +390,6 @@ public class Factory {
 				try {
 					synchronized (allBDDsCreatedSoFar) {
 						if (freedBDDsCounter > 100000) {
-							long start = System.currentTimeMillis();
 							@SuppressWarnings("unchecked")
 							List<BDDImpl> copy = (List<BDDImpl>) allBDDsCreatedSoFar.clone();
 							allBDDsCreatedSoFar.clear();
@@ -400,8 +399,6 @@ public class Factory {
 									allBDDsCreatedSoFar.add(bdd);									
 
 							freedBDDsCounter = 0;
-							time += (System.currentTimeMillis() - start);
-							System.out.println(time + " ms");
 						}
 					}
 				}
@@ -1743,8 +1740,6 @@ public class Factory {
 		for (AliveNodesMarker slave: slaves)
 			allBDDsCreatedSoFar.addAll(slave.alive);
 	}
-
-	private long time;
 
 	private void markAsAlive(int node, boolean[] aliveNodes) {
 		if (node >= NUM_OF_PREALLOCATED_NODES && !aliveNodes[node]) {

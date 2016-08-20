@@ -170,25 +170,17 @@ public class ERFactory extends Factory {
 
 		private void normalize() {
 			EquivalenceRelation eNew = l, eOld;
-			BDD nNew = super.copy();
-			BDD nOld = null;
+			int newId = id, oldId;
 
 			do {
-				if (nOld != null)
-					nOld.free();
-
-				nOld = nNew;
 				eOld = eNew;
-				
-				eNew = eNew.addPairs(new EquivVarsCalculator(((BDDImpl) nNew).getId()).result);
-				nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
+				eNew = eNew.addPairs(new EquivVarsCalculator(newId).result);
+				oldId = newId;
+				newId = renameWithLeader(newId, eNew);
 			}
-			while (!eNew.equals(eOld) || !nNew.isEquivalentTo(nOld));
+			while (newId != oldId || !eNew.equals(eOld));
 
-			if (nOld != nNew)
-				nOld.free();
-
-			setId(((BDDImpl) nNew).getId());
+			setId(newId);
 			this.l = eNew;
 		}
 
@@ -689,9 +681,9 @@ public class ERFactory extends Factory {
 			eNew = eNew.replace(renaming);
 
 			BDD old = nNew;
-			nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
+			int newId = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
 			old.free();
-			BDDER result = new BDDER(((BDDImpl) nNew).getId(), eNew, true);
+			BDDER result = new BDDER(newId, eNew, true);
 			nNew.free();
 			return result;
 		}
@@ -712,10 +704,10 @@ public class ERFactory extends Factory {
 			eNew = eNew.replace(renaming);
 
 			BDD old = nNew;
-			nNew = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
+			int newId = renameWithLeader(((BDDImpl) nNew).getId(), eNew);
 			old.free();
 
-			setId(((BDDImpl) nNew).getId());
+			setId(newId);
 			l = eNew;
 			normalize();
 
@@ -744,7 +736,7 @@ public class ERFactory extends Factory {
 			return varsOnTheRighSide;
 		}
 
-		private BDD renameWithLeader(int id, EquivalenceRelation equivalenceRelations) {
+		private int renameWithLeader(int id, EquivalenceRelation equivalenceRelations) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 
@@ -753,9 +745,9 @@ public class ERFactory extends Factory {
 				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, new UsefulLeaders(id));
 				int result = cache.get(id, equivalenceRelations);
 				if (result >= 0)
-					return mkBDDImpl(result);
+					return result;
 				else
-					return mkBDDImpl(new RenamerWithLeader(id, equivalenceRelations).resultId);
+					return new RenamerWithLeader(id, equivalenceRelations).resultId;
 			}
 			finally {
 				lock.unlock();
