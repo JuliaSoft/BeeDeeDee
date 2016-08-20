@@ -1051,9 +1051,9 @@ public class Factory {
 		}
 
 		@Override
-		public BDD exist(BitSet var) {
-			assertNonNull(var);
-			return quant(var, true);
+		public BDD exist(BitSet vars) {
+			assertNonNull(vars);
+			return quant(vars, true);
 		}
 
 		@Override

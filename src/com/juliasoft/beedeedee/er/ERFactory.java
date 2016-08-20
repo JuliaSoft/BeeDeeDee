@@ -411,6 +411,36 @@ public class ERFactory extends Factory {
 				throw new NotBDDERException();
 		}
 
+		/**
+		 * Computes XOR of this BDDER with another. It uses the identity g1 x g2 = (g1
+		 * | g2) & !(g1 & g2). The result is normalized.
+		 * 
+		 * TODO use another identity?
+		 * 
+		 * @param other the other BDDER
+		 * @return the xor
+		 */
+		private BDDER xor_(BDDER other, boolean intoThis) {
+			if (intoThis) {
+				BDDER and = and_(other, false);
+				or_(other, true);
+				BDDER notAnd = and.not_(true);
+				and_(notAnd, true);
+				notAnd.free();
+		
+				return this;
+			}
+			else {
+				BDDER and = and_(other, false);
+				BDDER or = or_(other, false);
+				BDDER notAnd = and.not_(true);
+				or.and_(notAnd, true);
+				notAnd.free();
+		
+				return or;
+			}
+		}
+
 		@Override
 		public BDD xor(BDD other) {
 			if (other instanceof BDDER)
@@ -430,36 +460,6 @@ public class ERFactory extends Factory {
 			}
 			else
 				throw new NotBDDERException();
-		}
-
-		/**
-		 * Computes XOR of this BDDER with another. It uses the identity g1 x g2 = (g1
-		 * | g2) & !(g1 & g2). The result is normalized.
-		 * 
-		 * TODO use another identity?
-		 * 
-		 * @param other the other BDDER
-		 * @return the xor
-		 */
-		private BDDER xor_(BDDER other, boolean intoThis) {
-			if (intoThis) {
-				BDDER and = and_(other, false);
-				or_(other, true);
-				BDDER notAnd = and.not_(true);
-				and_(notAnd, true);
-				notAnd.free();
-
-				return this;
-			}
-			else {
-				BDDER and = and_(other, false);
-				BDDER or = or_(other, false);
-				BDDER notAnd = and.not_(true);
-				or.and_(notAnd, true);
-				notAnd.free();
-
-				return or;
-			}
 		}
 
 		@Override
@@ -522,6 +522,19 @@ public class ERFactory extends Factory {
 			return not_(true);
 		}
 
+		/**
+		 * Computes the implication of this BDDER with another. It uses the identity g1 -> g2 = !g1 | g2.
+		 * 
+		 * @param other the other BDDER
+		 * @return the implication
+		 */
+		private BDDER imp_(BDDER other, boolean intoThis) {
+			if (intoThis)
+				return not_(true).or_(other, true);
+			else
+				return not_(false).or_(other, true);
+		}
+
 		@Override
 		public BDD imp(BDD other) {
 			if (other instanceof BDDER)
@@ -541,19 +554,6 @@ public class ERFactory extends Factory {
 			}
 			else
 				throw new NotBDDERException();
-		}
-
-		/**
-		 * Computes the implication of this BDDER with another. It uses the identity g1 -> g2 = !g1 | g2.
-		 * 
-		 * @param other the other BDDER
-		 * @return the implication
-		 */
-		private BDDER imp_(BDDER other, boolean intoThis) {
-			if (intoThis)
-				return not_(true).or_(other, true);
-			else
-				return not_(false).or_(other, true);
 		}
 
 		/**
@@ -669,8 +669,8 @@ public class ERFactory extends Factory {
 		}
 
 		@Override
-		public BDD exist(BitSet var) {
-			return exist_(var);
+		public BDD exist(BitSet vars) {
+			return exist_(vars);
 		}
 
 		private BDDER exist_(int var) {
