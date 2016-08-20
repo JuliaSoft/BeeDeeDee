@@ -664,8 +664,8 @@ public class ERFactory extends Factory {
 		}
 
 		@Override
-		public BDD exist(BDD var) {
-			return exist_(var.vars());
+		public BDD exist(BDD vars) {
+			return exist_(vars.vars());
 		}
 
 		@Override
@@ -674,19 +674,15 @@ public class ERFactory extends Factory {
 		}
 
 		private BDDER exist_(int var) {
-			BDD exist;
 			if (l.containsVar(var)) {
 				int nextLeader = l.nextLeader(var);
 				Map<Integer, Integer> renaming = new HashMap<>();
 				renaming.put(var, nextLeader);
-				exist = super.replace(renaming);	// requires normalized representation
+				int exist = innerReplace(renaming, renaming.hashCode()); // requires normalized representation
+				return new BDDER(exist, l.removeVar(var), true);
 			}
 			else
-				exist = super.exist(var);
-
-			BDDER result = new BDDER(((BDDImpl) exist).getId(), l.removeVar(var), true);
-			exist.free();
-			return result;
+				return new BDDER(innerExist(var), l, true);
 		}
 
 		private BDDER exist_(BitSet vars) {
@@ -694,37 +690,33 @@ public class ERFactory extends Factory {
 			BitSet quantifiedVars = new BitSet();
 			Map<Integer, Integer> renaming = new HashMap<>();
 
-			for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1)) {
+			for (int i = vars.nextSetBit(0); i >= 0; i = vars.nextSetBit(i + 1))
 				if (l.containsVar(i)) {
 					int nextLeader = l.nextLeader(i, vars);
 					if (nextLeader < 0)
 						quantifiedVars.set(i);
 					else
 						renaming.put(i, nextLeader);
+					
+					lNew = lNew.removeVar(i);
 				}
 				else
 					quantifiedVars.set(i);
 
-				lNew = lNew.removeVar(i);
-			}
+			int exist;
 
-			BDD exist = this;
 			if (!renaming.isEmpty()) {
-				exist = super.replace(renaming);	// requires normalized representation
+				exist = innerReplace(renaming, renaming.hashCode());  // requires normalized representation
 
-				if (!quantifiedVars.isEmpty()) {
-					BDD old = exist;
-					exist = exist.exist(quantifiedVars);
-					old.free();
-				}
+				if (!quantifiedVars.isEmpty())
+					exist = innerQuantify(exist, quantifiedVars, true, quantifiedVars.hashCode());
 			}
 			else if (!quantifiedVars.isEmpty())
-				exist = super.exist(quantifiedVars);
-				
+				exist = innerQuantify(id, quantifiedVars, true, quantifiedVars.hashCode());
+			else
+				exist = id;
 
-			BDDER result = new BDDER(((BDDImpl) exist).getId(), lNew, true);
-			exist.free();
-			return result;
+			return new BDDER(exist, lNew, true);
 		}
 
 		@Override

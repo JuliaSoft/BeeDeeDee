@@ -325,6 +325,13 @@ public class Factory {
 
 	private int freedBDDsCounter;
 
+	protected ReentrantLock lockGC() {
+		ReentrantLock lock = ut.getGCLock();
+		lock.lock();
+
+		return lock;
+	}
+
 	public class BDDImpl implements BDD {
 
 		/**
@@ -957,8 +964,8 @@ public class Factory {
 		private long pathCount(int id) {
 			if (id < FIRST_NODE_NUM) // terminal node
 				return id;
-
-			return pathCount(ut.low(id)) + pathCount(ut.high(id));
+			else
+				return pathCount(ut.low(id)) + pathCount(ut.high(id));
 		}
 
 		@Override
@@ -1004,12 +1011,16 @@ public class Factory {
 			return this;
 		}
 
+		protected int innerRestrict(int var, boolean value) {
+			return restrict(id, var, value);
+		}
+
 		@Override
 		public BDD restrict(int var, boolean value) {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(restrict(id, var, value));
+				return new BDDImpl(innerRestrict(var, value));
 			}
 			finally {
 				lock.unlock();
@@ -1036,24 +1047,35 @@ public class Factory {
 				return restrict(ut.low(u), var, value);
 		}
 
-		@Override
-		public BDD exist(int var) {
-			BDD falseOp = restrict(var, false);
-			BDD trueOp = restrict(var, true);
+		protected int innerExist(int var) {
+			int falseId = innerRestrict(var, false);
+			int trueId = innerRestrict(var, true);
 
-			return falseOp.orWith(trueOp);
+			return applyOR(falseId, trueId);
 		}
 
 		@Override
-		public BDD exist(BDD var) {
-			assertNonNull(var);
-			return quant(var.vars(), true);
+		public BDD exist(int var) {
+			ReentrantLock lock = ut.getGCLock();
+			lock.lock();
+			try {
+				return new BDDImpl(innerExist(var));
+			}
+			finally {
+				lock.unlock();
+			}
+		}
+
+		@Override
+		public BDD exist(BDD vars) {
+			assertNonNull(vars);
+			return quantify(vars.vars(), true);
 		}
 
 		@Override
 		public BDD exist(BitSet vars) {
 			assertNonNull(vars);
-			return quant(vars, true);
+			return quantify(vars, true);
 		}
 
 		@Override
@@ -1067,23 +1089,24 @@ public class Factory {
 		@Override
 		public BDD forAll(BDD var) {
 			assertNonNull(var);
-			return quant(var.vars(), false);
+			return quantify(var.vars(), false);
 		}
 
-		private BDD quant(BitSet vars, boolean exist) {
+		private BDD quantify(BitSet vars, boolean exist) {
 			assertNonNull(vars);
 
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
+			int hashCodeVars = vars.hashCode();
+
+			ReentrantLock lock = lockGC();
 			try {
-				return new BDDImpl(quant_rec(id, vars, exist, vars.hashCode()));
+				return new BDDImpl(innerQuantify(id, vars, exist, hashCodeVars));
 			}
 			finally {
 				lock.unlock();
 			}
 		}
 
-		private int quant_rec(int bdd, BitSet vars, boolean exist, int hashCodeOfVars) {
+		protected final int innerQuantify(int bdd, BitSet vars, boolean exist, int hashCodeOfVars) {
 			if (bdd < FIRST_NODE_NUM) // terminal node
 				return bdd;
 
@@ -1092,8 +1115,8 @@ public class Factory {
 				return result;
 
 			int oldA = ut.low(bdd), oldB = ut.high(bdd);
-			int a = quant_rec(oldA, vars, exist, hashCodeOfVars);
-			int b = quant_rec(oldB, vars, exist, hashCodeOfVars);
+			int a = innerQuantify(oldA, vars, exist, hashCodeOfVars);
+			int b = innerQuantify(oldB, vars, exist, hashCodeOfVars);
 
 			int var = ut.var(bdd);
 
@@ -1102,12 +1125,11 @@ public class Factory {
 					result = applyOR(a, b);
 				else
 					result = applyAND(a, b);
-			else {
+			else
 				if (a == oldA && b == oldB)
 					result = bdd;
 				else
 					result = MK(var, a, b);
-			}
 
 			ut.getQuantCache().put(exist, bdd, vars, hashCodeOfVars, result);
 
@@ -1219,6 +1241,10 @@ public class Factory {
 			return 1 + nodeCount(ut.low(bdd), seen) + nodeCount(ut.high(bdd), seen);
 		}
 
+		protected final int innerReplace(Map<Integer, Integer> renaming, int hashOfRenaming) {
+			return innerReplace(id, renaming, hashOfRenaming);
+		}
+
 		@Override
 		public BDD replace(Map<Integer, Integer> renaming) {
 			assertNonNull(renaming);
@@ -1257,10 +1283,6 @@ public class Factory {
 			}
 
 			return this;
-		}
-
-		protected final int innerReplace(Map<Integer, Integer> renaming, int hashOfRenaming) {
-			return innerReplace(id, renaming, hashOfRenaming);
 		}
 
 		private int innerReplace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {

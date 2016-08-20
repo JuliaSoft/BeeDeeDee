@@ -270,7 +270,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public BDD exist(BDD var);
+	public BDD exist(BDD vars);
 
 	/**
 	 * Existential quantification.
