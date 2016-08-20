@@ -35,7 +35,7 @@ import com.juliasoft.utils.concurrent.Executors;
 public class KnightsTour {
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
-	private static boolean parallel = false; // does each single tour problem must be solved in parallel
+	private static boolean parallel = false; // does each single tour problem must be solved in parallel?
 	private static @NonNull Factory factory;
 
 	public static void main(String[] args) throws InterruptedException {
