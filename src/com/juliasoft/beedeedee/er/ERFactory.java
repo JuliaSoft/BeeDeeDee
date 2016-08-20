@@ -308,6 +308,19 @@ public class ERFactory extends Factory {
 			}
 		}
 
+		/**
+		 * Computes conjunction of this BDDER with another. The resulting BDDER is the
+		 * normalized version of that having as l the union of the two l's, and as n
+		 * the conjunction of the two bdds.
+		 * The result is normalized.
+		 * 
+		 * @param other the other ER
+		 * @return the conjunction
+		 */
+		BDDER and_(BDDER other) {
+			return new BDDER(innerAnd(other), l.addClasses(other.l), true);
+		}
+
 		@Override
 		public BDD and(BDD other) {
 			if (other instanceof BDDER)
@@ -330,23 +343,6 @@ public class ERFactory extends Factory {
 			}
 			else
 				throw new NotBDDERException();
-		}
-
-		/**
-		 * Computes conjunction of this BDDER with another. The resulting BDDER is the
-		 * normalized version of that having as l the union of the two l's, and as n
-		 * the conjunction of the two bdds.
-		 * The result is normalized.
-		 * 
-		 * @param other the other ER
-		 * @return the conjunction
-		 */
-		BDDER and_(BDDER other) {
-			BDD and = super.and(other);
-			EquivalenceRelation ln = l.addClasses(other.l);
-			BDDER result = new BDDER(((BDDImpl) and).getId(), ln, true);
-			and.free();
-			return result;
 		}
 
 		@Override

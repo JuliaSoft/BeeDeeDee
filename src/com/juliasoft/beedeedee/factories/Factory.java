@@ -645,7 +645,7 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(applyAND(id, ((BDDImpl) other).id));
+				return new BDDImpl(innerAnd(other));
 			}
 			finally {
 				lock.unlock();
@@ -658,7 +658,7 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(applyAND(id, ((BDDImpl) other).id));
+				setId(innerAnd(other));
 			}
 			finally {
 				lock.unlock();
@@ -667,6 +667,10 @@ public class Factory {
 			other.free();
 
 			return this;
+		}
+
+		protected int innerAnd(BDD other) {
+			return applyAND(id, ((BDDImpl) other).id);
 		}
 
 		@Override
