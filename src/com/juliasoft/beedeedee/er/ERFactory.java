@@ -34,6 +34,80 @@ public class ERFactory extends Factory {
 		throw new RuntimeException("Not yet implemented"); //TODO
 	}
 
+	private class UsefulLeaders implements Filter {
+		private final int bdd;
+		private UsefulLeaders(int bdd) {
+			this.bdd = bdd;
+		}
+	
+		@Override
+		public boolean accept(BitSet eqClass) {
+			return accept(eqClass, bdd);
+		}
+	
+		private boolean accept(BitSet eqClass, int bdd) {
+			if (bdd < FIRST_NODE_NUM)
+				return false;
+			else {
+				int var = ut.var(bdd);
+				return (eqClass.nextSetBit(0) != var && eqClass.get(var))
+						|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
+			}
+		}
+	}
+
+	private class RenamerWithLeader {
+		private final EquivalenceRelation equivalenceRelations;
+		private final int resultId;
+		private final int maxVar;
+		private final RenameWithLeaderInternalCache rwlic;
+	
+		private RenamerWithLeader(int id, EquivalenceRelation equivalenceRelations) {
+			this.equivalenceRelations = equivalenceRelations;
+			this.maxVar = equivalenceRelations.maxVar();
+			this.rwlic = new RenameWithLeaderInternalCache(20);
+			this.resultId = renameWithLeader(id, 0, new BitSet());
+		}
+	
+		private int renameWithLeader(final int bdd, final int level, final BitSet t) {
+			int var;
+			if (bdd < FIRST_NODE_NUM)
+				return bdd;
+	
+			if ((var = ut.var(bdd)) > maxVar)
+				return bdd;
+	
+			int cached = rwlic.get(bdd, level, t);
+			if (cached >= 0) {
+				return cached;
+			}
+	
+			Filter filter = new UsefulLeaders(bdd);
+			// we further filter here, since some equivalence class might be irrelevant
+			// from the residual bdd, but not for the whole bdd
+			int minLeader = equivalenceRelations.getMinLeaderGreaterOrEqualtTo(level, var, filter), result, leader;
+			if (minLeader >= 0) {
+				BitSet augmented = (BitSet) t.clone();
+				augmented.set(minLeader);
+				result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
+			}
+			else if ((leader = equivalenceRelations.getLeader(var, filter)) < 0)
+				result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
+			else if (leader == var) {
+				BitSet augmented = (BitSet) t.clone();
+				augmented.set(var);
+				result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, augmented));
+			}
+			else if (t.get(leader))
+				result = renameWithLeader(ut.high(bdd), var + 1, t);
+			else
+				result = renameWithLeader(ut.low(bdd), var + 1, t);
+	
+			rwlic.put(bdd, level, t, result);
+			return result;
+		}
+	}
+
 	@Override
 	protected BDDImpl mk(int id) {
 		return new BDDER(id);
@@ -443,7 +517,7 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD imp(BDD other) {
 			if (other instanceof BDDER)
-				return imp_((BDDER) other);
+				return imp_((BDDER) other, false);
 			else
 				throw new NotBDDERException();
 		}
@@ -452,11 +526,8 @@ public class ERFactory extends Factory {
 		public BDD impWith(BDD other) {
 			if (other instanceof BDDER) {
 				BDDER otherBddEr = (BDDER) other;
-				BDDER imp_ = imp_(otherBddEr);
-				setId(((BDDImpl) imp_).getId());
-				l = imp_.l;
+				imp_(otherBddEr, true);
 				otherBddEr.free();
-				imp_.free();
 
 				return this;
 			}
@@ -470,8 +541,11 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the implication
 		 */
-		BDDER imp_(BDDER other) {
-			return not_(false).or_(other, true);
+		private BDDER imp_(BDDER other, boolean intoThis) {
+			if (intoThis)
+				return not_(true).or_(other, true);
+			else
+				return not_(false).or_(other, true);
 		}
 
 		/**
@@ -744,80 +818,6 @@ public class ERFactory extends Factory {
 				lock.unlock();
 			}
 		}
-
-		private class RenamerWithLeader {
-			private final EquivalenceRelation equivalenceRelations;
-			private final int resultId;
-			private final int maxVar;
-			private final RenameWithLeaderInternalCache rwlic;
-
-			private RenamerWithLeader(int id, EquivalenceRelation equivalenceRelations) {
-				this.equivalenceRelations = equivalenceRelations;
-				this.maxVar = equivalenceRelations.maxVar();
-				this.rwlic = new RenameWithLeaderInternalCache(20);
-				this.resultId = renameWithLeader(id, 0, new BitSet());
-			}
-
-			private int renameWithLeader(final int bdd, final int level, final BitSet t) {
-				int var;
-				if (bdd < FIRST_NODE_NUM)
-					return bdd;
-
-				if ((var = ut.var(bdd)) > maxVar)
-					return bdd;
-
-				int cached = rwlic.get(bdd, level, t);
-				if (cached >= 0) {
-					return cached;
-				}
-
-				Filter filter = new UsefulLeaders(bdd);
-				// we further filter here, since some equivalence class might be irrelevant
-				// from the residual bdd, but not for the whole bdd
-				int minLeader = equivalenceRelations.getMinLeaderGreaterOrEqualtTo(level, var, filter), result, leader;
-				if (minLeader >= 0) {
-					BitSet augmented = (BitSet) t.clone();
-					augmented.set(minLeader);
-					result = MK(minLeader++, renameWithLeader(bdd, minLeader, t), renameWithLeader(bdd, minLeader, augmented));
-				}
-				else if ((leader = equivalenceRelations.getLeader(var, filter)) < 0)
-					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, t));
-				else if (leader == var) {
-					BitSet augmented = (BitSet) t.clone();
-					augmented.set(var);
-					result = MK(var++, renameWithLeader(ut.low(bdd), var, t), renameWithLeader(ut.high(bdd), var, augmented));
-				}
-				else if (t.get(leader))
-					result = renameWithLeader(ut.high(bdd), var + 1, t);
-				else
-					result = renameWithLeader(ut.low(bdd), var + 1, t);
-
-				rwlic.put(bdd, level, t, result);
-				return result;
-			}
-		}
-
-		private class UsefulLeaders implements Filter {
-			private final int bdd;
-			private UsefulLeaders(int bdd) {
-				this.bdd = bdd;
-			}
-
-			@Override
-			public boolean accept(BitSet eqClass) {
-				return accept(eqClass, bdd);
-			}
-
-			private boolean accept(BitSet eqClass, int bdd) {
-				if (bdd < FIRST_NODE_NUM)
-					return false;
-				else {
-					int var = ut.var(bdd);
-					return (eqClass.nextSetBit(0) != var && eqClass.get(var))
-							|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
-				}
-			}
-		};
 
 		@Override
 		public long pathCount() {
