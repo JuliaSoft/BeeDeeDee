@@ -317,14 +317,21 @@ public class ERFactory extends Factory {
 		 * @param other the other ER
 		 * @return the conjunction
 		 */
-		BDDER and_(BDDER other) {
-			return new BDDER(innerAnd(other), l.addClasses(other.l), true);
+		BDDER and_(BDDER other, boolean intoThis) {
+			if (intoThis) {
+				setId(innerAnd(other));
+				l = l.addClasses(other.l);
+				normalize();
+				return this;
+			}
+			else
+				return new BDDER(innerAnd(other), l.addClasses(other.l), true);
 		}
 
 		@Override
 		public BDD and(BDD other) {
 			if (other instanceof BDDER)
-				return and_((BDDER) other);
+				return and_((BDDER) other, false);
 			else
 				throw new NotBDDERException();
 		}
@@ -333,11 +340,8 @@ public class ERFactory extends Factory {
 		public BDD andWith(BDD other) {
 			if (other instanceof BDDER) {
 				BDDER otherBddEr = (BDDER) other;
-				BDDER and_ = and_(otherBddEr);
-				setId(and_.getId());
-				l = and_.l;
+				and_(otherBddEr, true);
 				otherBddEr.free();
-				and_.free();
 
 				return this;
 			}
@@ -380,14 +384,13 @@ public class ERFactory extends Factory {
 		 */
 		BDDER xor_(BDDER other) {
 			BDDER or = or_(other);
-			BDDER and = and_(other);
+			BDDER and = and_(other, false);
 			BDDER notAnd = and.not_();
 			and.free();
-			BDDER result = or.and_(notAnd);
-			or.free();
+			or.and_(notAnd, true);
 			notAnd.free();
 
-			return result;
+			return or;
 		}
 
 		/**
@@ -412,7 +415,7 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD nand(BDD other) {
 			if (other instanceof BDDER) {
-				BDDER and_ = and_((BDDER) other);
+				BDDER and_ = and_((BDDER) other, false);
 				BDDER not_ = and_.not_();
 				and_.free();
 
@@ -426,10 +429,9 @@ public class ERFactory extends Factory {
 		public BDD nandWith(BDD other) {
 			if (other instanceof BDDER) {
 				BDDER otherBddEr = (BDDER) other;
-				BDDER and_ = and_(otherBddEr);
+				and_(otherBddEr, true);
 				otherBddEr.free();
-				BDDER not_ = and_.not_();
-				and_.free();
+				BDDER not_ = not_();
 				setId(((BDDImpl) not_).getId());
 				l = not_.l;
 				not_.free();
@@ -534,8 +536,7 @@ public class ERFactory extends Factory {
 			notG1.free();
 			notG2.free();
 
-			BDDER and = or1.and_(or2);
-			or1.free();
+			BDDER and = or1.and_(or2, true);
 			or2.free();
 
 			return and;
