@@ -381,42 +381,17 @@ public class ERFactory extends Factory {
 		BDDER xor_(BDDER other) {
 			BDDER or = or_(other, false);
 			BDDER and = and_(other, false);
-			BDDER notAnd = and.not_();
-			and.free();
+			BDDER notAnd = and.not_(true);
 			or.and_(notAnd, true);
 			notAnd.free();
 
 			return or;
 		}
 
-		/**
-		 * Computes negation of this ER. It uses the identity !(L & n) = !L | !n =
-		 * !p1 | !p2 | ... | !pn | !n. The result is normalized.
-		 * 
-		 * @return the negation
-		 */
-		BDDER not_() {
-			BDD not = super.not();
-			for (Pair pair: l.pairs()) {
-				BDD eq = makeVarBDDImpl(pair.first);
-				eq.biimpWith(makeVarBDDImpl(pair.second));
-				eq.notWith();
-				not.orWith(eq);
-			}
-			BDDER result = new BDDER(((BDDImpl) not).getId());
-			not.free();
-			return result;
-		}
-
 		@Override
 		public BDD nand(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER and_ = and_((BDDER) other, false);
-				BDDER not_ = and_.not_();
-				and_.free();
-
-				return not_;
-			}
+			if (other instanceof BDDER)
+				return and_((BDDER) other, false).not_(true);
 			else
 				throw new NotBDDERException();
 		}
@@ -427,30 +402,49 @@ public class ERFactory extends Factory {
 				BDDER otherBddEr = (BDDER) other;
 				and_(otherBddEr, true);
 				otherBddEr.free();
-				BDDER not_ = not_();
-				setId(((BDDImpl) not_).getId());
-				l = not_.l;
-				not_.free();
-
-				return this;
+				return not_(true);
 			}
 			else
 				throw new NotBDDERException();
 		}
 
+		/**
+		 * Computes negation of this ER. It uses the identity !(L & n) = !L | !n =
+		 * !p1 | !p2 | ... | !pn | !n. The result is normalized.
+		 * 
+		 * @return the negation
+		 */
+		private BDDER not_(boolean intoThis) {
+			BDD not = super.not();
+			for (Pair pair: l.pairs()) {
+				BDD eq = makeVarBDDImpl(pair.first);
+				eq.biimpWith(makeVarBDDImpl(pair.second));
+				eq.notWith();
+				not.orWith(eq);
+			}
+
+			if (intoThis) {
+				setId(((BDDImpl) not).getId());
+				l = new EquivalenceRelation();
+				normalize();
+				not.free();
+				return this;
+			}
+			else {
+				BDDER result = new BDDER(((BDDImpl) not).getId());
+				not.free();
+				return result;
+			}
+		}
+
 		@Override
 		public BDD not() {
-			return not_();
+			return not_(false);
 		}
 
 		@Override
 		public BDD notWith() {
-			BDDER not_ = not_();
-			setId(((BDDImpl) not_).getId());
-			l = not_.l;
-			not_.free();
-
-			return this;
+			return not_(true);
 		}
 
 		@Override
@@ -484,10 +478,7 @@ public class ERFactory extends Factory {
 		 * @return the implication
 		 */
 		BDDER imp_(BDDER other) {
-			BDDER notG1 = not_();
-			BDDER or_ = notG1.or_(other, false);
-			notG1.free();
-			return or_;
+			return not_(false).or_(other, true);
 		}
 
 		@Override
@@ -524,8 +515,8 @@ public class ERFactory extends Factory {
 		 * @return the biimplication
 		 */
 		BDDER biimp_(BDDER other) {
-			BDDER notG1 = not_();
-			BDDER notG2 = other.not_();
+			BDDER notG1 = not_(false);
+			BDDER notG2 = other.not_(false);
 			BDDER or1 = notG1.or_(other, true);
 			BDDER or2 = notG2.or_(this, true);
 			BDDER and = or1.and_(or2, true);

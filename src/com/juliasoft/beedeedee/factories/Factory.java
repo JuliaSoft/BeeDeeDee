@@ -1761,9 +1761,9 @@ public class Factory {
 		assertNonNull(bdds, "the collection of BBDs cannot be null here");
 
 		int count = 0;
-		Set<Integer> seen = new HashSet<Integer>();
+		Set<Integer> seen = new HashSet<>();
 
-		for (BDD bdd : bdds) {
+		for (BDD bdd: bdds) {
 			BDDImpl bddi = (BDDImpl) bdd;
 			if (bddi == null)
 				continue;
