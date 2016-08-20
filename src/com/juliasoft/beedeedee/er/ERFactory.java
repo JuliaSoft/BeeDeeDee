@@ -105,15 +105,15 @@ public class ERFactory extends Factory {
 				}
 			}
 			else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
-				EquivResult result1 = equivVars(ut.high(bdd));
-				EquivResult result2 = equivVars(ut.low(bdd));
-				result = new EquivResult(result1);
-				result.entailed.and(result2.entailed);
-				result.disentailed.and(result2.disentailed);
-				result.equiv.retainAll(result2.equiv);
-				BitSet intersection = (BitSet) result1.entailed.clone();
-				intersection.and(result2.disentailed);
-				if (intersection.cardinality() > 0)
+				EquivResult resultTrue = equivVars(ut.high(bdd));
+				EquivResult resultFalse = equivVars(ut.low(bdd));
+				result = new EquivResult(resultTrue);
+				result.entailed.and(resultFalse.entailed);
+				result.disentailed.and(resultFalse.disentailed);
+				result.equiv.retainAll(resultFalse.equiv);
+				BitSet intersection = (BitSet) resultTrue.entailed.clone();
+				intersection.and(resultFalse.disentailed);
+				if (!intersection.isEmpty())
 					result.equiv.add(new Pair(var, intersection.length() - 1));
 			}
 			else
@@ -414,6 +414,7 @@ public class ERFactory extends Factory {
 		 * 
 		 * @return the negation
 		 */
+
 		private BDDER not_(boolean intoThis) {
 			BDD not = super.not();
 			for (Pair pair: l.pairs()) {
@@ -481,6 +482,26 @@ public class ERFactory extends Factory {
 			return not_(false).or_(other, true);
 		}
 
+		/**
+		 * Computes the biimplication of this BDDER with another. It uses the identity
+		 * g1 <-> g2 = (!g1 | g2) & (!g2 | g1).
+		 * 
+		 * TODO use another identity?
+		 * 
+		 * @param other the other BDDER
+		 * @return the biimplication
+		 */
+		BDDER biimp_(BDDER other) {
+			BDDER notG1 = not_(false);
+			BDDER notG2 = other.not_(false);
+			BDDER or1 = notG1.or_(other, true);
+			BDDER or2 = notG2.or_(this, true);
+			BDDER and = or1.and_(or2, true);
+			or2.free();
+		
+			return and;
+		}
+
 		@Override
 		public BDD biimp(BDD other) {
 			if (other instanceof BDDER)
@@ -503,26 +524,6 @@ public class ERFactory extends Factory {
 			}
 			else
 				throw new NotBDDERException();
-		}
-
-		/**
-		 * Computes the biimplication of this BDDER with another. It uses the identity
-		 * g1 <-> g2 = (!g1 | g2) & (!g2 | g1).
-		 * 
-		 * TODO use another identity?
-		 * 
-		 * @param other the other BDDER
-		 * @return the biimplication
-		 */
-		BDDER biimp_(BDDER other) {
-			BDDER notG1 = not_(false);
-			BDDER notG2 = other.not_(false);
-			BDDER or1 = notG1.or_(other, true);
-			BDDER or2 = notG2.or_(this, true);
-			BDDER and = or1.and_(or2, true);
-			or2.free();
-
-			return and;
 		}
 
 		@Override

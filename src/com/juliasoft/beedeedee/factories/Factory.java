@@ -744,7 +744,7 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				return new BDDImpl(applyIMP(id, ZERO));
+				return new BDDImpl(innerNot());
 			}
 			finally {
 				lock.unlock();
@@ -756,13 +756,17 @@ public class Factory {
 			ReentrantLock lock = ut.getGCLock();
 			lock.lock();
 			try {
-				setId(applyIMP(id, ZERO));
+				setId(innerNot());
 			}
 			finally {
 				lock.unlock();
 			}
 
 			return this;
+		}
+
+		protected int innerNot() {
+			return applyIMP(id, ZERO);
 		}
 
 		@Override
