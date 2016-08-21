@@ -282,34 +282,28 @@ public class ERFactory extends Factory {
 				return new BDDER(or, l.intersection(other.l), false);
 		}
 
+		private int computeNforOr(BDDER er1, BDDER er2) {
+			int squeezedBDD = er1.new EquivalenceSqueezer().squeezedId;
+			for (Pair pair: er1.l.pairsInDifference(er2.l))
+				squeezedBDD = innerAnd(squeezedBDD, innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second)));
+
+			return squeezedBDD;
+		}
+
 		@Override
 		public BDD or(BDD other) {
-			if (other instanceof BDDER)
-				try (GCLock lock = new GCLock()) {
-					return or_((BDDER) other, false);
-				}
-			else
-				throw new NotBDDERException();
+			try (GCLock lock = new GCLock()) {
+				return or_((BDDER) other, false);
+			}
 		}
 
 		@Override
 		public BDD orWith(BDD other) {
-			if (other instanceof BDDER) {
+			try (GCLock lock = new GCLock()) {
 				or_((BDDER) other, true);
 				other.free();
 				return this;
 			}
-			else
-				throw new NotBDDERException();
-		}
-
-		private int computeNforOr(BDDER er1, BDDER er2) {
-			int squeezedBDD = er1.new EquivalenceSqueezer().squeezedId;
-			for (Pair pair: er1.l.pairsInDifference(er2.l)) {
-				int biimp = innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second));
-				squeezedBDD = innerAnd(squeezedBDD, biimp);
-			}
-			return squeezedBDD;
 		}
 
 		private class EquivalenceSqueezer {
@@ -363,23 +357,19 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD and(BDD other) {
-			if (other instanceof BDDER)
+			try (GCLock lock = new GCLock()) {
 				return and_((BDDER) other, false);
-			else
-				throw new NotBDDERException();
+			}
 		}
 
 		@Override
 		public BDD andWith(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				and_(otherBddEr, true);
-				otherBddEr.free();
+			try (GCLock lock = new GCLock()) {
+				and_((BDDER) other, true);
+				other.free();
 
 				return this;
 			}
-			else
-				throw new NotBDDERException();
 		}
 
 		/**
@@ -414,43 +404,35 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD xor(BDD other) {
-			if (other instanceof BDDER)
+			try (GCLock lock = new GCLock()) {
 				return xor_((BDDER) other, false);
-			else
-				throw new NotBDDERException();
+			}
 		}
 
 		@Override
 		public BDD xorWith(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				xor_(otherBddEr, true);
-				otherBddEr.free();
+			try (GCLock lock = new GCLock()) {
+				xor_((BDDER) other, true);
+				other.free();
 
 				return this;
 			}
-			else
-				throw new NotBDDERException();
 		}
 
 		@Override
 		public BDD nand(BDD other) {
-			if (other instanceof BDDER)
+			try (GCLock lock = new GCLock()) {
 				return and_((BDDER) other, false).not_(true);
-			else
-				throw new NotBDDERException();
+			}
 		}
 
 		@Override
 		public BDD nandWith(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				and_(otherBddEr, true);
-				otherBddEr.free();
+			try (GCLock lock = new GCLock()) {
+				and_((BDDER) other, true);
+				other.free();
 				return not_(true);
 			}
-			else
-				throw new NotBDDERException();
 		}
 
 		/**
@@ -462,10 +444,8 @@ public class ERFactory extends Factory {
 
 		private BDDER not_(boolean intoThis) {
 			int not = innerNot(id);
-			for (Pair pair: l.pairs()) {
-				int eq = innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second));
-				not = innerOr(not, innerNot(eq));
-			}
+			for (Pair pair: l.pairs())
+				not = innerOr(not, innerNot(innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second))));
 
 			if (intoThis) {
 				setId(not);
@@ -479,12 +459,16 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD not() {
-			return not_(false);
+			try (GCLock lock = new GCLock()) {
+				return not_(false);
+			}
 		}
 
 		@Override
 		public BDD notWith() {
-			return not_(true);
+			try (GCLock lock = new GCLock()) {
+				return not_(true);
+			}
 		}
 
 		/**
@@ -502,23 +486,19 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD imp(BDD other) {
-			if (other instanceof BDDER)
+			try (GCLock lock = new GCLock()) {
 				return imp_((BDDER) other, false);
-			else
-				throw new NotBDDERException();
+			}
 		}
 
 		@Override
 		public BDD impWith(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				imp_(otherBddEr, true);
-				otherBddEr.free();
+			try (GCLock lock = new GCLock()) {
+				imp_((BDDER) other, true);
+				other.free();
 
 				return this;
 			}
-			else
-				throw new NotBDDERException();
 		}
 
 		/**
@@ -543,31 +523,29 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD biimp(BDD other) {
-			if (other instanceof BDDER)
+			try (GCLock lock = new GCLock()) {
 				return biimp_((BDDER) other);
-			else
-				throw new NotBDDERException();
+			}
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
-			if (other instanceof BDDER) {
-				BDDER otherBddEr = (BDDER) other;
-				BDDER biimp_ = biimp_(otherBddEr);
-				setId(((BDDImpl) biimp_).getId());
+			try (GCLock lock = new GCLock()) {
+				BDDER biimp_ = biimp_((BDDER) other);
+				setId(biimp_.id);
 				l = biimp_.l;
-				otherBddEr.free();
+				other.free();
 				biimp_.free();
 
 				return this;
 			}
-			else
-				throw new NotBDDERException();
 		}
 
 		@Override
 		public BDD copy() {
-			return new BDDER(this);
+			try (GCLock lock = new GCLock()) {
+				return new BDDER(this);
+			}
 		}
 
 		@Override
@@ -623,24 +601,29 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD exist(int var) {
-			return exist_(var);
+			try (GCLock lock = new GCLock()) {
+				return exist_(var);
+			}
 		}
 
 		@Override
 		public BDD exist(BDD vars) {
-			return exist_(vars.vars());
+			try (GCLock lock = new GCLock()) {
+				return exist_(vars.vars());
+			}
 		}
 
 		@Override
 		public BDD exist(BitSet vars) {
-			return exist_(vars);
+			try (GCLock lock = new GCLock()) {
+				return exist_(vars);
+			}
 		}
 
 		private BDDER exist_(int var) {
 			if (l.containsVar(var)) {
-				int nextLeader = l.nextLeader(var);
 				Map<Integer, Integer> renaming = new HashMap<>();
-				renaming.put(var, nextLeader);
+				renaming.put(var, l.nextLeader(var));
 				int exist = innerReplace(renaming, renaming.hashCode()); // requires normalized representation
 				return new BDDER(exist, l.removeVar(var), true);
 			}
@@ -709,15 +692,17 @@ public class ERFactory extends Factory {
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
-			int nNew = innerReplace(renaming, renaming.hashCode());
+			try (GCLock lock = new GCLock()) {
+				int nNew = innerReplace(renaming, renaming.hashCode());
 
-			// perform "simultaneous" substitution
-			renaming = new HashMap<>(renaming);
-			Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
-			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
-			eNew = eNew.replace(renaming);
+				// perform "simultaneous" substitution
+				renaming = new HashMap<>(renaming);
+				Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
+				EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
+				eNew = eNew.replace(renaming);
 
-			return new BDDER(renameWithLeader(nNew, eNew), eNew, true);
+				return new BDDER(renameWithLeader(nNew, eNew), eNew, true);
+			}
 		}
 
 		@Override
@@ -727,19 +712,21 @@ public class ERFactory extends Factory {
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
-			int nNew = innerReplace(renaming, renaming.hashCode());
+			try (GCLock lock = new GCLock()) {
+				int nNew = innerReplace(renaming, renaming.hashCode());
 
-			// perform "simultaneous" substitution
-			renaming = new HashMap<>(renaming);
-			Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
-			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
-			eNew = eNew.replace(renaming);
+				// perform "simultaneous" substitution
+				renaming = new HashMap<>(renaming);
+				Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
+				EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
+				eNew = eNew.replace(renaming);
 
-			setId(renameWithLeader(nNew, eNew));
-			l = eNew;
-			normalize();
+				setId(renameWithLeader(nNew, eNew));
+				l = eNew;
+				normalize();
 
-			return this;
+				return this;
+			}
 		}
 
 		/**
@@ -800,12 +787,13 @@ public class ERFactory extends Factory {
 				BDDER o = (BDDER) other;
 				return l.equals(o.l) && super.isEquivalentTo(o);
 			}
-			else {
-				BDD full = getFullBDD();
-				boolean result = equivalentBDDs(other, full);
-				full.free();
-				return result;
-			}
+			else
+				try (GCLock lock = new GCLock()) {
+					BDD full = getFullBDD();
+					boolean result = equivalentBDDs(other, full);
+					full.free();
+					return result;
+				}
 		}
 
 		/**
@@ -837,30 +825,36 @@ public class ERFactory extends Factory {
 
 		@Override
 		public int var() {
-			BDD fullBDD = getFullBDD();
-			int var = fullBDD.var();
-			fullBDD.free();
-			return var;
+			try (GCLock lock = new GCLock()) {
+				BDD fullBDD = getFullBDD();
+				int var = fullBDD.var();
+				fullBDD.free();
+				return var;
+			}
 		}
 
 		@Override
 		public BDDER high() {
-			BDD fullBDD = getFullBDD();
-			BDD high = fullBDD.high();
-			fullBDD.free();
-			BDDER result = new BDDER(((BDDImpl) high).getId());
-			high.free();
-			return result;
+			try (GCLock lock = new GCLock()) {
+				BDD fullBDD = getFullBDD();
+				BDD high = fullBDD.high();
+				fullBDD.free();
+				BDDER result = new BDDER(((BDDImpl) high).getId());
+				high.free();
+				return result;
+			}
 		}
 
 		@Override
 		public BDDER low() {
-			BDD fullBDD = getFullBDD();
-			BDD low = fullBDD.low();
-			fullBDD.free();
-			BDDER result = new BDDER(((BDDImpl) low).getId());
-			low.free();
-			return result;
+			try (GCLock lock = new GCLock()) {
+				BDD fullBDD = getFullBDD();
+				BDD low = fullBDD.low();
+				fullBDD.free();
+				BDDER result = new BDDER(((BDDImpl) low).getId());
+				low.free();
+				return result;
+			}
 		}
 
 		@Override
@@ -888,10 +882,12 @@ public class ERFactory extends Factory {
 		}
 
 		boolean isNormalized() {
-			BDDER norm = new BDDER(getId(), l, true);
-			boolean result = isEquivalentTo(norm);
-			norm.free();
-			return result;
+			try (GCLock lock = new GCLock()) {
+				BDDER norm = new BDDER(getId(), l, true);
+				boolean result = isEquivalentTo(norm);
+				norm.free();
+				return result;
+			}
 		}
 
 		EquivalenceRelation getEquiv() {
