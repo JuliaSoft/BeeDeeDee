@@ -255,22 +255,22 @@ public class Factory {
 	/**
 	 * Constructs a BDD representing a single variable.
 	 * 
-	 * @param i the number of the variable
+	 * @param v the number of the variable
 	 * @return the variable as a BDD object 
 	 */
-	public BDD makeVar(int i) {
+	public BDD makeVar(int v) {
 		try (GCLock lock = new GCLock()) {
-			return mk(innerMkOptimized(i));
+			return mk(innerMakeVar(v));
 		}
 	}
 
 	protected BDD makeVarBDDImpl(int i) {
 		try (GCLock lock = new GCLock()) {
-			return new BDDImpl(innerMkOptimized(i));
+			return new BDDImpl(innerMakeVar(i));
 		}
 	}
 
-	protected int innerMkOptimized(int v) {
+	protected int innerMakeVar(int v) {
 		updateMaxVar(v);
 
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
@@ -423,7 +423,7 @@ public class Factory {
 		 * Recursive version of the apply() function.
 		 */
 
-		private int applyAND(int bdd1, int bdd2) {
+		protected final int innerAnd(int bdd1, int bdd2) {
 			if (bdd1 == bdd2)
 				return bdd1;
 
@@ -442,17 +442,17 @@ public class Factory {
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.AND, bdd1, bdd2,
-							result = MK(v1, applyAND(ut.low(bdd1), ut.low(bdd2)), applyAND(ut.high(bdd1), ut.high(bdd2))));
+							result = MK(v1, innerAnd(ut.low(bdd1), ut.low(bdd2)), innerAnd(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v1, applyAND(ut.low(bdd1), bdd2), applyAND(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v1, innerAnd(ut.low(bdd1), bdd2), innerAnd(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v2, applyAND(bdd1, ut.low(bdd2)), applyAND(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v2, innerAnd(bdd1, ut.low(bdd2)), innerAnd(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
 		}
 
-		private int applyOR(int bdd1, int bdd2) {
+		protected final int innerOr(int bdd1, int bdd2) {
 			if (bdd1 == bdd2)
 				return bdd1;
 
@@ -471,17 +471,17 @@ public class Factory {
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.OR, bdd1, bdd2,
-							result = MK(v1, applyOR(ut.low(bdd1), ut.low(bdd2)), applyOR(ut.high(bdd1), ut.high(bdd2))));
+							result = MK(v1, innerOr(ut.low(bdd1), ut.low(bdd2)), innerOr(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v1, applyOR(ut.low(bdd1), bdd2), applyOR(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v1, innerOr(ut.low(bdd1), bdd2), innerOr(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v2, applyOR(bdd1, ut.low(bdd2)), applyOR(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v2, innerOr(bdd1, ut.low(bdd2)), innerOr(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
 		}
 
-		private int applyBIIMP(int bdd1, int bdd2) {
+		protected final int innerBiimp(int bdd1, int bdd2) {
 			if (bdd1 == bdd2)
 				return ONE;
 
@@ -503,11 +503,11 @@ public class Factory {
 
 				if (v1 == v2)
 					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2,
-							result = MK(v1, applyBIIMP(ut.low(bdd1), ut.low(bdd2)), applyBIIMP(ut.high(bdd1), ut.high(bdd2))));
+							result = MK(v1, innerBiimp(ut.low(bdd1), ut.low(bdd2)), innerBiimp(ut.high(bdd1), ut.high(bdd2))));
 				else if (v1 < v2)
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v1, applyBIIMP(ut.low(bdd1), bdd2), applyBIIMP(ut.high(bdd1), bdd2)));
+					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v1, innerBiimp(ut.low(bdd1), bdd2), innerBiimp(ut.high(bdd1), bdd2)));
 				else
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v2, applyBIIMP(bdd1, ut.low(bdd2)), applyBIIMP(bdd1, ut.high(bdd2))));
+					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v2, innerBiimp(bdd1, ut.low(bdd2)), innerBiimp(bdd1, ut.high(bdd2))));
 			}
 
 			return result;
@@ -575,7 +575,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyOR(id, ((BDDImpl) other).id));
+				return new BDDImpl(innerOr(id, ((BDDImpl) other).id));
 			}
 		}
 
@@ -584,7 +584,7 @@ public class Factory {
 			assertNonNull(other);
 			
 			try (GCLock lock = new GCLock()) {
-				setId(applyOR(id, ((BDDImpl) other).id));
+				setId(innerOr(id, ((BDDImpl) other).id));
 			}
 
 			other.free();
@@ -598,7 +598,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerAnd(((BDDImpl) other).id));
+				return new BDDImpl(innerAnd(id, ((BDDImpl) other).id));
 			}
 		}
 
@@ -607,16 +607,12 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(innerAnd(((BDDImpl) other).id));
+				setId(innerAnd(id, ((BDDImpl) other).id));
 			}
 
 			other.free();
 
 			return this;
-		}
-
-		protected int innerAnd(int otherId) {
-			return applyAND(id, otherId);
 		}
 
 		@Override
@@ -648,7 +644,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
+				return new BDDImpl(applyIMP(innerAnd(id, ((BDDImpl) other).id), ZERO));
 			}
 		}
 
@@ -657,7 +653,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(applyIMP(applyAND(id, ((BDDImpl) other).id), ZERO));
+				setId(applyIMP(innerAnd(id, ((BDDImpl) other).id), ZERO));
 			}
 
 			other.free();
@@ -670,20 +666,20 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerNot());
+				return new BDDImpl(innerNot(id));
 			}
 		}
 
 		@Override
 		public BDD notWith() {
 			try (GCLock lock = new GCLock()) {
-				setId(innerNot());
+				setId(innerNot(id));
 			}
 
 			return this;
 		}
 
-		protected int innerNot() {
+		protected final int innerNot(int id) {
 			return applyIMP(id, ZERO);
 		}
 
@@ -710,17 +706,13 @@ public class Factory {
 			return this;
 		}
 
-		protected int innerBiimp(int otherId) {
-			return applyBIIMP(id, otherId);
-		}
-
 		@Override
 		public BDD biimp(BDD other) {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerBiimp(((BDDImpl) other).id));
+				return new BDDImpl(innerBiimp(id, ((BDDImpl) other).id));
 			}
 		}
 
@@ -729,7 +721,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(innerBiimp(((BDDImpl) other).id));
+				setId(innerBiimp(id, ((BDDImpl) other).id));
 			}
 
 			other.free();
@@ -913,7 +905,7 @@ public class Factory {
 			int falseId = innerRestrict(var, false);
 			int trueId = innerRestrict(var, true);
 
-			return applyOR(falseId, trueId);
+			return innerOr(falseId, trueId);
 		}
 
 		@Override
@@ -974,9 +966,9 @@ public class Factory {
 
 			if (vars.get(var))
 				if (exist)
-					result = applyOR(a, b);
+					result = innerOr(a, b);
 				else
-					result = applyAND(a, b);
+					result = innerAnd(a, b);
 			else
 				if (a == oldA && b == oldB)
 					result = bdd;
@@ -1342,7 +1334,7 @@ public class Factory {
 
 			try (GCLock lock = new GCLock()) {
 				for (int v: vars) {
-					BDD var = mk(innerMkOptimized(v));
+					BDD var = mk(innerMakeVar(v));
 					if (truthTable.get(v) == Boolean.FALSE)
 						var.notWith();
 

@@ -268,28 +268,18 @@ public class ERFactory extends Factory {
 		}
 
 		private BDDER or_(BDDER other, boolean intoThis) {
+			int n1 = computeNforOr(this, other);
+			int n2 = computeNforOr(other, this);
+			int or = innerOr(n1, n2);
+
 			if (intoThis) {
-				BDD n1 = computeNforOr(this, other);
-				BDD n2 = computeNforOr(other, this);
-		
-				n1.orWith(n2);
-				n2.free();
-				setId(((BDDImpl) n1).getId());
+				setId(or);
 				l = l.intersection(other.l);
-				n1.free();
 		
 				return this;
 			}
-			else {
-				BDD n1 = computeNforOr(this, other);
-				BDD n2 = computeNforOr(other, this);
-		
-				n1.orWith(n2);
-				n2.free();
-				BDDER result = new BDDER(((BDDImpl) n1).getId(), l.intersection(other.l), false);
-				n1.free();
-				return result;
-			}
+			else
+				return new BDDER(or, l.intersection(other.l), false);
 		}
 
 		@Override
@@ -313,12 +303,11 @@ public class ERFactory extends Factory {
 				throw new NotBDDERException();
 		}
 
-		private BDD computeNforOr(BDDER er1, BDDER er2) {
-			BDD squeezedBDD = mkBDDImpl(er1.new EquivalenceSqueezer().squeezedId);
+		private int computeNforOr(BDDER er1, BDDER er2) {
+			int squeezedBDD = er1.new EquivalenceSqueezer().squeezedId;
 			for (Pair pair: er1.l.pairsInDifference(er2.l)) {
-				BDD biimp = makeVarBDDImpl(pair.first);
-				biimp.biimpWith(makeVarBDDImpl(pair.second));
-				squeezedBDD.andWith(biimp);
+				int biimp = innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second));
+				squeezedBDD = innerAnd(squeezedBDD, biimp);
 			}
 			return squeezedBDD;
 		}
@@ -363,13 +352,13 @@ public class ERFactory extends Factory {
 		 */
 		private BDDER and_(BDDER other, boolean intoThis) {
 			if (intoThis) {
-				setId(innerAnd(other.id));
+				setId(innerAnd(id, other.id));
 				l = l.addClasses(other.l);
 				normalize();
 				return this;
 			}
 			else
-				return new BDDER(innerAnd(other.id), l.addClasses(other.l), true);
+				return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), true);
 		}
 
 		@Override
