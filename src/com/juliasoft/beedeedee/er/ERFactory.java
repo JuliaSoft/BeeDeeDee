@@ -647,11 +647,11 @@ public class ERFactory extends Factory {
 			if (l.containsVar(var)) {
 				Map<Integer, Integer> renaming = new HashMap<>();
 				renaming.put(var, l.nextLeader(var));
-				int exist = innerReplace(renaming, renaming.hashCode()); // requires normalized representation
+				int exist = innerReplace(id, renaming, renaming.hashCode()); // requires normalized representation
 				return new BDDER(exist, l.removeVar(var), true);
 			}
 			else
-				return new BDDER(innerExist(var), l, true);
+				return new BDDER(innerExist(id, var), l, true);
 		}
 
 		private BDDER exist_(BitSet vars) {
@@ -675,7 +675,7 @@ public class ERFactory extends Factory {
 			int exist;
 
 			if (!renaming.isEmpty()) {
-				exist = innerReplace(renaming, renaming.hashCode());  // requires normalized representation
+				exist = innerReplace(id, renaming, renaming.hashCode());  // requires normalized representation
 
 				if (!quantifiedVars.isEmpty())
 					exist = innerQuantify(exist, quantifiedVars, true, quantifiedVars.hashCode());
@@ -716,7 +716,7 @@ public class ERFactory extends Factory {
 					throw new ReplacementWithExistingVarException(v);
 
 			try (GCLock lock = new GCLock()) {
-				int nNew = innerReplace(renaming, renaming.hashCode());
+				int nNew = innerReplace(id, renaming, renaming.hashCode());
 
 				// perform "simultaneous" substitution
 				renaming = new HashMap<>(renaming);
@@ -736,7 +736,7 @@ public class ERFactory extends Factory {
 					throw new ReplacementWithExistingVarException(v);
 
 			try (GCLock lock = new GCLock()) {
-				int nNew = innerReplace(renaming, renaming.hashCode());
+				int nNew = innerReplace(id, renaming, renaming.hashCode());
 
 				// perform "simultaneous" substitution
 				renaming = new HashMap<>(renaming);

@@ -4,12 +4,11 @@ import java.util.Arrays;
 import java.util.BitSet;
 
 public class RenameWithLeaderInternalCache {
-
-	private int size;
-	private int[] cache;
-	private int[] levels;
-	private BitSet[] ts;
-	private int[] results;
+	private final int size;
+	private final int[] cache;
+	private final int[] levels;
+	private final BitSet[] ts;
+	private final int[] results;
 
 	RenameWithLeaderInternalCache(int size) {
 		this.size = size;
@@ -23,9 +22,9 @@ public class RenameWithLeaderInternalCache {
 	public int get(int f, int level, BitSet t) {
 		int pos = hash(f, level, t);
 
-		if (cache[pos] == f && levels[pos] == level && ts[pos].equals(t)) {
+		if (cache[pos] == f && levels[pos] == level && ts[pos].equals(t))
 			return results[pos];
-		}
+
 		return -1;
 	}
 
@@ -41,5 +40,4 @@ public class RenameWithLeaderInternalCache {
 	private int hash(int f, int level, BitSet t) {
 		return Math.abs((f ^ (level << 24) ^ t.hashCode()) % size);
 	}
-
 }

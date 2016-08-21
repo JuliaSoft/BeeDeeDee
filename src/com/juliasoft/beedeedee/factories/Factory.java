@@ -312,6 +312,240 @@ public class Factory {
 			return notVars[v];
 	}
 
+	/**
+	 * Recursive version of the apply() function.
+	 */
+	
+	protected final int innerAnd(int bdd1, int bdd2) {
+		if (bdd1 == bdd2)
+			return bdd1;
+	
+		if (bdd1 == ZERO || bdd2 == ZERO)
+			return ZERO;
+	
+		if (bdd1 == ONE)
+			return bdd2;
+	
+		if (bdd2 == ONE)
+			return bdd1;
+	
+		int result;
+		if ((result = ut.getFromCache(Operator.AND, bdd1, bdd2)) < 0) {
+			int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
+	
+			if (v1 == v2)
+				ut.putIntoCache(Operator.AND, bdd1, bdd2,
+						result = MK(v1, innerAnd(ut.low(bdd1), ut.low(bdd2)), innerAnd(ut.high(bdd1), ut.high(bdd2))));
+			else if (v1 < v2)
+				ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v1, innerAnd(ut.low(bdd1), bdd2), innerAnd(ut.high(bdd1), bdd2)));
+			else
+				ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v2, innerAnd(bdd1, ut.low(bdd2)), innerAnd(bdd1, ut.high(bdd2))));
+		}
+	
+		return result;
+	}
+
+	protected final int innerOr(int bdd1, int bdd2) {
+		if (bdd1 == bdd2)
+			return bdd1;
+	
+		if (bdd1 == ONE || bdd2 == ONE)
+			return ONE;
+	
+		if (bdd1 == ZERO)
+			return bdd2;
+	
+		if (bdd2 == ZERO)
+			return bdd1;
+	
+		int result;
+		if ((result = ut.getFromCache(Operator.OR, bdd1, bdd2)) < 0) {
+			int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
+	
+			if (v1 == v2)
+				ut.putIntoCache(Operator.OR, bdd1, bdd2,
+						result = MK(v1, innerOr(ut.low(bdd1), ut.low(bdd2)), innerOr(ut.high(bdd1), ut.high(bdd2))));
+			else if (v1 < v2)
+				ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v1, innerOr(ut.low(bdd1), bdd2), innerOr(ut.high(bdd1), bdd2)));
+			else
+				ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v2, innerOr(bdd1, ut.low(bdd2)), innerOr(bdd1, ut.high(bdd2))));
+		}
+	
+		return result;
+	}
+
+	protected final int innerBiimp(int bdd1, int bdd2) {
+		if (bdd1 == bdd2)
+			return ONE;
+	
+		if (bdd1 == ZERO && bdd2 == ONE)
+			return ZERO;
+	
+		if (bdd1 == ONE && bdd2 == ZERO)
+			return ZERO;
+	
+		if (bdd1 == ONE)
+			return bdd2;
+	
+		if (bdd2 == ONE)
+			return bdd1;
+	
+		int result;
+		if ((result = ut.getFromCache(Operator.BIIMP, bdd1, bdd2)) < 0) {
+			int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
+	
+			if (v1 == v2)
+				ut.putIntoCache(Operator.BIIMP, bdd1, bdd2,
+						result = MK(v1, innerBiimp(ut.low(bdd1), ut.low(bdd2)), innerBiimp(ut.high(bdd1), ut.high(bdd2))));
+			else if (v1 < v2)
+				ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v1, innerBiimp(ut.low(bdd1), bdd2), innerBiimp(ut.high(bdd1), bdd2)));
+			else
+				ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v2, innerBiimp(bdd1, ut.low(bdd2)), innerBiimp(bdd1, ut.high(bdd2))));
+		}
+	
+		return result;
+	}
+
+	/**
+	 * Recursive version of the apply() function.
+	 */
+	
+	protected final int innerImp(int bdd1, int bdd2) {
+		if (bdd1 == bdd2 || bdd1 == ZERO)
+			return ONE;
+		else if (bdd1 == ONE)
+			return bdd2;
+	
+		int result;
+		if ((result = ut.getFromCache(Operator.IMP, bdd1, bdd2)) < 0) {
+			int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
+	
+			if (v1 == v2)
+				ut.putIntoCache(Operator.IMP, bdd1, bdd2,
+						result = MK(v1, innerImp(ut.low(bdd1), ut.low(bdd2)), innerImp(ut.high(bdd1), ut.high(bdd2))));
+			else if (v1 < v2)
+				ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v1, innerImp(ut.low(bdd1), bdd2), innerImp(ut.high(bdd1), bdd2)));
+			else
+				ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v2, innerImp(bdd1, ut.low(bdd2)), innerImp(bdd1, ut.high(bdd2))));
+		}
+	
+		return result;
+	}
+
+	protected final int innerXor(int bdd1, int bdd2) {
+		if (bdd1 == bdd2 || (bdd1 == ONE && bdd2 == ONE) || (bdd1 == ZERO && bdd2 == ZERO))
+			return ZERO;
+	
+		if ((bdd1 == ONE && bdd2 == ZERO) || (bdd1 == ZERO && bdd2 == ONE))
+			return ONE;
+	
+		if (bdd1 == ZERO)
+			return bdd2;
+	
+		if (bdd2 == ZERO)
+			return bdd1;
+	
+		int result;
+		if ((result = ut.getFromCache(Operator.XOR, bdd1, bdd2)) < 0) {
+			int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
+	
+			if (v1 == v2)
+				ut.putIntoCache(Operator.XOR, bdd1, bdd2,
+						result = MK(v1, innerXor(ut.low(bdd1), ut.low(bdd2)), innerXor(ut.high(bdd1), ut.high(bdd2))));
+			else if (v1 < v2)
+				ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v1, innerXor(ut.low(bdd1), bdd2), innerXor(ut.high(bdd1), bdd2)));
+			else
+				ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v2, innerXor(bdd1, ut.low(bdd2)), innerXor(bdd1, ut.high(bdd2))));
+		}
+	
+		return result;
+	}
+
+	protected final int innerNot(int id) {
+		return innerImp(id, ZERO);
+	}
+
+	protected final int innerRestrict(int id, int var, boolean value) {
+		int result;
+		result = ut.getRestrictCache().get(id, var, value);
+		if (result >= 0)
+			return result;
+	
+		int diff = ut.var(id) - var;
+		if (diff > 0)
+			return id;
+		else if (diff < 0) {
+			result = MK(ut.var(id), innerRestrict(ut.low(id), var, value), innerRestrict(ut.high(id), var, value));
+			ut.getRestrictCache().put(id, var, value, result);
+			return result;
+		}
+		else if (value)
+			return innerRestrict(ut.high(id), var, value);
+		else
+			return innerRestrict(ut.low(id), var, value);
+	}
+
+	protected final int innerExist(int id, int var) {
+		return innerOr(innerRestrict(id, var, false), innerRestrict(id, var, true));
+	}
+
+	protected final int innerReplace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
+		assertNonNull(renaming);
+		if (bdd < FIRST_NODE_NUM) // terminal node
+			return bdd;
+	
+		int result = ut.getReplaceCache().get(bdd, renaming, hashOfRenaming);
+		if (result >= 0)
+			return result;
+	
+		int oldLow = ut.low(bdd), oldHigh = ut.high(bdd);
+		int lowRenamed = innerReplace(oldLow, renaming, hashOfRenaming);
+		int highRenamed = innerReplace(oldHigh, renaming, hashOfRenaming);
+		int var = ut.var(bdd);
+		Integer newVar = renaming.get(var);
+		if (newVar == null)
+			newVar = var;
+	
+		if (var == newVar && lowRenamed == oldLow && highRenamed == oldHigh)
+			result = bdd;
+		else
+			result = MKInOrder(newVar, lowRenamed, highRenamed);
+	
+		ut.getReplaceCache().put(bdd, renaming, result, hashOfRenaming);
+	
+		return result;
+	}
+
+	protected final int innerQuantify(int id, BitSet vars, boolean exist, int hashCodeOfVars) {
+		if (id < FIRST_NODE_NUM) // terminal node
+			return id;
+	
+		int result = ut.getQuantCache().get(exist, id, vars, hashCodeOfVars);
+		if (result >= 0)
+			return result;
+	
+		int oldA = ut.low(id), oldB = ut.high(id);
+		int a = innerQuantify(oldA, vars, exist, hashCodeOfVars);
+		int b = innerQuantify(oldB, vars, exist, hashCodeOfVars);
+	
+		int var = ut.var(id);
+	
+		if (vars.get(var))
+			if (exist)
+				result = innerOr(a, b);
+			else
+				result = innerAnd(a, b);
+		else
+			if (a == oldA && b == oldB)
+				result = id;
+			else
+				result = MK(var, a, b);
+	
+		ut.getQuantCache().put(exist, id, vars, hashCodeOfVars, result);
+	
+		return result;
+	}
+
 	private int freedBDDsCounter;
 
 	public class BDDImpl implements BDD {
@@ -342,17 +576,13 @@ public class Factory {
 			}
 		}
 
-		protected final BDDImpl mkBDDImpl(int id) {
-			return new BDDImpl(id);
-		}
-
-		protected void setId(int id) {
+		protected final void setId(int id) {
 			this.id = id;
 			this.hashCode = ut.hashCodeAux(id);
 			this.nodeCount = -1;
 		}
 
-		public int getId() {
+		public final int getId() {
 			return id;
 		}
 
@@ -427,156 +657,6 @@ public class Factory {
 			return s;
 		}
 
-		/**
-		 * Recursive version of the apply() function.
-		 */
-
-		protected final int innerAnd(int bdd1, int bdd2) {
-			if (bdd1 == bdd2)
-				return bdd1;
-
-			if (bdd1 == ZERO || bdd2 == ZERO)
-				return ZERO;
-
-			if (bdd1 == ONE)
-				return bdd2;
-
-			if (bdd2 == ONE)
-				return bdd1;
-
-			int result;
-			if ((result = ut.getFromCache(Operator.AND, bdd1, bdd2)) < 0) {
-				int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
-
-				if (v1 == v2)
-					ut.putIntoCache(Operator.AND, bdd1, bdd2,
-							result = MK(v1, innerAnd(ut.low(bdd1), ut.low(bdd2)), innerAnd(ut.high(bdd1), ut.high(bdd2))));
-				else if (v1 < v2)
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v1, innerAnd(ut.low(bdd1), bdd2), innerAnd(ut.high(bdd1), bdd2)));
-				else
-					ut.putIntoCache(Operator.AND, bdd1, bdd2, result = MK(v2, innerAnd(bdd1, ut.low(bdd2)), innerAnd(bdd1, ut.high(bdd2))));
-			}
-
-			return result;
-		}
-
-		protected final int innerOr(int bdd1, int bdd2) {
-			if (bdd1 == bdd2)
-				return bdd1;
-
-			if (bdd1 == ONE || bdd2 == ONE)
-				return ONE;
-
-			if (bdd1 == ZERO)
-				return bdd2;
-
-			if (bdd2 == ZERO)
-				return bdd1;
-
-			int result;
-			if ((result = ut.getFromCache(Operator.OR, bdd1, bdd2)) < 0) {
-				int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
-
-				if (v1 == v2)
-					ut.putIntoCache(Operator.OR, bdd1, bdd2,
-							result = MK(v1, innerOr(ut.low(bdd1), ut.low(bdd2)), innerOr(ut.high(bdd1), ut.high(bdd2))));
-				else if (v1 < v2)
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v1, innerOr(ut.low(bdd1), bdd2), innerOr(ut.high(bdd1), bdd2)));
-				else
-					ut.putIntoCache(Operator.OR, bdd1, bdd2, result = MK(v2, innerOr(bdd1, ut.low(bdd2)), innerOr(bdd1, ut.high(bdd2))));
-			}
-
-			return result;
-		}
-
-		protected final int innerBiimp(int bdd1, int bdd2) {
-			if (bdd1 == bdd2)
-				return ONE;
-
-			if (bdd1 == ZERO && bdd2 == ONE)
-				return ZERO;
-
-			if (bdd1 == ONE && bdd2 == ZERO)
-				return ZERO;
-
-			if (bdd1 == ONE)
-				return bdd2;
-
-			if (bdd2 == ONE)
-				return bdd1;
-
-			int result;
-			if ((result = ut.getFromCache(Operator.BIIMP, bdd1, bdd2)) < 0) {
-				int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
-
-				if (v1 == v2)
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2,
-							result = MK(v1, innerBiimp(ut.low(bdd1), ut.low(bdd2)), innerBiimp(ut.high(bdd1), ut.high(bdd2))));
-				else if (v1 < v2)
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v1, innerBiimp(ut.low(bdd1), bdd2), innerBiimp(ut.high(bdd1), bdd2)));
-				else
-					ut.putIntoCache(Operator.BIIMP, bdd1, bdd2, result = MK(v2, innerBiimp(bdd1, ut.low(bdd2)), innerBiimp(bdd1, ut.high(bdd2))));
-			}
-
-			return result;
-		}
-
-		private int applyXOR(int bdd1, int bdd2) {
-			if (bdd1 == bdd2 || (bdd1 == ONE && bdd2 == ONE) || (bdd1 == ZERO && bdd2 == ZERO))
-				return ZERO;
-
-			if ((bdd1 == ONE && bdd2 == ZERO) || (bdd1 == ZERO && bdd2 == ONE))
-				return ONE;
-
-			if (bdd1 == ZERO)
-				return bdd2;
-
-			if (bdd2 == ZERO)
-				return bdd1;
-
-			int result;
-			if ((result = ut.getFromCache(Operator.XOR, bdd1, bdd2)) < 0) {
-				int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
-
-				if (v1 == v2)
-					ut.putIntoCache(Operator.XOR, bdd1, bdd2,
-							result = MK(v1, applyXOR(ut.low(bdd1), ut.low(bdd2)), applyXOR(ut.high(bdd1), ut.high(bdd2))));
-				else if (v1 < v2)
-					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v1, applyXOR(ut.low(bdd1), bdd2), applyXOR(ut.high(bdd1), bdd2)));
-				else
-					ut.putIntoCache(Operator.XOR, bdd1, bdd2, result = MK(v2, applyXOR(bdd1, ut.low(bdd2)), applyXOR(bdd1, ut.high(bdd2))));
-			}
-
-			return result;
-		}
-
-		/**
-		 * Recursive version of the apply() function.
-		 */
-
-		private int applyIMP(int bdd1, int bdd2) {
-			if (bdd1 == bdd2 || bdd1 == ZERO)
-				return ONE;
-
-			if (bdd1 == ONE)
-				return bdd2;
-
-			int result;
-			if ((result = ut.getFromCache(Operator.IMP, bdd1, bdd2)) < 0) {
-				int v1 = ut.var(bdd1), v2 = ut.var(bdd2);
-
-				if (v1 == v2)
-					ut.putIntoCache(Operator.IMP, bdd1, bdd2,
-							result = MK(v1, applyIMP(ut.low(bdd1), ut.low(bdd2)), applyIMP(ut.high(bdd1), ut.high(bdd2))));
-				else if (v1 < v2)
-					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v1, applyIMP(ut.low(bdd1), bdd2), applyIMP(ut.high(bdd1), bdd2)));
-				else
-					ut.putIntoCache(Operator.IMP, bdd1, bdd2, result = MK(v2, applyIMP(bdd1, ut.low(bdd2)), applyIMP(bdd1, ut.high(bdd2))));
-			}
-
-			return result;
-		}
-
 		@Override
 		public BDD or(BDD other) {
 			assertNonNull(other);
@@ -629,7 +709,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyXOR(id, ((BDDImpl) other).id));
+				return new BDDImpl(innerXor(id, ((BDDImpl) other).id));
 			}
 		}
 
@@ -638,7 +718,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(applyXOR(id, ((BDDImpl) other).id));
+				setId(innerXor(id, ((BDDImpl) other).id));
 			}
 
 			other.free();
@@ -652,7 +732,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyIMP(innerAnd(id, ((BDDImpl) other).id), ZERO));
+				return new BDDImpl(innerImp(innerAnd(id, ((BDDImpl) other).id), ZERO));
 			}
 		}
 
@@ -661,7 +741,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(applyIMP(innerAnd(id, ((BDDImpl) other).id), ZERO));
+				setId(innerImp(innerAnd(id, ((BDDImpl) other).id), ZERO));
 			}
 
 			other.free();
@@ -687,17 +767,13 @@ public class Factory {
 			return this;
 		}
 
-		protected final int innerNot(int id) {
-			return applyIMP(id, ZERO);
-		}
-
 		@Override
 		public BDD imp(BDD other) {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyIMP(id, ((BDDImpl) other).id));
+				return new BDDImpl(innerImp(id, ((BDDImpl) other).id));
 			}
 		}
 
@@ -706,7 +782,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(applyIMP(id, ((BDDImpl) other).id));
+				setId(innerImp(id, ((BDDImpl) other).id));
 			}
 
 			other.free();
@@ -849,11 +925,11 @@ public class Factory {
 
 			try (GCLock lock = new GCLock()) {
 				int res = id;
-				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
+				for (int varId = ((BDDImpl) var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
 					if (ut.low(varId) == ZERO)
-						res = restrict(res, ut.var(varId), true);
+						res = innerRestrict(res, ut.var(varId), true);
 					else if (ut.low(varId) == ONE)
-						res = restrict(res, ut.var(varId), false);
+						res = innerRestrict(res, ut.var(varId), false);
 
 				return new BDDImpl(res);
 			}
@@ -865,12 +941,11 @@ public class Factory {
 
 			try (GCLock lock = new GCLock()) {
 				int res = id;
-				for (int varId = ((BDDImpl)var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId)) {
+				for (int varId = ((BDDImpl) var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
 					if (ut.low(varId) == ZERO)
-						res = restrict(res, ut.var(varId), true);
-					if (ut.low(varId) == ONE)
-						res = restrict(res, ut.var(varId), false);
-				}
+						res = innerRestrict(res, ut.var(varId), true);
+					else if (ut.low(varId) == ONE)
+						res = innerRestrict(res, ut.var(varId), false);
 
 				setId(res);
 			}
@@ -878,48 +953,17 @@ public class Factory {
 			return this;
 		}
 
-		protected int innerRestrict(int var, boolean value) {
-			return restrict(id, var, value);
-		}
-
 		@Override
 		public BDD restrict(int var, boolean value) {
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerRestrict(var, value));
+				return new BDDImpl(innerRestrict(id, var, value));
 			}
-		}
-
-		private int restrict(int u, int var, boolean value) {
-			int result;
-			result = ut.getRestrictCache().get(u, var, value);
-			if (result >= 0)
-				return result;
-
-			int diff = ut.var(u) - var;
-			if (diff > 0)
-				return u;
-			else if (diff < 0) {
-				result = MK(ut.var(u), restrict(ut.low(u), var, value), restrict(ut.high(u), var, value));
-				ut.getRestrictCache().put(u, var, value, result);
-				return result;
-			}
-			else if (value)
-				return restrict(ut.high(u), var, value);
-			else
-				return restrict(ut.low(u), var, value);
-		}
-
-		protected int innerExist(int var) {
-			int falseId = innerRestrict(var, false);
-			int trueId = innerRestrict(var, true);
-
-			return innerOr(falseId, trueId);
 		}
 
 		@Override
 		public BDD exist(int var) {
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerExist(var));
+				return new BDDImpl(innerExist(id, var));
 			}
 		}
 
@@ -956,36 +1000,6 @@ public class Factory {
 			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(innerQuantify(id, vars, exist, hashCodeVars));
 			}
-		}
-
-		protected final int innerQuantify(int bdd, BitSet vars, boolean exist, int hashCodeOfVars) {
-			if (bdd < FIRST_NODE_NUM) // terminal node
-				return bdd;
-
-			int result = ut.getQuantCache().get(exist, bdd, vars, hashCodeOfVars);
-			if (result >= 0)
-				return result;
-
-			int oldA = ut.low(bdd), oldB = ut.high(bdd);
-			int a = innerQuantify(oldA, vars, exist, hashCodeOfVars);
-			int b = innerQuantify(oldB, vars, exist, hashCodeOfVars);
-
-			int var = ut.var(bdd);
-
-			if (vars.get(var))
-				if (exist)
-					result = innerOr(a, b);
-				else
-					result = innerAnd(a, b);
-			else
-				if (a == oldA && b == oldB)
-					result = bdd;
-				else
-					result = MK(var, a, b);
-
-			ut.getQuantCache().put(exist, bdd, vars, hashCodeOfVars, result);
-
-			return result;
 		}
 
 		@Override
@@ -1074,10 +1088,6 @@ public class Factory {
 			return 1 + nodeCount(ut.low(bdd), seen) + nodeCount(ut.high(bdd), seen);
 		}
 
-		protected final int innerReplace(Map<Integer, Integer> renaming, int hashOfRenaming) {
-			return innerReplace(id, renaming, hashOfRenaming);
-		}
-
 		@Override
 		public BDD replace(Map<Integer, Integer> renaming) {
 			assertNonNull(renaming);
@@ -1089,7 +1099,7 @@ public class Factory {
 			int hash = renaming.hashCode();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerReplace(renaming, hash));
+				return new BDDImpl(innerReplace(id, renaming, hash));
 			}
 		}
 
@@ -1102,37 +1112,10 @@ public class Factory {
 			int hashCodeOfRenaming = renaming.hashCode();
 
 			try (GCLock lock = new GCLock()) {
-				setId(innerReplace(renaming, hashCodeOfRenaming));
+				setId(innerReplace(id, renaming, hashCodeOfRenaming));
 			}
 
 			return this;
-		}
-
-		private int innerReplace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
-			assertNonNull(renaming);
-			if (bdd < FIRST_NODE_NUM) // terminal node
-				return bdd;
-
-			int result = ut.getReplaceCache().get(bdd, renaming, hashOfRenaming);
-			if (result >= 0)
-				return result;
-
-			int oldLow = ut.low(bdd), oldHigh = ut.high(bdd);
-			int lowRenamed = innerReplace(oldLow, renaming, hashOfRenaming);
-			int highRenamed = innerReplace(oldHigh, renaming, hashOfRenaming);
-			int var = ut.var(bdd);
-			Integer newVar = renaming.get(var);
-			if (newVar == null)
-				newVar = var;
-
-			if (var == newVar && lowRenamed == oldLow && highRenamed == oldHigh)
-				result = bdd;
-			else
-				result = MKInOrder(newVar, lowRenamed, highRenamed);
-
-			ut.getReplaceCache().put(bdd, renaming, result, hashOfRenaming);
-
-			return result;
 		}
 
 		@Override
@@ -1155,7 +1138,7 @@ public class Factory {
 			if (g == ONE && h == ZERO)
 				return f;
 			if (g == ZERO && h == ONE)
-				return applyIMP(f, ZERO);
+				return innerImp(f, ZERO);
 
 			int vf = ut.var(f);
 			int vg = ut.var(g);
