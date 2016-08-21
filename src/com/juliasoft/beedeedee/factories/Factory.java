@@ -150,7 +150,7 @@ public class Factory {
 	protected class GCLock implements Closeable {
 		private final ReentrantLock lock;
 	
-		protected GCLock() {
+		public GCLock() {
 			this.lock = ut.getGCLock();
 			this.lock.lock();
 		}
@@ -710,13 +710,17 @@ public class Factory {
 			return this;
 		}
 
+		protected int innerBiimp(int otherId) {
+			return applyBIIMP(id, otherId);
+		}
+
 		@Override
 		public BDD biimp(BDD other) {
 			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(applyBIIMP(id, ((BDDImpl) other).id));
+				return new BDDImpl(innerBiimp(((BDDImpl) other).id));
 			}
 		}
 
@@ -725,7 +729,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(applyBIIMP(id, ((BDDImpl) other).id));
+				setId(innerBiimp(((BDDImpl) other).id));
 			}
 
 			other.free();

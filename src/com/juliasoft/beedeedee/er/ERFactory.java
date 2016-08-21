@@ -8,7 +8,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.locks.ReentrantLock;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -296,7 +295,9 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD or(BDD other) {
 			if (other instanceof BDDER)
-				return or_((BDDER) other, false);
+				try (GCLock lock = new GCLock()) {
+					return or_((BDDER) other, false);
+				}
 			else
 				throw new NotBDDERException();
 		}
@@ -313,30 +314,13 @@ public class ERFactory extends Factory {
 		}
 
 		private BDD computeNforOr(BDDER er1, BDDER er2) {
-			BDD squeezedBDD = er1.getSqueezedBDD();
+			BDD squeezedBDD = mkBDDImpl(er1.new EquivalenceSqueezer().squeezedId);
 			for (Pair pair: er1.l.pairsInDifference(er2.l)) {
 				BDD biimp = makeVarBDDImpl(pair.first);
 				biimp.biimpWith(makeVarBDDImpl(pair.second));
 				squeezedBDD.andWith(biimp);
 			}
 			return squeezedBDD;
-		}
-
-		/**
-		 * Computes the "squeezed" version of the bdd. This version doesn't contain
-		 * equivalent variables, see {@link BDD#squeezeEquiv(LeaderFunction)}.
-		 * 
-		 * @return the squeezed bdd
-		 */
-		BDD getSqueezedBDD() {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-			try {
-				return mkBDDImpl(new EquivalenceSqueezer().squeezedId);
-			}
-			finally {
-				lock.unlock();
-			}
 		}
 
 		private class EquivalenceSqueezer {
@@ -798,21 +782,13 @@ public class ERFactory extends Factory {
 		}
 
 		private int renameWithLeader(int id, EquivalenceRelation equivalenceRelations) {
-			ReentrantLock lock = ut.getGCLock();
-			lock.lock();
-
-			try {
-				RenameWithLeaderCache cache = ut.getRWLCache();
-				equivalenceRelations = equivalenceRelations.filter(new UsefulLeaders(id));
-				int result = cache.get(id, equivalenceRelations);
-				if (result >= 0)
-					return result;
-				else
-					return new RenamerWithLeader(id, equivalenceRelations).resultId;
-			}
-			finally {
-				lock.unlock();
-			}
+			RenameWithLeaderCache cache = ut.getRWLCache();
+			equivalenceRelations = equivalenceRelations.filter(new UsefulLeaders(id));
+			int result = cache.get(id, equivalenceRelations);
+			if (result >= 0)
+				return result;
+			else
+				return new RenamerWithLeader(id, equivalenceRelations).resultId;
 		}
 
 		@Override
