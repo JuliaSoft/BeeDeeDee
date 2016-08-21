@@ -806,7 +806,7 @@ public class ERFactory extends Factory {
 
 			try {
 				RenameWithLeaderCache cache = ut.getRWLCache();
-				equivalenceRelations = new EquivalenceRelation(equivalenceRelations, new UsefulLeaders(id));
+				equivalenceRelations = equivalenceRelations.filter(new UsefulLeaders(id));
 				int result = cache.get(id, equivalenceRelations);
 				if (result >= 0)
 					return result;

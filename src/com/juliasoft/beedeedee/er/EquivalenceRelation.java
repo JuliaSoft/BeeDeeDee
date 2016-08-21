@@ -30,10 +30,10 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			BitSet xor = (BitSet) lhs.clone();
 			xor.xor(rhs);
 			int firstDifferent = xor.length() - 1;
-			if (firstDifferent == -1)
+			if (firstDifferent < 0)
 				return 0;
-
-			return rhs.get(firstDifferent) ? 1 : -1;
+			else
+				return rhs.get(firstDifferent) ? 1 : -1;
 		}
 	};
 
@@ -63,9 +63,15 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.hashCode = hashCodeAux();
 	}
 
-	public EquivalenceRelation(EquivalenceRelation parent, Filter filter) {
-		// no need to sort
-		this(filterClasses(parent, filter), false);
+	public EquivalenceRelation filter(Filter filter) {
+		if (isEmpty())
+			return empty;
+		
+		List<BitSet> filtered = filterClasses(filter);
+		if (filtered.isEmpty())
+			return empty;
+		else
+			return new EquivalenceRelation(filtered, false);  // no need to sort
 	}
 
 	public EquivalenceRelation(int[][] classes) {
@@ -84,9 +90,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.hashCode = hashCodeAux();
 	}
 
-	private static List<BitSet> filterClasses(EquivalenceRelation parent, Filter filter) {
+	private List<BitSet> filterClasses(Filter filter) {
 		List<BitSet> equivalenceClasses = new ArrayList<>();
-		for (BitSet eqClass: parent)
+		for (BitSet eqClass: this)
 			if (filter.accept(eqClass))
 				equivalenceClasses.add(eqClass);
 	
@@ -106,6 +112,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 */
 
 	public EquivalenceRelation intersection(EquivalenceRelation other) {
+		if (isEmpty() || other.isEmpty())
+			return empty;
+
 		List<BitSet> intersection = new ArrayList<>();
 		for (BitSet set1: equivalenceClasses) {
 			for (BitSet set2: other.equivalenceClasses) {
@@ -116,7 +125,10 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			}
 		}
 
-		return new EquivalenceRelation(intersection, true);
+		if (intersection.isEmpty())
+			return empty;
+		else
+			return new EquivalenceRelation(intersection, true);
 	}
 
 	public boolean isEmpty() {
@@ -240,6 +252,11 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	}
 
 	public EquivalenceRelation addClasses(EquivalenceRelation other) {
+		if (other.isEmpty())
+			return this;
+		else if (isEmpty())
+			return other;
+
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
 			newEquivalenceClasses.add(eqClass);
