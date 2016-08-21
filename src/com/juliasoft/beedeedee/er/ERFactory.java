@@ -254,7 +254,7 @@ public class ERFactory extends Factory {
 		 * @param shouldNormalize true if and only if normalization must be applied
 		 */
 
-		BDDER(int id, EquivalenceRelation l, boolean shouldNormalize) {
+		private BDDER(int id, EquivalenceRelation l, boolean shouldNormalize) {
 			super(id);
 
 			this.l = l;
@@ -291,9 +291,7 @@ public class ERFactory extends Factory {
 		}
 
 		private BDDER or_(BDDER other, boolean intoThis) {
-			int n1 = computeNforOr(this, other);
-			int n2 = computeNforOr(other, this);
-			int or = innerOr(n1, n2);
+			int or = innerOr(computeNforOr(this, other), computeNforOr(other, this));
 
 			if (intoThis) {
 				setId(or);
@@ -533,32 +531,40 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the biimplication
 		 */
-		BDDER biimp_(BDDER other) {
-			BDDER notG1 = not_(false);
+		private BDDER biimp_(BDDER other, boolean intoThis) {
 			BDDER notG2 = other.not_(false);
-			BDDER or1 = notG1.or_(other, true);
 			BDDER or2 = notG2.or_(this, true);
-			BDDER and = or1.and_(or2, true);
-			or2.free();
-		
-			return and;
+
+			if (intoThis) {
+				not_(true);
+				or_(other, true);
+				and_(or2, true);
+				or2.free();
+
+				return this;
+			}
+			else {
+				BDDER notG1 = not_(false);
+				BDDER or1 = notG1.or_(other, true);
+				BDDER and = or1.and_(or2, true);
+				or2.free();
+
+				return and;
+			}
 		}
 
 		@Override
 		public BDD biimp(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return biimp_((BDDER) other);
+				return biimp_((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				BDDER biimp_ = biimp_((BDDER) other);
-				setId(biimp_.id);
-				l = biimp_.l;
+				biimp_((BDDER) other, true);
 				other.free();
-				biimp_.free();
 
 				return this;
 			}
