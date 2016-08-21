@@ -461,26 +461,20 @@ public class ERFactory extends Factory {
 		 */
 
 		private BDDER not_(boolean intoThis) {
-			BDD not = super.not();
+			int not = innerNot(id);
 			for (Pair pair: l.pairs()) {
-				BDD eq = makeVarBDDImpl(pair.first);
-				eq.biimpWith(makeVarBDDImpl(pair.second));
-				eq.notWith();
-				not.orWith(eq);
+				int eq = innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second));
+				not = innerOr(not, innerNot(eq));
 			}
 
 			if (intoThis) {
-				setId(((BDDImpl) not).getId());
+				setId(not);
 				l = EquivalenceRelation.empty;
 				normalize();
-				not.free();
 				return this;
 			}
-			else {
-				BDDER result = new BDDER(((BDDImpl) not).getId());
-				not.free();
-				return result;
-			}
+			else
+				return new BDDER(not);
 		}
 
 		@Override
