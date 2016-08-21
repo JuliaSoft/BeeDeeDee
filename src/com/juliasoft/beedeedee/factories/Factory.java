@@ -260,32 +260,23 @@ public class Factory {
 	 */
 	public BDD makeVar(int i) {
 		try (GCLock lock = new GCLock()) {
-			return mkOptimized(i);
+			return mk(innerMkOptimized(i));
 		}
 	}
 
 	protected BDD makeVarBDDImpl(int i) {
 		try (GCLock lock = new GCLock()) {
-			return mkOptimizedBDDImpl(i);
+			return new BDDImpl(innerMkOptimized(i));
 		}
 	}
 
-	private BDDImpl mkOptimized(int v) {
+	protected int innerMkOptimized(int v) {
 		updateMaxVar(v);
 
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
-			return mk(MK(v, ZERO, ONE));
+			return MK(v, ZERO, ONE);
 		else
-			return mk(vars[v]);
-	}
-
-	private BDDImpl mkOptimizedBDDImpl(int v) {
-		updateMaxVar(v);
-
-		if (v >= NUMBER_OF_PREALLOCATED_VARS)
-			return new BDDImpl(MK(v, ZERO, ONE));
-		else
-			return new BDDImpl(vars[v]);
+			return vars[v];
 	}
 
 	protected BDDImpl mk(int id) {
@@ -607,7 +598,7 @@ public class Factory {
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerAnd(other));
+				return new BDDImpl(innerAnd(((BDDImpl) other).id));
 			}
 		}
 
@@ -616,7 +607,7 @@ public class Factory {
 			assertNonNull(other);
 
 			try (GCLock lock = new GCLock()) {
-				setId(innerAnd(other));
+				setId(innerAnd(((BDDImpl) other).id));
 			}
 
 			other.free();
@@ -624,8 +615,8 @@ public class Factory {
 			return this;
 		}
 
-		protected int innerAnd(BDD other) {
-			return applyAND(id, ((BDDImpl) other).id);
+		protected int innerAnd(int otherId) {
+			return applyAND(id, otherId);
 		}
 
 		@Override
@@ -1347,7 +1338,7 @@ public class Factory {
 
 			try (GCLock lock = new GCLock()) {
 				for (int v: vars) {
-					BDD var = mkOptimized(v);
+					BDD var = mk(innerMkOptimized(v));
 					if (truthTable.get(v) == Boolean.FALSE)
 						var.notWith();
 

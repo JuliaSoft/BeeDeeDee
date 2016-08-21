@@ -314,8 +314,7 @@ public class ERFactory extends Factory {
 
 		private BDD computeNforOr(BDDER er1, BDDER er2) {
 			BDD squeezedBDD = er1.getSqueezedBDD();
-			List<Pair> subtract = er1.l.pairsInDifference(er2.l);
-			for (Pair pair: subtract) {
+			for (Pair pair: er1.l.pairsInDifference(er2.l)) {
 				BDD biimp = makeVarBDDImpl(pair.first);
 				biimp.biimpWith(makeVarBDDImpl(pair.second));
 				squeezedBDD.andWith(biimp);
@@ -380,13 +379,13 @@ public class ERFactory extends Factory {
 		 */
 		private BDDER and_(BDDER other, boolean intoThis) {
 			if (intoThis) {
-				setId(innerAnd(other));
+				setId(innerAnd(other.id));
 				l = l.addClasses(other.l);
 				normalize();
 				return this;
 			}
 			else
-				return new BDDER(innerAnd(other), l.addClasses(other.l), true);
+				return new BDDER(innerAnd(other.id), l.addClasses(other.l), true);
 		}
 
 		@Override
@@ -626,10 +625,8 @@ public class ERFactory extends Factory {
 			int c = 1;
 			for (BitSet eqClass: l) {
 				int leader = eqClass.nextSetBit(0);
-				if (vars.get(leader))
-					continue;
-
-				c *= 2;
+				if (!vars.get(leader))
+					c *= 2;
 			}
 
 			return c * super.satCount(vars.cardinality() - 1);
