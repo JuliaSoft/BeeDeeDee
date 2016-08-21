@@ -19,7 +19,11 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 public class EquivalenceRelation implements Iterable<BitSet> {
 	private final BitSet[] equivalenceClasses;
 	private final int hashCode;
-	private final static BitSet[] noSets = new BitSet[0];
+	
+	/**
+	 * This is the only empty element.
+	 */
+
 	public final static EquivalenceRelation empty = new EquivalenceRelation();
 
 	private static Comparator<BitSet> bitSetOrder = new Comparator<BitSet>() {
@@ -59,7 +63,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	}
 
 	private EquivalenceRelation() {
-		this.equivalenceClasses = noSets;
+		this.equivalenceClasses = new BitSet[0];
 		this.hashCode = hashCodeAux();
 	}
 
@@ -92,7 +96,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 
 	private List<BitSet> filterClasses(Filter filter) {
 		List<BitSet> equivalenceClasses = new ArrayList<>();
-		for (BitSet eqClass: this)
+		for (BitSet eqClass: this.equivalenceClasses)
 			if (filter.accept(eqClass))
 				equivalenceClasses.add(eqClass);
 	
@@ -132,7 +136,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	}
 
 	public boolean isEmpty() {
-		return equivalenceClasses.length == 0;
+		// the following works since this class enforces the invariant
+		// that "empty" is the only empty set of equivalence relations
+		return equivalenceClasses.length == 0; //this == empty;
 	}
 
 	public int size() {
@@ -392,8 +398,12 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				return new EquivalenceRelation(newEquivalenceClasses, true);
 			}
 			else {
-				BitSet[] newEquivalenceClasses = new BitSet[equivalenceClasses.length - 1];
-				for (int i = 0, j = 0; i < equivalenceClasses.length; i++)
+				int length = equivalenceClasses.length;
+				if (length == 1)
+					return empty;
+
+				BitSet[] newEquivalenceClasses = new BitSet[length - 1];
+				for (int i = 0, j = 0; i < length; i++)
 					if (i != pos)
 						newEquivalenceClasses[j++] = equivalenceClasses[i];
 
