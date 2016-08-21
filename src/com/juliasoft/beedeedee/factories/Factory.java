@@ -253,6 +253,24 @@ public class Factory {
 	}
 
 	/**
+	 * @return a BDD object representing the constant zero
+	 */
+	public BDD makeZero() {
+		try (GCLock lock = new GCLock()) {
+			return new BDDImpl(ZERO);
+		}
+	}
+
+	/**
+	 * @return a BDD object representing the constant one
+	 */
+	public BDD makeOne() {
+		try (GCLock lock = new GCLock()) {
+			return new BDDImpl(ONE);
+		}
+	}
+
+	/**
 	 * Constructs a BDD representing a single variable.
 	 * 
 	 * @param v the number of the variable
@@ -260,11 +278,23 @@ public class Factory {
 	 */
 	public BDD makeVar(int v) {
 		try (GCLock lock = new GCLock()) {
-			return mk(innerMakeVar(v));
+			return new BDDImpl(innerMakeVar(v));
 		}
 	}
 
-	protected int innerMakeVar(int v) {
+	/**
+	 * Constructs a BDD representing the negation of a single variable.
+	 *
+	 * @param v the number of the variable
+	 * @return the negation of the variable as a BDD object 
+	 */
+	public BDD makeNotVar(int v) {
+		try (GCLock lock = new GCLock()) {
+			return new BDDImpl(innerMakeNotVar(v));
+		}
+	}
+
+	protected final int innerMakeVar(int v) {
 		updateMaxVar(v);
 
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
@@ -273,29 +303,13 @@ public class Factory {
 			return vars[v];
 	}
 
-	protected BDDImpl mk(int id) {
-		return new BDDImpl(id);
-	}
-
-	/**
-	 * Constructs a BDD representing the negation of a single variable.
-	 * 
-	 * @param i the number of the variable
-	 * @return the negation of the variable as a BDD object 
-	 */
-	public BDD makeNotVar(int i) {
-		try (GCLock lock = new GCLock()) {
-			return mkOptmizedNot(i);
-		}
-	}
-
-	private BDDImpl mkOptmizedNot(int v) {
+	protected final int innerMakeNotVar(int v) {
 		updateMaxVar(v);
-
+	
 		if (v >= NUMBER_OF_PREALLOCATED_VARS)
-			return mk(MK(v, ONE, ZERO));
+			return MK(v, ONE, ZERO);
 		else
-			return mk(notVars[v]);
+			return notVars[v];
 	}
 
 	private int freedBDDsCounter;
@@ -1348,24 +1362,6 @@ public class Factory {
 	}
 
 	/**
-	 * @return a BDD object representing the constant zero
-	 */
-	public BDD makeZero() {
-		try (GCLock lock = new GCLock()) {
-			return mk(ZERO);
-		}
-	}
-
-	/**
-	 * @return a BDD object representing the constant one
-	 */
-	public BDD makeOne() {
-		try (GCLock lock = new GCLock()) {
-			return mk(ONE);
-		}
-	}
-
-	/**
 	 * Runs the garbage collection.
 	 */
 	public void gc() {
@@ -1541,8 +1537,9 @@ public class Factory {
 		return count;
 	}
 
-	ArrayList<BDDImpl> getAllBDDsCreatedSoFarCopy() {
-		return new ArrayList<>(allBDDsCreatedSoFar);
+	@SuppressWarnings("unchecked")
+	List<BDDImpl> getAllBDDsCreatedSoFarCopy() {
+		return (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 	}
 
 	/**

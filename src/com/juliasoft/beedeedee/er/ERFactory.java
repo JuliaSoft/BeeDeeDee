@@ -29,6 +29,34 @@ public class ERFactory extends Factory {
 	}
 
 	@Override
+	public BDD makeZero() {
+		try (GCLock lock = new GCLock()) {
+			return new BDDER(ZERO, EquivalenceRelation.empty, false);
+		}
+	}
+
+	@Override
+	public BDD makeOne() {
+		try (GCLock lock = new GCLock()) {
+			return new BDDER(ONE, EquivalenceRelation.empty, false);
+		}
+	}
+
+	@Override
+	public BDD makeVar(int v) {
+		try (GCLock lock = new GCLock()) {
+			return new BDDER(innerMakeVar(v), EquivalenceRelation.empty, false);
+		}
+	}
+
+	@Override
+	public BDD makeNotVar(int v) {
+		try (GCLock lock = new GCLock()) {
+			return new BDDER(innerMakeNotVar(v), EquivalenceRelation.empty, false);
+		}
+	}
+
+	@Override
 	public int nodeCount(Collection<BDD> bdds) {
 		throw new RuntimeException("Not yet implemented"); //TODO
 	}
@@ -104,11 +132,6 @@ public class ERFactory extends Factory {
 			rwlic.put(bdd, level, t, result);
 			return result;
 		}
-	}
-
-	@Override
-	protected BDDImpl mk(int id) {
-		return new BDDER(id, EquivalenceRelation.empty, false);
 	}
 
 	public static class EquivResult {
