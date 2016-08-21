@@ -789,33 +789,19 @@ public class ERFactory extends Factory {
 			}
 			else
 				try (GCLock lock = new GCLock()) {
-					BDD full = getFullBDD();
-					boolean result = equivalentBDDs(other, full);
-					full.free();
-					return result;
+					return ((BDDImpl) other).getId() == getFullBDD();
 				}
 		}
 
 		/**
 		 * @return the full BDD, containing also equivalence constraints in l.
 		 */
-		BDD getFullBDD() {
-			BDD full = super.copy();
-			for (Pair pair: l.pairs()) {
-				BDD biimp = makeVarBDDImpl(pair.first);
-				biimp.biimpWith(makeVarBDDImpl(pair.second));
-				full.andWith(biimp);
-			}
-			return full;
-		}
+		private int getFullBDD() {
+			int full = id;
+			for (Pair pair: l.pairs())
+				full = innerAnd(full, innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second)));
 
-		boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
-			if (bdd1.isOne())
-				return bdd2.isOne();
-			else if (bdd1.isZero())
-				return bdd2.isZero();
-			else
-				return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low()) && equivalentBDDs(bdd1.high(), bdd2.high());
+			return full;
 		}
 
 		@Override
@@ -826,34 +812,21 @@ public class ERFactory extends Factory {
 		@Override
 		public int var() {
 			try (GCLock lock = new GCLock()) {
-				BDD fullBDD = getFullBDD();
-				int var = fullBDD.var();
-				fullBDD.free();
-				return var;
+				return ut.var(getFullBDD());
 			}
 		}
 
 		@Override
 		public BDDER high() {
 			try (GCLock lock = new GCLock()) {
-				BDD fullBDD = getFullBDD();
-				BDD high = fullBDD.high();
-				fullBDD.free();
-				BDDER result = new BDDER(((BDDImpl) high).getId());
-				high.free();
-				return result;
+				return new BDDER(ut.high(getFullBDD()));
 			}
 		}
 
 		@Override
 		public BDDER low() {
 			try (GCLock lock = new GCLock()) {
-				BDD fullBDD = getFullBDD();
-				BDD low = fullBDD.low();
-				fullBDD.free();
-				BDDER result = new BDDER(((BDDImpl) low).getId());
-				low.free();
-				return result;
+				return new BDDER(ut.low(getFullBDD()));
 			}
 		}
 

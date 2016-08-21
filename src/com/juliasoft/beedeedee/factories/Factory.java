@@ -264,12 +264,6 @@ public class Factory {
 		}
 	}
 
-	protected BDD makeVarBDDImpl(int i) {
-		try (GCLock lock = new GCLock()) {
-			return new BDDImpl(innerMakeVar(i));
-		}
-	}
-
 	protected int innerMakeVar(int v) {
 		updateMaxVar(v);
 
@@ -1330,17 +1324,8 @@ public class Factory {
 		@Override
 		public BDD toBDD() {
 			BDD res = makeOne();
-			Set<Integer> vars = truthTable.keySet();
-
-			try (GCLock lock = new GCLock()) {
-				for (int v: vars) {
-					BDD var = mk(innerMakeVar(v));
-					if (truthTable.get(v) == Boolean.FALSE)
-						var.notWith();
-
-					res.andWith(var);
-				}
-			}
+			for (int v: truthTable.keySet())
+				res.andWith(truthTable.get(v) == Boolean.FALSE ? makeNotVar(v) :  makeVar(v));
 
 			return res;
 		}
