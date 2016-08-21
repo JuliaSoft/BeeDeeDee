@@ -78,9 +78,8 @@ public class ERFactory extends Factory {
 				return bdd;
 	
 			int cached = rwlic.get(bdd, level, t);
-			if (cached >= 0) {
+			if (cached >= 0)
 				return cached;
-			}
 	
 			Filter filter = new UsefulLeaders(bdd);
 			// we further filter here, since some equivalence class might be irrelevant
@@ -110,7 +109,7 @@ public class ERFactory extends Factory {
 
 	@Override
 	protected BDDImpl mk(int id) {
-		return new BDDER(id);
+		return new BDDER(id, EquivalenceRelation.empty, false);
 	}
 
 	public static class EquivResult {
@@ -213,7 +212,7 @@ public class ERFactory extends Factory {
 		 *            (same as) normalized
 		 */
 		BDDER(int id) {
-			this(id, new EquivalenceRelation(), true);
+			this(id, EquivalenceRelation.empty, true);
 		}
 
 		/**
@@ -243,19 +242,19 @@ public class ERFactory extends Factory {
 		}
 
 		private void normalize() {
-			EquivalenceRelation eNew = l, eOld;
-			int newId = id, oldId;
+			if (id >= FIRST_NODE_NUM && (id >= NUM_OF_PREALLOCATED_NODES || !l.isEmpty())) {
+				EquivalenceRelation eNew = l, eOld;
+				int newId = id, oldId;
 
-			do {
-				eOld = eNew;
-				eNew = eNew.addPairs(new EquivVarsCalculator(newId).result);
-				oldId = newId;
-				newId = renameWithLeader(newId, eNew);
+				do {
+					eNew = (eOld = eNew).addPairs(new EquivVarsCalculator(newId).result);
+					newId = renameWithLeader(oldId = newId, eNew);
+				}
+				while (newId != oldId || eNew != eOld);
+
+				setId(newId);
+				this.l = eNew;
 			}
-			while (newId != oldId || !eNew.equals(eOld));
-
-			setId(newId);
-			this.l = eNew;
 		}
 
 		@Override
@@ -500,7 +499,7 @@ public class ERFactory extends Factory {
 
 			if (intoThis) {
 				setId(((BDDImpl) not).getId());
-				l = new EquivalenceRelation();
+				l = EquivalenceRelation.empty;
 				normalize();
 				not.free();
 				return this;

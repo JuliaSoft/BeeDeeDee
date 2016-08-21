@@ -18,8 +18,9 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 
 public class EquivalenceRelation implements Iterable<BitSet> {
 	private final BitSet[] equivalenceClasses;
-	private final static BitSet[] empty = new BitSet[0];
 	private final int hashCode;
+	private final static BitSet[] noSets = new BitSet[0];
+	public final static EquivalenceRelation empty = new EquivalenceRelation();
 
 	private static Comparator<BitSet> bitSetOrder = new Comparator<BitSet>() {
 		public int compare(BitSet lhs, BitSet rhs) {
@@ -57,9 +58,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.hashCode = hashCodeAux();
 	}
 
-	public EquivalenceRelation() {
-		this.equivalenceClasses = empty;
-
+	private EquivalenceRelation() {
+		this.equivalenceClasses = noSets;
 		this.hashCode = hashCodeAux();
 	}
 
@@ -174,16 +174,22 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * Adds pairs to this set.
 	 * 
 	 * @param pairs the pairs to add
+	 * @return the new set of pairs. Yields the same set if and only if nothing changed
 	 */
+
 	public EquivalenceRelation addPairs(Iterable<Pair> pairs) {
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
 			newEquivalenceClasses.add(eqClass);
 
+		boolean changed = false;
 		for (Pair pair: pairs)
-			addPair(pair, newEquivalenceClasses);
+			changed |= addPair(pair, newEquivalenceClasses);
 
-		return new EquivalenceRelation(newEquivalenceClasses, true);
+		if (changed)
+			return new EquivalenceRelation(newEquivalenceClasses, true);
+		else
+			return this;
 	}
 
 	/**
@@ -191,7 +197,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param pair the pair to add
 	 */
-	private static void addPair(Pair pair, List<BitSet> where) {
+	private static boolean addPair(Pair pair, List<BitSet> where) {
 		int pos1 = findClass(pair.first, where);
 		int pos2 = findClass(pair.second, where);
 
@@ -205,12 +211,14 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 					c1.or(c2);
 					where.set(pos1, c1);
 					where.remove(pos2);
+					return true;
 				}
 			}
 			else {
 				BitSet c1 = (BitSet) where.get(pos1).clone();
 				c1.set(pair.second);
 				where.set(pos1, c1);
+				return true;
 			}
 		}
 		else
@@ -218,13 +226,17 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				BitSet c2 = (BitSet) where.get(pos2).clone();
 				c2.set(pair.first);
 				where.set(pos2, c2);
+				return true;
 			}
 			else {
 				BitSet eqClass = new BitSet();
 				eqClass.set(pair.first);
 				eqClass.set(pair.second);
 				where.add(eqClass);
+				return true;
 			}
+
+		return false;
 	}
 
 	public EquivalenceRelation addClasses(EquivalenceRelation other) {

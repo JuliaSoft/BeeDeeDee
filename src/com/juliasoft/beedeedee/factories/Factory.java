@@ -138,7 +138,7 @@ public class Factory {
 	protected final static int FIRST_NODE_NUM = 2;
 	protected final int NUMBER_OF_PREALLOCATED_VARS;
 	protected final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
-	private final int NUM_OF_PREALLOCATED_NODES;
+	protected final int NUM_OF_PREALLOCATED_NODES;
 	protected ResizingAndGarbageCollectedUniqueTable ut;
 	private final ArrayList<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
 	protected int ZERO;
@@ -1347,7 +1347,7 @@ public class Factory {
 
 			try (GCLock lock = new GCLock()) {
 				for (int v: vars) {
-					BDD var = Factory.this.mkOptimized(v);
+					BDD var = mkOptimized(v);
 					if (truthTable.get(v) == Boolean.FALSE)
 						var.notWith();
 
