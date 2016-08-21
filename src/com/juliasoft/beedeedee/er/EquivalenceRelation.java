@@ -485,14 +485,17 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @return the minimum leader >= c, or -1 if it does not exist
 	 */
 	public int getMinLeaderGreaterOrEqualtTo(int c, int var, Filter filter) {
-		int min = -1;
 		for (BitSet eqClass: equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);
-			if (leader >= c && (min < 0 || leader < min) && leader < var && filter.accept(eqClass))
-				min = leader;
+			// the following logic is correct since bitsets are kept in order
+			// wrt their leftmost bit set
+			if (leader >= var)
+				return -1;
+			else if (leader >= c && filter.accept(eqClass))
+				return leader;
 		}
 	
-		return min;
+		return -1;
 	}
 
 	public static interface Filter {
