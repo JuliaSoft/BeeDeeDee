@@ -224,7 +224,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				BitSet c1 = where.get(pos1);
 				BitSet c2 = where.get(pos2);
 
-				if (!c1.equals(c2)) {
+				if (c1 != c2) {
 					c1 = (BitSet) c1.clone();
 					c1.or(c2);
 					where.set(pos1, c1);
