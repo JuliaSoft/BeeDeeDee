@@ -138,7 +138,7 @@ public class Factory {
 	protected final static int FIRST_NODE_NUM = 2;
 	protected final int NUMBER_OF_PREALLOCATED_VARS;
 	protected final static int DEFAULT_NUMBER_OF_PREALLOCATED_VARS = 1000;
-	protected final int NUM_OF_PREALLOCATED_NODES;
+	protected final int NUMBER_OF_PREALLOCATED_NODES;
 	protected ResizingAndGarbageCollectedUniqueTable ut;
 	private final ArrayList<BDDImpl> allBDDsCreatedSoFar = new ArrayList<BDDImpl>();
 	protected int ZERO;
@@ -167,11 +167,11 @@ public class Factory {
 
 	Factory(int utSize, int cacheSize, int numberOfPreallocatedVars) {
 		NUMBER_OF_PREALLOCATED_VARS = numberOfPreallocatedVars;
-		NUM_OF_PREALLOCATED_NODES = FIRST_NODE_NUM + 2 * NUMBER_OF_PREALLOCATED_VARS;
+		NUMBER_OF_PREALLOCATED_NODES = FIRST_NODE_NUM + 2 * NUMBER_OF_PREALLOCATED_VARS;
 		vars = new int[NUMBER_OF_PREALLOCATED_VARS];
 		notVars = new int[NUMBER_OF_PREALLOCATED_VARS];
 
-		utSize = Math.max(utSize, NUM_OF_PREALLOCATED_NODES);
+		utSize = Math.max(utSize, NUMBER_OF_PREALLOCATED_NODES);
 		setUT(new ResizingAndGarbageCollectedUniqueTable(utSize, cacheSize, this));
 	}
 
@@ -588,7 +588,7 @@ public class Factory {
 
 		@Override
 		public void free() {
-			if (id >= NUM_OF_PREALLOCATED_NODES) {
+			if (id >= NUMBER_OF_PREALLOCATED_NODES) {
 				id = -1;
 				ut.scheduleGC();
 				ut.gcIfAlmostFull();
@@ -1082,7 +1082,7 @@ public class Factory {
 				return 0;
 
 			// variables or their negation
-			if (bdd < NUM_OF_PREALLOCATED_NODES)
+			if (bdd < NUMBER_OF_PREALLOCATED_NODES)
 				return 1;
 
 			return 1 + nodeCount(ut.low(bdd), seen) + nodeCount(ut.high(bdd), seen);
@@ -1417,7 +1417,7 @@ public class Factory {
 
 	protected void updateIndicesOfAllBDDsCreatedSoFar(int[] newPositions) {
 		for (BDDImpl bdd: allBDDsCreatedSoFar)
-			if (bdd.id >= NUM_OF_PREALLOCATED_NODES)
+			if (bdd.id >= NUMBER_OF_PREALLOCATED_NODES)
 				bdd.id = newPositions[bdd.id];
 	}
 
@@ -1433,7 +1433,7 @@ public class Factory {
 			return;
 		}
 
-		for (int pos = 0; pos < NUM_OF_PREALLOCATED_NODES; pos++)
+		for (int pos = 0; pos < NUMBER_OF_PREALLOCATED_NODES; pos++)
 			aliveNodes[pos] = true;
 
 		@SuppressWarnings("unchecked")
@@ -1443,7 +1443,7 @@ public class Factory {
 		for (BDDImpl bdd: copy) {
 			allBDDsCreatedSoFar.add(bdd);
 
-			if (bdd.id >= NUM_OF_PREALLOCATED_NODES)
+			if (bdd.id >= NUMBER_OF_PREALLOCATED_NODES)
 				markAsAlive(bdd.id, aliveNodes);
 		}
 	}
@@ -1467,7 +1467,7 @@ public class Factory {
 					int id = bdd.id;
 					if (id % total == num) {
 						alive.add(bdd);
-						if (id >= NUM_OF_PREALLOCATED_NODES)
+						if (id >= NUMBER_OF_PREALLOCATED_NODES)
 							markAsAlive(id, aliveNodes);
 					}
 				}
@@ -1479,7 +1479,7 @@ public class Factory {
 			slaves[num] = new AliveNodesMarker(num);
 
 		allBDDsCreatedSoFar.clear();
-		for (int pos = 0; pos < NUM_OF_PREALLOCATED_NODES; pos++)
+		for (int pos = 0; pos < NUMBER_OF_PREALLOCATED_NODES; pos++)
 			aliveNodes[pos] = true;
 
 		Executors.parallelise(slaves);
@@ -1489,7 +1489,7 @@ public class Factory {
 	}
 
 	private void markAsAlive(int node, boolean[] aliveNodes) {
-		if (node >= NUM_OF_PREALLOCATED_NODES && !aliveNodes[node]) {
+		if (node >= NUMBER_OF_PREALLOCATED_NODES && !aliveNodes[node]) {
 			aliveNodes[node] = true;
 			markAsAlive(ut.low(node), aliveNodes);
 			markAsAlive(ut.high(node), aliveNodes);

@@ -264,7 +264,7 @@ public class ERFactory extends Factory {
 		}
 
 		private void normalize() {
-			if (id >= FIRST_NODE_NUM && (id >= NUM_OF_PREALLOCATED_NODES || !l.isEmpty())) {
+			if (id >= FIRST_NODE_NUM && (id >= NUMBER_OF_PREALLOCATED_NODES || !l.isEmpty())) {
 				EquivalenceRelation eNew = l, eOld;
 				int newId = id, oldId;
 

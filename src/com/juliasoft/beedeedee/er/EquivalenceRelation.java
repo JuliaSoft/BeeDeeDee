@@ -371,7 +371,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 						setAll(a, eqClass, true);
 						continue classIteration;
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// ignore exception if variable not in assignment
 				}
 			}
