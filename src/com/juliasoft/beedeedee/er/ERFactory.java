@@ -4,10 +4,8 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -135,20 +133,20 @@ public class ERFactory extends Factory {
 	}
 
 	public static class EquivResult {
-		private final BitSet entailed;
-		private final BitSet disentailed;
-		private Set<Pair> equiv;
+		private BitSet entailed;
+		private BitSet disentailed;
+		private ArrayList<Pair> equiv;
 		private final static EquivResult emptyEquivResult = new EquivResult();
 
-		protected EquivResult() {
-			this(new BitSet(), new BitSet(), new HashSet<Pair>());
+		private EquivResult() {
+			this(new BitSet(), new BitSet(), new ArrayList<Pair>());
 		}
 
 		private EquivResult(EquivResult parent) {
-			this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), parent.equiv);
+			this(parent.entailed, parent.disentailed, parent.equiv);
 		}
 
-		private EquivResult(BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
+		private EquivResult(BitSet entailed, BitSet disentailed, ArrayList<Pair> equiv) {
 			this.entailed = entailed;
 			this.disentailed = disentailed;
 			this.equiv = equiv;
@@ -157,12 +155,13 @@ public class ERFactory extends Factory {
 
 	private class EquivVarsCalculator {
 		private final EquivCache equivCache = ut.getEquivCache();
-		private final Set<Pair> result;
+		private final Iterable<Pair> result;
 
 		private EquivVarsCalculator(int id) {
 			this.result = equivVars(id).equiv;
 		}
 
+		@SuppressWarnings("unchecked")
 		private EquivResult equivVars(int bdd) {
 			if (bdd < FIRST_NODE_NUM)
 				return EquivResult.emptyEquivResult;
@@ -176,10 +175,11 @@ public class ERFactory extends Factory {
 			if (ut.high(bdd) == ZERO) {
 				if (ut.low(bdd) != ONE) {
 					result = new EquivResult(equivVars(ut.low(bdd)));
+					result.disentailed = (BitSet) result.disentailed.clone();
 					result.disentailed.set(var);
 					int maxd = result.disentailed.length() - 1;
 					if (var != maxd) {
-						result.equiv = new HashSet<>(result.equiv);
+						result.equiv = (ArrayList<Pair>) result.equiv.clone();
 						result.equiv.add(new Pair(var, maxd));
 					}
 				}
@@ -191,10 +191,11 @@ public class ERFactory extends Factory {
 			else if (ut.low(bdd) == ZERO) {
 				if (ut.high(bdd) != ONE) {
 					result = new EquivResult(equivVars(ut.high(bdd)));
+					result.entailed = (BitSet) result.entailed.clone();
 					result.entailed.set(var);
 					int maxe = result.entailed.length() - 1;
 					if (var != maxe) {
-						result.equiv = new HashSet<>(result.equiv);
+						result.equiv = (ArrayList<Pair>) result.equiv.clone();
 						result.equiv.add(new Pair(var, maxe));
 					}
 				}
@@ -207,14 +208,17 @@ public class ERFactory extends Factory {
 				EquivResult resultTrue = equivVars(ut.high(bdd));
 				EquivResult resultFalse = equivVars(ut.low(bdd));
 				result = new EquivResult(resultTrue);
+				result.entailed = (BitSet) result.entailed.clone();
 				result.entailed.and(resultFalse.entailed);
+				result.disentailed = (BitSet) result.disentailed.clone();
 				result.disentailed.and(resultFalse.disentailed);
-				result.equiv = new HashSet<>(result.equiv);
+				result.equiv = (ArrayList<Pair>) result.equiv.clone();
 				result.equiv.retainAll(resultFalse.equiv);
 				BitSet intersection = (BitSet) resultTrue.entailed.clone();
 				intersection.and(resultFalse.disentailed);
-				if (!intersection.isEmpty())
-					result.equiv.add(new Pair(var, intersection.length() - 1));
+				int length = intersection.length();
+				if (length > 0)
+					result.equiv.add(new Pair(var, length - 1));
 			}
 			else
 				result = EquivResult.emptyEquivResult;
