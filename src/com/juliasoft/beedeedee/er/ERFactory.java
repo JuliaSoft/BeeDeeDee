@@ -137,7 +137,7 @@ public class ERFactory extends Factory {
 	public static class EquivResult {
 		private final BitSet entailed;
 		private final BitSet disentailed;
-		private final Set<Pair> equiv;
+		private Set<Pair> equiv;
 		private final static EquivResult emptyEquivResult = new EquivResult();
 
 		protected EquivResult() {
@@ -145,7 +145,7 @@ public class ERFactory extends Factory {
 		}
 
 		private EquivResult(EquivResult parent) {
-			this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), new HashSet<Pair>(parent.equiv));
+			this((BitSet) parent.entailed.clone(), (BitSet) parent.disentailed.clone(), parent.equiv);
 		}
 
 		private EquivResult(BitSet entailed, BitSet disentailed, Set<Pair> equiv) {
@@ -178,8 +178,10 @@ public class ERFactory extends Factory {
 					result = new EquivResult(equivVars(ut.low(bdd)));
 					result.disentailed.set(var);
 					int maxd = result.disentailed.length() - 1;
-					if (var != maxd)
+					if (var != maxd) {
+						result.equiv = new HashSet<>(result.equiv);
 						result.equiv.add(new Pair(var, maxd));
+					}
 				}
 				else {
 					result = new EquivResult();
@@ -191,8 +193,10 @@ public class ERFactory extends Factory {
 					result = new EquivResult(equivVars(ut.high(bdd)));
 					result.entailed.set(var);
 					int maxe = result.entailed.length() - 1;
-					if (var != maxe)
+					if (var != maxe) {
+						result.equiv = new HashSet<>(result.equiv);
 						result.equiv.add(new Pair(var, maxe));
+					}
 				}
 				else {
 					result = new EquivResult();
@@ -205,6 +209,7 @@ public class ERFactory extends Factory {
 				result = new EquivResult(resultTrue);
 				result.entailed.and(resultFalse.entailed);
 				result.disentailed.and(resultFalse.disentailed);
+				result.equiv = new HashSet<>(result.equiv);
 				result.equiv.retainAll(resultFalse.equiv);
 				BitSet intersection = (BitSet) resultTrue.entailed.clone();
 				intersection.and(resultFalse.disentailed);
