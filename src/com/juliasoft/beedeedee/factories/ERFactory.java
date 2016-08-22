@@ -312,15 +312,15 @@ public class ERFactory extends Factory {
 				do {
 					eNew = (eOld = eNew).addPairs(new EquivVarsCalculator(newId).result);
 					newId = renameWithLeader(oldId = newId, eNew);
-					/*if (newId == ZERO) {
-						eNew = EquivalenceRelation.empty;
-						break;
-					}*/
 				}
 				while (newId != oldId || eNew != eOld);
 
 				setId(newId);
 				this.l = eNew;
+
+				if (newId == ZERO && !l.isEmpty()) {
+					throw new RuntimeException("normalizzazione di false con l = " + l);
+				}
 			}
 		}
 
