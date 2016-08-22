@@ -2,8 +2,6 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-
 public class SqueezeEquivCache {
 	private final int[] bdds;
 	private EquivalenceRelation[] ers;

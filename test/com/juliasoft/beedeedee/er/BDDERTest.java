@@ -15,8 +15,10 @@ import org.junit.Test;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
-import com.juliasoft.beedeedee.er.ERFactory.BDDER;
+import com.juliasoft.beedeedee.factories.EquivalenceRelation;
 import com.juliasoft.beedeedee.factories.Factory;
+import com.juliasoft.beedeedee.factories.Pair;
+import com.juliasoft.beedeedee.factories.ERFactory.BDDER;
 
 public class BDDERTest {
 

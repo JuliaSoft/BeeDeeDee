@@ -2,8 +2,6 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-
 // FIXME not thread-safe
 public class RenameWithLeaderCache {
 	private int[] bdds;

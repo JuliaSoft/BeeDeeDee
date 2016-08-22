@@ -11,8 +11,8 @@ import java.util.List;
 import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-import com.juliasoft.beedeedee.er.Pair;
+import com.juliasoft.beedeedee.factories.EquivalenceRelation;
+import com.juliasoft.beedeedee.factories.Pair;
 
 public class EquivalenceRelationTest {
 

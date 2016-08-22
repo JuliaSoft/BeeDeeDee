@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.er;
+package com.juliasoft.beedeedee.factories;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,11 +12,7 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
-import com.juliasoft.beedeedee.er.EquivalenceRelation.Filter;
-import com.juliasoft.beedeedee.factories.EquivCache;
-import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.beedeedee.factories.RenameWithLeaderCache;
-import com.juliasoft.beedeedee.factories.SqueezeEquivCache;
+import com.juliasoft.beedeedee.factories.EquivalenceRelation.Filter;
 
 /**
  * A BDD factory using the ER representation.
@@ -77,7 +73,7 @@ public class ERFactory extends Factory {
 			else {
 				int var = ut.var(bdd);
 				return (eqClass.nextSetBit(0) != var && eqClass.get(var))
-						|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
+					|| accept(eqClass, ut.low(bdd)) || accept(eqClass, ut.high(bdd));
 			}
 		}
 	}

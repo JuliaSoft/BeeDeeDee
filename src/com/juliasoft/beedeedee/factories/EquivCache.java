@@ -2,7 +2,7 @@ package com.juliasoft.beedeedee.factories;
 
 import java.util.Arrays;
 
-import com.juliasoft.beedeedee.er.ERFactory.EquivResult;
+import com.juliasoft.beedeedee.factories.ERFactory.EquivResult;
 
 public class EquivCache {
 	private final int[] bdds;

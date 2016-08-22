@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.er;
+package com.juliasoft.beedeedee.factories;
 
 import java.util.ArrayList;
 import java.util.Arrays;

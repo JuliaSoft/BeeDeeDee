@@ -35,7 +35,6 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
-import com.juliasoft.beedeedee.er.ERFactory;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.utils.concurrent.Executors;
 
