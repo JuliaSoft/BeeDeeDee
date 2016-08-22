@@ -1,6 +1,7 @@
 package com.juliasoft.beedeedee.er;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
@@ -96,10 +97,7 @@ public class ERFactory extends Factory {
 	
 		private int renameWithLeader(final int bdd, final int level, final BitSet t) {
 			int var;
-			if (bdd < FIRST_NODE_NUM)
-				return bdd;
-	
-			if ((var = ut.var(bdd)) > maxVar)
+			if (bdd < FIRST_NODE_NUM || (var = ut.var(bdd)) > maxVar)
 				return bdd;
 	
 			int cached = rwlic.get(bdd, level, t);
@@ -129,6 +127,44 @@ public class ERFactory extends Factory {
 	
 			rwlic.put(bdd, level, t, result);
 			return result;
+		}
+
+		private class RenameWithLeaderInternalCache {
+			private final int size;
+			private final int[] cache;
+			private final int[] levels;
+			private final BitSet[] ts;
+			private final int[] results;
+
+			private RenameWithLeaderInternalCache(int size) {
+				this.size = size;
+				this.cache = new int[size];
+				this.levels = new int[size];
+				this.ts = new BitSet[size];
+				Arrays.fill(cache, -1);
+				this.results = new int[size];
+			}
+
+			private int get(int f, int level, BitSet t) {
+				int pos = hash(f, level, t);
+				if (cache[pos] == f && levels[pos] == level && ts[pos].equals(t))
+					return results[pos];
+
+				return -1;
+			}
+
+			private void put(int f, int level, BitSet t, int res) {
+				int pos = hash(f, level, t);
+
+				cache[pos] = f;
+				levels[pos] = level;
+				ts[pos] = (BitSet) t.clone();
+				results[pos] = res;
+			}
+
+			private int hash(int f, int level, BitSet t) {
+				return Math.abs((f ^ (level << 24) ^ t.hashCode()) % size);
+			}
 		}
 	}
 
@@ -643,7 +679,7 @@ public class ERFactory extends Factory {
 		}
 
 		@Override
-		public BDDER copy() {
+		public BDD copy() {
 			try (GCLock lock = new GCLock()) {
 				return new BDDER(this);
 			}
