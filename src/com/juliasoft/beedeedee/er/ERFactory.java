@@ -290,6 +290,11 @@ public class ERFactory extends Factory {
 			return super.isOne() && l.isEmpty();
 		}
 
+		@Override
+		public boolean isVar() {
+			return super.isVar() && l.isEmpty();
+		}
+
 		private BDDER or_(BDDER other, boolean intoThis) {
 			int or = innerOr(computeNforOr(this, other), computeNforOr(other, this));
 
@@ -532,6 +537,24 @@ public class ERFactory extends Factory {
 		 * @return the biimplication
 		 */
 		private BDDER biimp_(BDDER other, boolean intoThis) {
+			if (isVar() && other.isVar()) {
+				int var1 = ut.var(id);
+				int var2 = ut.var(other.id);
+				if (var1 > var2) {
+					int temp = var1;
+					var1 = var2;
+					var2 = temp;
+				}
+
+				if (intoThis) {
+					setId(ONE);
+					l = new EquivalenceRelation(new int[][] {{var1, var2}});
+					return this;
+				}
+				else
+					return new BDDER(ONE, new EquivalenceRelation(new int[][] {{var1, var2}}), true);
+			}
+
 			BDDER notG2 = other.not_(false);
 			BDDER or2 = notG2.or_(this, true);
 
@@ -672,7 +695,7 @@ public class ERFactory extends Factory {
 						quantifiedVars.set(i);
 					else
 						renaming.put(i, nextLeader);
-					
+
 					lNew = lNew.removeVar(i);
 				}
 				else
@@ -683,13 +706,16 @@ public class ERFactory extends Factory {
 			if (!renaming.isEmpty()) {
 				exist = innerReplace(id, renaming, renaming.hashCode());  // requires normalized representation
 
-				if (!quantifiedVars.isEmpty())
+				if (quantifiedVars.isEmpty())
+					// no need to normalize in this case
+					return new BDDER(exist, lNew, false);
+				else
 					exist = innerQuantify(exist, quantifiedVars, true, quantifiedVars.hashCode());
 			}
-			else if (!quantifiedVars.isEmpty())
-				exist = innerQuantify(id, quantifiedVars, true, quantifiedVars.hashCode());
+			else if (quantifiedVars.isEmpty())
+				return new BDDER(id, l, false);
 			else
-				exist = id;
+				exist = innerQuantify(id, quantifiedVars, true, quantifiedVars.hashCode());
 
 			return new BDDER(exist, lNew, true);
 		}

@@ -1045,6 +1045,11 @@ public class Factory {
 		}
 
 		@Override
+		public boolean isVar() {
+			return ut.low(id) == ZERO && ut.high(id) == ONE;
+		}
+
+		@Override
 		public int[] varProfile() {
 			int[] varp = new int[maxVar + 1];
 

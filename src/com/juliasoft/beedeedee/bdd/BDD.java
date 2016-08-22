@@ -50,6 +50,12 @@ public interface BDD {
 	public boolean isOne();
 	
 	/**
+	 * @return true if this BDD represents a variable
+	 */
+	
+	public boolean isVar();
+
+	/**
 	 * Computes the logical OR of this bdd with another one.
 	 * 
 	 * @param other the other bdd
