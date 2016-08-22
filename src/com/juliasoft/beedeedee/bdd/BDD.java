@@ -56,6 +56,12 @@ public interface BDD {
 	public boolean isVar();
 
 	/**
+	 * @return true if this BDD represents the negation of a variable
+	 */
+	
+	public boolean isNotVar();
+
+	/**
 	 * Computes the logical OR of this bdd with another one.
 	 * 
 	 * @param other the other bdd

@@ -295,6 +295,11 @@ public class ERFactory extends Factory {
 			return super.isVar() && l.isEmpty();
 		}
 
+		@Override
+		public boolean isNotVar() {
+			return super.isNotVar() && l.isEmpty();
+		}
+
 		private BDDER or_(BDDER other, boolean intoThis) {
 			int or = innerOr(computeNforOr(this, other), computeNforOr(other, this));
 
@@ -476,11 +481,12 @@ public class ERFactory extends Factory {
 			if (intoThis) {
 				setId(not);
 				l = EquivalenceRelation.empty;
-				normalize();
+				if (!isVar() && !isNotVar())
+					normalize();
 				return this;
 			}
 			else
-				return new BDDER(not);
+				return new BDDER(not, EquivalenceRelation.empty, !isVar() && !isNotVar());
 		}
 
 		@Override
@@ -537,7 +543,7 @@ public class ERFactory extends Factory {
 		 * @return the biimplication
 		 */
 		private BDDER biimp_(BDDER other, boolean intoThis) {
-			if (isVar() && other.isVar()) {
+			if ((isVar() && other.isVar()) || (isNotVar() && other.isNotVar())) {
 				int var1 = ut.var(id);
 				int var2 = ut.var(other.id);
 				if (var1 > var2) {
