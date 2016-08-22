@@ -301,7 +301,7 @@ public class ERFactory extends Factory {
 		}
 
 		private BDDER or_(BDDER other, boolean intoThis) {
-			int or = innerOr(computeNforOr(this, other), computeNforOr(other, this));
+			int or = orOfPairsInDifference(other);
 
 			if (intoThis) {
 				setId(or);
@@ -313,12 +313,37 @@ public class ERFactory extends Factory {
 				return new BDDER(or, l.intersection(other.l), false);
 		}
 
-		private int computeNforOr(BDDER er1, BDDER er2) {
-			int squeezedBDD = er1.new EquivalenceSqueezer().squeezedId;
-			for (Pair pair: er1.l.pairsInDifference(er2.l))
-				squeezedBDD = innerAnd(squeezedBDD, innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second)));
+		/**
+		 * Subtracts the pairs in the other set from this set.
+		 * 
+		 * @param other the other set
+		 */
 
-			return squeezedBDD;
+		private int orOfPairsInDifference(BDDER other) {
+			List<Pair> myPairs = l.pairs();
+			List<Pair> otherPairs = other.l.pairs();
+
+			BitSet toRemoveFromThis = new BitSet();
+			for (Pair pair: myPairs)
+				if (otherPairs.contains(pair))
+					toRemoveFromThis.set(pair.second);
+
+			BitSet toRemoveFromOther = new BitSet();
+			for (Pair pair: otherPairs)
+				if (myPairs.contains(pair))
+					toRemoveFromOther.set(pair.second);
+
+			int squeezedBDD1 = new EquivalenceSqueezer().squeezedId;
+			for (Pair pair: myPairs)
+				if (!toRemoveFromThis.get(pair.first) && !toRemoveFromThis.get(pair.second))
+					squeezedBDD1 = innerAnd(squeezedBDD1, innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second)));
+
+			int squeezedBDD2 = other.new EquivalenceSqueezer().squeezedId;
+			for (Pair pair: otherPairs)
+				if (!toRemoveFromOther.get(pair.first) && !toRemoveFromOther.get(pair.second))
+					squeezedBDD2 = innerAnd(squeezedBDD2, innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second)));
+
+			return innerOr(squeezedBDD1, squeezedBDD2);
 		}
 
 		@Override
@@ -356,7 +381,7 @@ public class ERFactory extends Factory {
 				int var = ut.var(bdd), result;
 				if (l.getLeader(var) == var)
 					result = MK(var, squeezeEquiv(ut.low(bdd)), squeezeEquiv(ut.high(bdd)));
-				else if (ut.high(bdd) == 0)
+				else if (ut.high(bdd) == ZERO)
 					result = squeezeEquiv(ut.low(bdd));
 				else
 					result = squeezeEquiv(ut.high(bdd));
@@ -475,8 +500,10 @@ public class ERFactory extends Factory {
 
 		private BDDER not_(boolean intoThis) {
 			int not = innerNot(id);
-			for (Pair pair: l.pairs())
-				not = innerOr(not, innerNot(innerBiimp(innerMakeVar(pair.first), innerMakeVar(pair.second))));
+			for (BitSet bs: l)
+				for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+					for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
+						not = innerOr(not, innerNot(innerBiimp(innerMakeVar(i), innerMakeVar(j))));
 
 			if (intoThis) {
 				setId(not);

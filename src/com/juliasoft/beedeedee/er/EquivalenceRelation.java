@@ -156,36 +156,13 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @return the list of pairs
 	 */
 	public List<Pair> pairs() {
-		ArrayList<Pair> pairs = new ArrayList<>();
+		List<Pair> pairs = new ArrayList<>();
 		for (BitSet bs: equivalenceClasses)
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
 				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
 					pairs.add(new Pair(i, j));
 
 		return pairs;
-	}
-
-	/**
-	 * Subtracts the pairs in the other set from this set.
-	 * 
-	 * @param other the other set
-	 * @return the list of the pairs of this set not contained in the other
-	 */
-	public List<Pair> pairsInDifference(EquivalenceRelation other) {
-		List<Pair> myPairs = pairs();
-		List<Pair> otherPairs = other.pairs();
-
-		BitSet toRemove = new BitSet();
-		for (Pair pair: myPairs)
-			if (otherPairs.contains(pair))
-				toRemove.set(pair.second);
-
-		List<Pair> result = new ArrayList<>();
-		for (Pair pair: myPairs)
-			if (!toRemove.get(pair.first) && !toRemove.get(pair.second))
-				result.add(pair);
-
-		return result;
 	}
 
 	/**
