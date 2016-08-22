@@ -271,10 +271,10 @@ public class ERFactory extends Factory {
 				do {
 					eNew = (eOld = eNew).addPairs(new EquivVarsCalculator(newId).result);
 					newId = renameWithLeader(oldId = newId, eNew);
-					if (newId == ZERO) {
+					/*if (newId == ZERO) {
 						eNew = EquivalenceRelation.empty;
 						break;
-					}
+					}*/
 				}
 				while (newId != oldId || eNew != eOld);
 
@@ -352,9 +352,6 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD or(BDD other) {
-			if (isZero())
-				return other;
-
 			try (GCLock lock = new GCLock()) {
 				return or_((BDDER) other, false);
 			}
@@ -431,7 +428,7 @@ public class ERFactory extends Factory {
 			try (GCLock lock = new GCLock()) {
 				and_((BDDER) other, true);
 			}
-			
+
 			other.free();
 			return this;
 		}
@@ -810,14 +807,14 @@ public class ERFactory extends Factory {
 				if ((l.containsVar(v) || nVars.get(v)) && !renaming.containsKey(v))
 					throw new ReplacementWithExistingVarException(v);
 
+			// perform "simultaneous" substitution
+			renaming = new HashMap<>(renaming);
+			Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
+			EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
+			eNew = eNew.replace(renaming);
+
 			try (GCLock lock = new GCLock()) {
 				int nNew = innerReplace(id, renaming, renaming.hashCode());
-
-				// perform "simultaneous" substitution
-				renaming = new HashMap<>(renaming);
-				Map<Integer, Integer> varsOnTheRighSide = splitRenaming(renaming);
-				EquivalenceRelation eNew = l.replace(varsOnTheRighSide);	// these renamings need to be performed first
-				eNew = eNew.replace(renaming);
 
 				setId(renameWithLeader(nNew, eNew));
 				l = eNew;
