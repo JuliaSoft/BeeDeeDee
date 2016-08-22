@@ -3,6 +3,7 @@ package com.juliasoft.beedeedee.er;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -155,8 +156,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @return the list of pairs
 	 */
-	public List<Pair> pairs() {
-		List<Pair> pairs = new ArrayList<>();
+	public Collection<Pair> pairs() {
+		Collection<Pair> pairs = new ArrayList<>();
 		for (BitSet bs: equivalenceClasses)
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
 				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))

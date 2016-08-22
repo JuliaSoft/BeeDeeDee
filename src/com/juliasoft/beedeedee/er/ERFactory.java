@@ -271,6 +271,10 @@ public class ERFactory extends Factory {
 				do {
 					eNew = (eOld = eNew).addPairs(new EquivVarsCalculator(newId).result);
 					newId = renameWithLeader(oldId = newId, eNew);
+					if (newId == ZERO) {
+						eNew = EquivalenceRelation.empty;
+						break;
+					}
 				}
 				while (newId != oldId || eNew != eOld);
 
@@ -320,8 +324,8 @@ public class ERFactory extends Factory {
 		 */
 
 		private int orOfPairsInDifference(BDDER other) {
-			List<Pair> myPairs = l.pairs();
-			List<Pair> otherPairs = other.l.pairs();
+			Collection<Pair> myPairs = l.pairs();
+			Collection<Pair> otherPairs = other.l.pairs();
 
 			BitSet toRemoveFromThis = new BitSet();
 			for (Pair pair: myPairs)
@@ -348,6 +352,9 @@ public class ERFactory extends Factory {
 
 		@Override
 		public BDD or(BDD other) {
+			if (isZero())
+				return other;
+
 			try (GCLock lock = new GCLock()) {
 				return or_((BDDER) other, false);
 			}
@@ -357,9 +364,10 @@ public class ERFactory extends Factory {
 		public BDD orWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				or_((BDDER) other, true);
-				other.free();
-				return this;
 			}
+
+			other.free();
+			return this;
 		}
 
 		private class EquivalenceSqueezer {
@@ -422,10 +430,10 @@ public class ERFactory extends Factory {
 		public BDD andWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				and_((BDDER) other, true);
-				other.free();
-
-				return this;
 			}
+			
+			other.free();
+			return this;
 		}
 
 		/**
@@ -469,10 +477,10 @@ public class ERFactory extends Factory {
 		public BDD xorWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				xor_((BDDER) other, true);
-				other.free();
-
-				return this;
 			}
+
+			other.free();
+			return this;
 		}
 
 		@Override
@@ -486,9 +494,11 @@ public class ERFactory extends Factory {
 		public BDD nandWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				and_((BDDER) other, true);
-				other.free();
-				return not_(true);
+				not_(true);
 			}
+
+			other.free();
+			return this;
 		}
 
 		/**
@@ -554,10 +564,10 @@ public class ERFactory extends Factory {
 		public BDD impWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				imp_((BDDER) other, true);
-				other.free();
-
-				return this;
 			}
+
+			other.free();
+			return this;
 		}
 
 		/**
@@ -620,14 +630,14 @@ public class ERFactory extends Factory {
 		public BDD biimpWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
 				biimp_((BDDER) other, true);
-				other.free();
-
-				return this;
 			}
+
+			other.free();
+			return this;
 		}
 
 		@Override
-		public BDD copy() {
+		public BDDER copy() {
 			try (GCLock lock = new GCLock()) {
 				return new BDDER(this);
 			}
@@ -812,9 +822,9 @@ public class ERFactory extends Factory {
 				setId(renameWithLeader(nNew, eNew));
 				l = eNew;
 				normalize();
-
-				return this;
 			}
+
+			return this;
 		}
 
 		/**
