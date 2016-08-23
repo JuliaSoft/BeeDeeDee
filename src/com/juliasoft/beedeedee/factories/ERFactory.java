@@ -345,7 +345,7 @@ public class ERFactory extends Factory {
 			return super.isNotVar() && l.isEmpty();
 		}
 
-		private BDDER or_(BDDER other, boolean intoThis) {
+		private BDDER or(BDDER other, boolean intoThis) {
 			int or = orOfPairsInDifference(other);
 
 			if (intoThis) {
@@ -394,14 +394,14 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD or(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return or_((BDDER) other, false);
+				return or((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD orWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				or_((BDDER) other, true);
+				or((BDDER) other, true);
 			}
 
 			other.free();
@@ -446,7 +446,7 @@ public class ERFactory extends Factory {
 		 * @param other the other ER
 		 * @return the conjunction
 		 */
-		private BDDER and_(BDDER other, boolean intoThis) {
+		private BDDER and(BDDER other, boolean intoThis) {
 			if (intoThis) {
 				setId(innerAnd(id, other.id));
 				l = l.addClasses(other.l);
@@ -457,17 +457,27 @@ public class ERFactory extends Factory {
 				return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), true);
 		}
 
+		private BDDER andNoNormalization(BDDER other, boolean intoThis) {
+			if (intoThis) {
+				setId(innerAnd(id, other.id));
+				l = l.addClasses(other.l);
+				return this;
+			}
+			else
+				return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), false);
+		}
+
 		@Override
 		public BDD and(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return and_((BDDER) other, false);
+				return and((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD andWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				and_((BDDER) other, true);
+				and((BDDER) other, true);
 			}
 
 			other.free();
@@ -483,21 +493,21 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the xor
 		 */
-		private BDDER xor_(BDDER other, boolean intoThis) {
+		private BDDER xor(BDDER other, boolean intoThis) {
 			if (intoThis) {
-				BDDER and = and_(other, false);
-				or_(other, true);
-				BDDER notAnd = and.not_(true);
-				and_(notAnd, true);
+				BDDER and = andNoNormalization(other, false);
+				or(other, true);
+				BDDER notAnd = and.notNoNormalization(true);
+				and(notAnd, true);
 				notAnd.free();
 		
 				return this;
 			}
 			else {
-				BDDER and = and_(other, false);
-				BDDER or = or_(other, false);
-				BDDER notAnd = and.not_(true);
-				or.and_(notAnd, true);
+				BDDER and = andNoNormalization(other, false);
+				BDDER or = or(other, false);
+				BDDER notAnd = and.notNoNormalization(true);
+				or.and(notAnd, true);
 				notAnd.free();
 		
 				return or;
@@ -507,14 +517,14 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD xor(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return xor_((BDDER) other, false);
+				return xor((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD xorWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				xor_((BDDER) other, true);
+				xor((BDDER) other, true);
 			}
 
 			other.free();
@@ -524,15 +534,15 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD nand(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return and_((BDDER) other, false).not_(true);
+				return andNoNormalization((BDDER) other, false).not(true);
 			}
 		}
 
 		@Override
 		public BDD nandWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				and_((BDDER) other, true);
-				not_(true);
+				andNoNormalization((BDDER) other, true);
+				not(true);
 			}
 
 			other.free();
@@ -546,7 +556,7 @@ public class ERFactory extends Factory {
 		 * @return the negation
 		 */
 
-		private BDDER not_(boolean intoThis) {
+		private BDDER not(boolean intoThis) {
 			int not = innerNot(id);
 			for (BitSet bs: l)
 				for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
@@ -564,17 +574,33 @@ public class ERFactory extends Factory {
 				return new BDDER(not, EquivalenceRelation.empty, !isVar() && !isNotVar());
 		}
 
+		private BDDER notNoNormalization(boolean intoThis) {
+			int not = innerNot(id);
+			for (BitSet bs: l)
+				for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
+					for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
+						not = innerOr(not, innerNot(innerBiimp(innerMakeVar(i), innerMakeVar(j))));
+
+			if (intoThis) {
+				setId(not);
+				l = EquivalenceRelation.empty;
+				return this;
+			}
+			else
+				return new BDDER(not, EquivalenceRelation.empty, false);
+		}
+
 		@Override
 		public BDD not() {
 			try (GCLock lock = new GCLock()) {
-				return not_(false);
+				return not(false);
 			}
 		}
 
 		@Override
 		public BDD notWith() {
 			try (GCLock lock = new GCLock()) {
-				return not_(true);
+				return not(true);
 			}
 		}
 
@@ -584,24 +610,24 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the implication
 		 */
-		private BDDER imp_(BDDER other, boolean intoThis) {
+		private BDDER imp(BDDER other, boolean intoThis) {
 			if (intoThis)
-				return not_(true).or_(other, true);
+				return notNoNormalization(true).or(other, true);
 			else
-				return not_(false).or_(other, true);
+				return notNoNormalization(false).or(other, true);
 		}
 
 		@Override
 		public BDD imp(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return imp_((BDDER) other, false);
+				return imp((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD impWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				imp_((BDDER) other, true);
+				imp((BDDER) other, true);
 			}
 
 			other.free();
@@ -617,7 +643,7 @@ public class ERFactory extends Factory {
 		 * @param other the other BDDER
 		 * @return the biimplication
 		 */
-		private BDDER biimp_(BDDER other, boolean intoThis) {
+		private BDDER biimp(BDDER other, boolean intoThis) {
 			if ((isVar() && other.isVar()) || (isNotVar() && other.isNotVar())) {
 				int var1 = ut.var(id);
 				int var2 = ut.var(other.id);
@@ -633,24 +659,24 @@ public class ERFactory extends Factory {
 					return this;
 				}
 				else
-					return new BDDER(ONE, new EquivalenceRelation(new int[][] {{var1, var2}}), true);
+					return new BDDER(ONE, new EquivalenceRelation(new int[][] {{var1, var2}}), false);
 			}
 
-			BDDER notG2 = other.not_(false);
-			BDDER or2 = notG2.or_(this, true);
+			BDDER notG2 = other.not(false);
+			BDDER or2 = notG2.or(this, true);
 
 			if (intoThis) {
-				not_(true);
-				or_(other, true);
-				and_(or2, true);
+				notNoNormalization(true);
+				or(other, true);
+				and(or2, true);
 				or2.free();
 
 				return this;
 			}
 			else {
-				BDDER notG1 = not_(false);
-				BDDER or1 = notG1.or_(other, true);
-				BDDER and = or1.and_(or2, true);
+				BDDER notG1 = notNoNormalization(false);
+				BDDER or1 = notG1.or(other, true);
+				BDDER and = or1.and(or2, true);
 				or2.free();
 
 				return and;
@@ -660,14 +686,14 @@ public class ERFactory extends Factory {
 		@Override
 		public BDD biimp(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				return biimp_((BDDER) other, false);
+				return biimp((BDDER) other, false);
 			}
 		}
 
 		@Override
 		public BDD biimpWith(BDD other) {
 			try (GCLock lock = new GCLock()) {
-				biimp_((BDDER) other, true);
+				biimp((BDDER) other, true);
 			}
 
 			other.free();
