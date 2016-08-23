@@ -321,8 +321,9 @@ public class ERFactory extends Factory {
 				setId(newId);
 				this.l = eNew;
 
-				if (newId == ZERO && !l.isEmpty()) {
-					throw new RuntimeException("normalizzazione di false con l = " + l);
+				if (newId == ZERO) { // && !l.isEmpty()) {
+					l = EquivalenceRelation.empty;
+					//TODO throw new RuntimeException("normalizzazione di false con l = " + l);
 				}
 			}
 		}
@@ -352,18 +353,8 @@ public class ERFactory extends Factory {
 			int or = orOfPairsInDifference(other);
 
 			if (intoThis) {
-				if (isOne() || other.isOne()) {
-					setId(ONE);
-					l = EquivalenceRelation.empty;
-				}
-				else if (isZero()) {
-					setId(other.id);
-					l = other.l;
-				}
-				else if (!other.isZero()) {
-					setId(or);
-					l = l.intersection(other.l);
-				}
+				setId(or);
+				l = l.intersection(other.l);
 
 				return this;
 			}
@@ -461,38 +452,21 @@ public class ERFactory extends Factory {
 		 */
 		private BDDER and(BDDER other, boolean intoThis) {
 			if (intoThis) {
-				if (isZero() || other.isZero()) {
-					setId(ZERO);
-					l = EquivalenceRelation.empty;
-				}
-				else if (isOne()) {
-					setId(other.id);
-					l = other.l;
-				}
-				else if (!other.isOne()) {
-					setId(innerAnd(id, other.id));
-					l = l.addClasses(other.l);
-					normalize();
-				}
-
+				setId(innerAnd(id, other.id));
+				l = l.addClasses(other.l);
+				normalize();
+				
 				return this;
 			}
-			else {
-				if (isZero() || other.isZero())
-					return new BDDER(ZERO, EquivalenceRelation.empty, false);
-				else if (isOne())
-					return (BDDER) other.copy();
-				else if (other.isOne())
-					return (BDDER) copy();
-				else
-					return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), true);
-			}
+			else
+				return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), true);
 		}
 
 		private BDDER andNoNormalization(BDDER other, boolean intoThis) {
 			if (intoThis) {
 				setId(innerAnd(id, other.id));
 				l = l.addClasses(other.l);
+
 				return this;
 			}
 			else
