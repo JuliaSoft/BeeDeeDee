@@ -969,13 +969,23 @@ public class Factory {
 		@Override
 		public BDD exist(BDD vars) {
 			assertNonNull(vars);
-			return quantify(vars.vars(), true);
+
+			BitSet varsAsBitSet = vars.vars();
+			int hashCode = varsAsBitSet.hashCode();
+			
+			try (GCLock lock = new GCLock()) {
+				return quantify(varsAsBitSet, true, hashCode);
+			}
 		}
 
 		@Override
 		public BDD exist(BitSet vars) {
 			assertNonNull(vars);
-			return quantify(vars, true);
+			int hashCodeVars = vars.hashCode();
+
+			try (GCLock lock = new GCLock()) {
+				return quantify(vars, true, hashCodeVars);
+			}
 		}
 
 		@Override
@@ -989,16 +999,17 @@ public class Factory {
 		@Override
 		public BDD forAll(BDD var) {
 			assertNonNull(var);
-			return quantify(var.vars(), false);
-		}
 
-		private BDD quantify(BitSet vars, boolean exist) {
-			assertNonNull(vars);
-			int hashCodeVars = vars.hashCode();
+			BitSet varsAsBitSet = var.vars();
+			int hashCodeVars = varsAsBitSet.hashCode();
 
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(innerQuantify(id, vars, exist, hashCodeVars));
+				return quantify(varsAsBitSet, false, hashCodeVars);
 			}
+		}
+
+		private BDD quantify(BitSet vars, boolean exist, int hashCodeVars) {
+			return new BDDImpl(innerQuantify(id, vars, exist, hashCodeVars));
 		}
 
 		@Override
@@ -1260,17 +1271,20 @@ public class Factory {
 			BitSet vars = new BitSet();
 
 			try (GCLock lock = new GCLock()) {
-				updateVars(id, vars);
+				updateVars(id, vars, new HashSet<Integer>());
 			}
 
 			return vars;
 		}
 
-		private void updateVars(int id, BitSet vars) {
+		private void updateVars(int id, BitSet vars, Set<Integer> seen) {
+			if (!seen.add(id))
+				return;
+
 			if (id >= FIRST_NODE_NUM) {
 				vars.set(ut.var(id));
-				updateVars(ut.low(id), vars);
-				updateVars(ut.high(id), vars);
+				updateVars(ut.low(id), vars, seen);
+				updateVars(ut.high(id), vars, seen);
 			}
 		}
 
