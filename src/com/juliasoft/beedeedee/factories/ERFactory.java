@@ -203,10 +203,12 @@ public class ERFactory extends Factory {
 				return result;
 
 			int var = ut.var(bdd);
+			int low = ut.low(bdd);
+			int high = ut.high(bdd);
 
-			if (ut.high(bdd) == ZERO) {
-				if (ut.low(bdd) != ONE) {
-					result = new EquivResult(equivVars(ut.low(bdd)));
+			if (high == ZERO) {
+				if (low != ONE) {
+					result = new EquivResult(equivVars(low));
 					result.disentailed = (BitSet) result.disentailed.clone();
 					result.disentailed.set(var);
 					int maxd = result.disentailed.length() - 1;
@@ -220,9 +222,9 @@ public class ERFactory extends Factory {
 					result.disentailed.set(var);
 				}
 			}
-			else if (ut.low(bdd) == ZERO) {
-				if (ut.high(bdd) != ONE) {
-					result = new EquivResult(equivVars(ut.high(bdd)));
+			else if (low == ZERO) {
+				if (high != ONE) {
+					result = new EquivResult(equivVars(high));
 					result.entailed = (BitSet) result.entailed.clone();
 					result.entailed.set(var);
 					int maxe = result.entailed.length() - 1;
@@ -236,16 +238,24 @@ public class ERFactory extends Factory {
 					result.entailed.set(var);
 				}
 			}
-			else if (ut.high(bdd) != ONE && ut.low(bdd) != ONE) {
-				EquivResult resultTrue = equivVars(ut.high(bdd));
-				EquivResult resultFalse = equivVars(ut.low(bdd));
+			else if (high != ONE && low != ONE) {
+				EquivResult resultTrue = equivVars(high);
+				EquivResult resultFalse = equivVars(low);
 				result = new EquivResult(resultTrue);
 				result.entailed = (BitSet) result.entailed.clone();
 				result.entailed.and(resultFalse.entailed);
 				result.disentailed = (BitSet) result.disentailed.clone();
 				result.disentailed.and(resultFalse.disentailed);
-				result.equiv = (ArrayList<Pair>) result.equiv.clone();
-				result.equiv.retainAll(resultFalse.equiv);
+				// size does matter for efficiency
+				if (resultFalse.equiv.size() < result.equiv.size()) {
+					ArrayList<Pair> temp = result.equiv;
+					result.equiv = (ArrayList<Pair>) resultFalse.equiv.clone();
+					result.equiv.retainAll(temp);
+				}
+				else {
+					result.equiv = (ArrayList<Pair>) result.equiv.clone();
+					result.equiv.retainAll(resultFalse.equiv);
+				}
 				BitSet intersection = (BitSet) resultTrue.entailed.clone();
 				intersection.and(resultFalse.disentailed);
 				int length = intersection.length();
