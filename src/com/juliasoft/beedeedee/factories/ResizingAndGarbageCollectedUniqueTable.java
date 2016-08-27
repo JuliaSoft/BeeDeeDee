@@ -459,9 +459,10 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	private void innerResize(ResizeData data) {
 		System.arraycopy(ut, 0, data.newUt, 0, nextPos * getNodeSize());
 
-		this.size = data.newSize;
+		// FIXME I don't think this instruction order is mandatory according to the JMM
 		this.ut = data.newUt;
 		this.H = data.newH;
+		this.size = data.newSize;
 		this.computationCache = data.computationCache;
 		this.restrictCache = data.restrictCache;
 		this.replaceCache = data.replaceCache;
