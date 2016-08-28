@@ -210,6 +210,24 @@ public class BDDERTest {
 	}
 
 	@Test
+	public void testAnd3() {
+		BDD f = erFactory.makeZero();
+		BDDER and = (BDDER) erBddX1biX2.and(f);
+
+		assertTrue(and.isNormalized());
+		assertTrue(equivalentBDDs(and, f));
+	}
+
+	@Test
+	public void testAnd4() {
+		BDD f = erFactory.makeZero();
+		BDDER and = (BDDER) f.and(erBddX1biX2);
+
+		assertTrue(and.isNormalized());
+		assertTrue(equivalentBDDs(and, f));
+	}
+
+	@Test
 	public void testXor() {
 		BDD xor = erBddX1biX2.xor(erBddX3);
 		BDD originalXor = bddX1biX2.xor(bddX3);
@@ -226,7 +244,7 @@ public class BDDERTest {
 	}
 
 	@Test
-	public void testNot() {
+	public void testNot1() {
 		// (x1 <-> x2) | x3
 		BDD bdd = bddX1biX2.or(bddX3);
 		BDD bddEr = erBddX1biX2.or(erBddX3);
@@ -235,6 +253,13 @@ public class BDDERTest {
 		BDD originalNot = bdd.not();
 
 		assertTrue(equivalentBDDs(not, originalNot));
+	}
+
+	@Test
+	public void testNot2() {
+		BDD bddEr = erFactory.makeZero();
+		BDD not = bddEr.not();
+		assertTrue(equivalentBDDs(not, erFactory.makeOne()));
 	}
 
 	@Test
