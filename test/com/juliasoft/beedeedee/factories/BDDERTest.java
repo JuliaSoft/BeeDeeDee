@@ -74,15 +74,6 @@ public class BDDERTest {
 		assertFalse(erBddX1biX2.isOne());
 	}
 
-	@Test
-	public void testOr1() {
-		BDDER or = (BDDER) erBddX1biX2.or(erBddX3);
-		BDD originalOr = bddX1biX2.or(bddX3);
-
-		assertTrue(or.isNormalized());
-		assertTrue(equivalentBDDs(or, originalOr));
-	}
-
 	private boolean equivalentBDDs(BDD bdd1, BDD bdd2) {
 		if (bdd1.isOne()) {
 			return bdd2.isOne();
@@ -92,6 +83,15 @@ public class BDDERTest {
 		}
 		return bdd1.var() == bdd2.var() && equivalentBDDs(bdd1.low(), bdd2.low())
 				&& equivalentBDDs(bdd1.high(), bdd2.high());
+	}
+
+	@Test
+	public void testOr1() {
+		BDDER or = (BDDER) erBddX1biX2.or(erBddX3);
+		BDD originalOr = bddX1biX2.or(bddX3);
+
+		assertTrue(or.isNormalized());
+		assertTrue(equivalentBDDs(or, originalOr));
 	}
 
 	@Test
@@ -164,7 +164,25 @@ public class BDDERTest {
 		bdd2.andWith(b1);
 		return bdd2;
 	}
-	
+
+	@Test
+	public void testOr4() {
+		BDD f = erFactory.makeZero();
+		BDDER or = (BDDER) erBddX1biX2.or(f);
+
+		assertTrue(or.isNormalized());
+		assertTrue(equivalentBDDs(or, erBddX1biX2));
+	}
+
+	@Test
+	public void testOr5() {
+		BDD f = erFactory.makeZero();
+		BDDER or = (BDDER) f.or(erBddX1biX2);
+
+		assertTrue(or.isNormalized());
+		assertTrue(equivalentBDDs(or, erBddX1biX2));
+	}
+
 	@Test
 	public void testAnd1() {
 		BDD and = erBddX1biX2.and(erBddX3);

@@ -360,16 +360,26 @@ public class ERFactory extends Factory {
 		}
 
 		private BDDER or(BDDER other, boolean intoThis) {
-			int or = orOfPairsInDifference(other);
+			int or;
+			EquivalenceRelation newL;
+			if (isZero()) {
+				or = other.id;
+				newL = other.l;
+			} else if (other.isZero()) {
+				or = id;
+				newL = l;
+			} else {
+				or = orOfPairsInDifference(other);
+				newL = l.intersection(other.l);
+			}
 
 			if (intoThis) {
 				setId(or);
-				l = l.intersection(other.l);
+				l = newL;
 
 				return this;
-			}
-			else
-				return new BDDER(or, l.intersection(other.l), false);
+			} else
+				return new BDDER(or, newL, false);
 		}
 
 		/**
