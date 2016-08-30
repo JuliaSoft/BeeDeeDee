@@ -459,7 +459,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	private void innerResize(ResizeData data) {
 		System.arraycopy(ut, 0, data.newUt, 0, nextPos * getNodeSize());
 
-		// FIXME I don't think this instruction order is mandatory according to the JMM
+		// TODO is this instruction order mandatory according to the JMM?
 		this.ut = data.newUt;
 		this.H = data.newH;
 		this.size = data.newSize;

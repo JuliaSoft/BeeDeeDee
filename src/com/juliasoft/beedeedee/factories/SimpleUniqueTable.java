@@ -31,17 +31,17 @@ class SimpleUniqueTable implements UniqueTable {
 	protected static final int HASHCODEAUX_OFFSET = 4;
 	protected static final int NODE_SIZE = 5;
 
-	protected int[] ut;
-	protected int[] H;
-	protected int size;
-	protected int nextPos;
-	protected ComputationCache computationCache;
-	protected RestrictCache restrictCache;
-	protected ReplaceCache replaceCache;
-	protected QuantCache quantCache;
-	protected EquivCache equivCache;
-	protected RenameWithLeaderCache rwlCache;
-	protected SqueezeEquivCache squeezeEquivCache;
+	protected volatile int[] ut;
+	protected volatile int[] H;
+	protected volatile int size;
+	protected volatile int nextPos;
+	protected volatile ComputationCache computationCache;
+	protected volatile RestrictCache restrictCache;
+	protected volatile ReplaceCache replaceCache;
+	protected volatile QuantCache quantCache;
+	protected volatile EquivCache equivCache;
+	protected volatile RenameWithLeaderCache rwlCache;
+	protected volatile SqueezeEquivCache squeezeEquivCache;
 
 	private final int[] hitCounters = new int[Operator.values().length];
 	private final int[] opCounters = new int[Operator.values().length];
