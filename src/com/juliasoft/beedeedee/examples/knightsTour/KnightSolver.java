@@ -25,7 +25,6 @@ public class KnightSolver extends Thread {
 	private final Factory factory;
 	private final @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
 	private final @Inner0NonNull @Inner1NonNull BDD[][] Xp; /* next BDD variable array */
-	private boolean parallel;
 
 	private final int availableProcessors;
 
@@ -33,7 +32,6 @@ public class KnightSolver extends Thread {
 		super("Knights solver for size " + N);
 
 		this.N = N;
-		this.parallel = parallel;
 		availableProcessors = parallel ? 4 /*Runtime.getRuntime().availableProcessors()*/ : 1;
 		this.factory = factory;
 		this.X = new BDD[N][N];
@@ -143,18 +141,20 @@ public class KnightSolver extends Thread {
 
 	private BDD buildT() {
 		ExecutorService executorService = Executors.newCachedThreadPool();
+		@SuppressWarnings("unchecked")
 		Future<BDD>[] submitted = new Future[availableProcessors];
 		for (int i = 0; i < availableProcessors; i++) {
 			submitted[i] = executorService.submit(new PartialTProcessor(i));			
 		}
 		BDD result = factory.makeZero();
-		for (int i = 0; i < availableProcessors; i++) {
+		for (int i = 0; i < availableProcessors; i++)
 			try {
 				result.orWith(submitted[i].get());
-			} catch (InterruptedException | ExecutionException e) {
+			}
+			catch (InterruptedException | ExecutionException e) {
 				e.printStackTrace();
 			}			
-		}
+
 		executorService.shutdown();
 		return result;
 	}

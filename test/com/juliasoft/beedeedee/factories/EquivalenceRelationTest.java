@@ -1,18 +1,18 @@
-package com.juliasoft.beedeedee.er;
+package com.juliasoft.beedeedee.factories;
 
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.*;
 
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 import org.junit.Test;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-import com.juliasoft.beedeedee.er.Pair;
+import com.juliasoft.beedeedee.factories.EquivalenceRelation;
+import com.juliasoft.beedeedee.factories.Pair;
 
 public class EquivalenceRelationTest {
 
@@ -65,44 +65,21 @@ public class EquivalenceRelationTest {
 	public void testPairGeneration1() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}});
 
-		List<Pair> pairs = e.pairs();
+		Collection<Pair> pairs = e.pairs();
 		assertEquals(1, pairs.size());
-		Pair pair = pairs.get(0);
-		assertEquals(1, pair.first);
-		assertEquals(2, pair.second);
+		assertTrue(pairs.contains(new Pair(1, 2)));
 	}
 
 	@Test
 	public void testPairGeneration2() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2}, {3, 5, 8}});
 
-		List<Pair> pairs = e.pairs();
+		Collection<Pair> pairs = e.pairs();
 		assertEquals(4, pairs.size());
 		assertTrue(pairs.contains(new Pair(1, 2)));
 		assertTrue(pairs.contains(new Pair(3, 5)));
 		assertTrue(pairs.contains(new Pair(3, 8)));
 		assertTrue(pairs.contains(new Pair(5, 8)));
-	}
-
-	@Test
-	public void testSubtract1() {
-		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2}});
-		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-
-		// expected result is the empty list
-		List<Pair> pairs = e1.pairsInDifference(e2);
-		assertTrue(pairs.isEmpty());
-	}
-
-	@Test
-	public void testSubtract2() {
-		EquivalenceRelation e1 = new EquivalenceRelation(new int[][] {{1, 2, 3}});
-		EquivalenceRelation e2 = new EquivalenceRelation(new int[][] {{1, 2}});
-
-		// expected result is {(1, 3)} (removes pairs containing non leaders)
-		List<Pair> pairs = e1.pairsInDifference(e2);
-		assertEquals(1, pairs.size());
-		assertTrue(pairs.contains(new Pair(1, 3)));
 	}
 
 	@Test
@@ -205,9 +182,9 @@ public class EquivalenceRelationTest {
 	public void testRemoveVar2() {
 		EquivalenceRelation e = new EquivalenceRelation(new int[][] {{1, 2, 3}});
 		e = e.removeVar(1);
-		List<Pair> pairs = e.pairs();
+		Collection<Pair> pairs = e.pairs();
 		assertEquals(1, pairs.size());
-		assertEquals(pairs.get(0), new Pair(2, 3));
+		assertTrue(pairs.contains(new Pair(2, 3)));
 	}
 
 	@Test

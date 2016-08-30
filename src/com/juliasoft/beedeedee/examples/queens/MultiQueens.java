@@ -86,7 +86,8 @@ public class MultiQueens {
 	}
 
 	private static void initFactory() {
-		factory = Factory.mk(utSize, cacheSize);
+		//factory = Factory.mk(utSize, cacheSize);
+		factory = Factory.mkER(utSize, cacheSize);
 		
 		factory.setGarbageCollectionListener(new GarbageCollectionListener() {
 			@Override

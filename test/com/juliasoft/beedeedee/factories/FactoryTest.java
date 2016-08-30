@@ -3,10 +3,10 @@ package com.juliasoft.beedeedee.factories;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
@@ -454,7 +454,7 @@ public class FactoryTest {
 		newPositions[3] = 6;
 		factory.updateIndicesOfAllBDDsCreatedSoFar(newPositions);
 
-		ArrayList<BDDImpl> allBDDsCreatedSoFarCopy = factory.getAllBDDsCreatedSoFarCopy();
+		List<BDDImpl> allBDDsCreatedSoFarCopy = factory.getAllBDDsCreatedSoFarCopy();
 		for (BDDImpl bdd : allBDDsCreatedSoFarCopy) {
 			assertTrue(bdd.id == 4 || bdd.id == 6);
 		}

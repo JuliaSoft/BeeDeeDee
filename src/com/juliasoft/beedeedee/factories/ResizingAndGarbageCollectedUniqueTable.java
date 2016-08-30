@@ -26,7 +26,7 @@ import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.utils.concurrent.Executors;
 
-class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
+public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	/**
 	 * The maximal number of nodes that is added at each resize operation.
@@ -131,7 +131,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		while (true);
 	}
 
-	protected ReentrantLock getGCLock() {
+	public ReentrantLock getGCLock() {
 		return gcLocks[nextGCLocks = (nextGCLocks + 1) % gcLocks.length];
 	}
 
@@ -357,7 +357,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 	 */
 
 	protected void gcIfAlmostFull() {
-		if (gcRequired && getSize() - nodesCount() < getSize() * 0.02) // do we need to do gc?
+		if (gcRequired && size - nodesCount() < size * 0.02) // do we need to do gc?
 			gc();
 	}
 	
@@ -478,7 +478,7 @@ class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		long resizeTime = System.currentTimeMillis() - data.start;
 		totalResizeTime += resizeTime;
 		numOfResizes++;
-	
+
 		ResizeListener listener = resizeListener;
 		if (listener != null)
 			listener.onStop(numOfResizes, data.oldSize, data.newSize, resizeTime, totalResizeTime);

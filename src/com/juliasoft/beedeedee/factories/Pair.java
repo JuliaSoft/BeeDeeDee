@@ -1,4 +1,4 @@
-package com.juliasoft.beedeedee.er;
+package com.juliasoft.beedeedee.factories;
 
 public final class Pair {
 	public final int first;

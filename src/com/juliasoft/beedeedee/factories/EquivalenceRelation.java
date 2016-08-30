@@ -1,8 +1,9 @@
-package com.juliasoft.beedeedee.er;
+package com.juliasoft.beedeedee.factories;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -18,8 +19,13 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 
 public class EquivalenceRelation implements Iterable<BitSet> {
 	private final BitSet[] equivalenceClasses;
-	private final static BitSet[] empty = new BitSet[0];
 	private final int hashCode;
+	
+	/**
+	 * This is the only empty element.
+	 */
+
+	public final static EquivalenceRelation empty = new EquivalenceRelation();
 
 	private static Comparator<BitSet> bitSetOrder = new Comparator<BitSet>() {
 		public int compare(BitSet lhs, BitSet rhs) {
@@ -29,10 +35,10 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			BitSet xor = (BitSet) lhs.clone();
 			xor.xor(rhs);
 			int firstDifferent = xor.length() - 1;
-			if (firstDifferent == -1)
+			if (firstDifferent < 0)
 				return 0;
-
-			return rhs.get(firstDifferent) ? 1 : -1;
+			else
+				return rhs.get(firstDifferent) ? 1 : -1;
 		}
 	};
 
@@ -57,15 +63,20 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.hashCode = hashCodeAux();
 	}
 
-	public EquivalenceRelation() {
-		this.equivalenceClasses = empty;
-
+	private EquivalenceRelation() {
+		this.equivalenceClasses = new BitSet[0];
 		this.hashCode = hashCodeAux();
 	}
 
-	public EquivalenceRelation(EquivalenceRelation parent, Filter filter) {
-		// no need to sort
-		this(filterClasses(parent, filter), false);
+	public EquivalenceRelation filter(Filter filter) {
+		if (isEmpty())
+			return empty;
+		
+		List<BitSet> filtered = filterClasses(filter);
+		if (filtered.isEmpty())
+			return empty;
+		else
+			return new EquivalenceRelation(filtered, false);  // no need to sort
 	}
 
 	public EquivalenceRelation(int[][] classes) {
@@ -84,9 +95,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 		this.hashCode = hashCodeAux();
 	}
 
-	private static List<BitSet> filterClasses(EquivalenceRelation parent, Filter filter) {
+	private List<BitSet> filterClasses(Filter filter) {
 		List<BitSet> equivalenceClasses = new ArrayList<>();
-		for (BitSet eqClass: parent)
+		for (BitSet eqClass: this.equivalenceClasses)
 			if (filter.accept(eqClass))
 				equivalenceClasses.add(eqClass);
 	
@@ -106,6 +117,9 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 */
 
 	public EquivalenceRelation intersection(EquivalenceRelation other) {
+		if (isEmpty() || other.isEmpty())
+			return empty;
+
 		List<BitSet> intersection = new ArrayList<>();
 		for (BitSet set1: equivalenceClasses) {
 			for (BitSet set2: other.equivalenceClasses) {
@@ -116,11 +130,16 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 			}
 		}
 
-		return new EquivalenceRelation(intersection, true);
+		if (intersection.isEmpty())
+			return empty;
+		else
+			return new EquivalenceRelation(intersection, true);
 	}
 
 	public boolean isEmpty() {
-		return equivalenceClasses.length == 0;
+		// the following works since this class enforces the invariant
+		// that "empty" is the only empty set of equivalence relations
+		return equivalenceClasses.length == 0; //this == empty;
 	}
 
 	public int size() {
@@ -137,8 +156,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @return the list of pairs
 	 */
-	public List<Pair> pairs() {
-		ArrayList<Pair> pairs = new ArrayList<>();
+	public Collection<Pair> pairs() {
+		Collection<Pair> pairs = new ArrayList<>();
 		for (BitSet bs: equivalenceClasses)
 			for (int i = bs.nextSetBit(0); i >= 0; i = bs.nextSetBit(i + 1))
 				for (int j = bs.nextSetBit(i + 1); j >= 0; j = bs.nextSetBit(j + 1))
@@ -148,42 +167,25 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	}
 
 	/**
-	 * Subtracts the pairs in the other set from this set.
-	 * 
-	 * @param other the other set
-	 * @return the list of the pairs of this set not contained in the other
-	 */
-	public List<Pair> pairsInDifference(EquivalenceRelation other) {
-		List<Pair> myPairs = pairs();
-		List<Pair> otherPairs = other.pairs();
-
-		BitSet toRemove = new BitSet();
-		for (Pair pair: myPairs)
-			if (otherPairs.contains(pair))
-				toRemove.set(pair.second);
-
-		List<Pair> result = new ArrayList<>();
-		for (Pair pair: myPairs)
-			if (!toRemove.get(pair.first) && !toRemove.get(pair.second))
-				result.add(pair);
-
-		return result;
-	}
-
-	/**
 	 * Adds pairs to this set.
 	 * 
 	 * @param pairs the pairs to add
+	 * @return the new set of pairs. Yields the same set if and only if nothing changed
 	 */
+
 	public EquivalenceRelation addPairs(Iterable<Pair> pairs) {
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
 			newEquivalenceClasses.add(eqClass);
 
+		boolean changed = false;
 		for (Pair pair: pairs)
-			addPair(pair, newEquivalenceClasses);
+			changed |= addPair(pair, newEquivalenceClasses);
 
-		return new EquivalenceRelation(newEquivalenceClasses, true);
+		if (changed)
+			return new EquivalenceRelation(newEquivalenceClasses, true);
+		else
+			return this;
 	}
 
 	/**
@@ -191,7 +193,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * 
 	 * @param pair the pair to add
 	 */
-	private static void addPair(Pair pair, List<BitSet> where) {
+	private static boolean addPair(Pair pair, List<BitSet> where) {
 		int pos1 = findClass(pair.first, where);
 		int pos2 = findClass(pair.second, where);
 
@@ -200,17 +202,20 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				BitSet c1 = where.get(pos1);
 				BitSet c2 = where.get(pos2);
 
-				if (!c1.equals(c2)) {
+				// != instead of !equals() is correct since sets are disjoint
+				if (c1 != c2) {
 					c1 = (BitSet) c1.clone();
 					c1.or(c2);
 					where.set(pos1, c1);
 					where.remove(pos2);
+					return true;
 				}
 			}
 			else {
 				BitSet c1 = (BitSet) where.get(pos1).clone();
 				c1.set(pair.second);
 				where.set(pos1, c1);
+				return true;
 			}
 		}
 		else
@@ -218,16 +223,25 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				BitSet c2 = (BitSet) where.get(pos2).clone();
 				c2.set(pair.first);
 				where.set(pos2, c2);
+				return true;
 			}
 			else {
 				BitSet eqClass = new BitSet();
 				eqClass.set(pair.first);
 				eqClass.set(pair.second);
 				where.add(eqClass);
+				return true;
 			}
+
+		return false;
 	}
 
 	public EquivalenceRelation addClasses(EquivalenceRelation other) {
+		if (other.isEmpty())
+			return this;
+		else if (isEmpty())
+			return other;
+
 		List<BitSet> newEquivalenceClasses = new ArrayList<>();
 		for (BitSet eqClass: equivalenceClasses)
 			newEquivalenceClasses.add(eqClass);
@@ -336,7 +350,8 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 						setAll(a, eqClass, true);
 						continue classIteration;
 					}
-				} catch (Exception e) {
+				}
+				catch (Exception e) {
 					// ignore exception if variable not in assignment
 				}
 			}
@@ -363,8 +378,12 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 				return new EquivalenceRelation(newEquivalenceClasses, true);
 			}
 			else {
-				BitSet[] newEquivalenceClasses = new BitSet[equivalenceClasses.length - 1];
-				for (int i = 0, j = 0; i < equivalenceClasses.length; i++)
+				int length = equivalenceClasses.length;
+				if (length == 1)
+					return empty;
+
+				BitSet[] newEquivalenceClasses = new BitSet[length - 1];
+				for (int i = 0, j = 0; i < length; i++)
 					if (i != pos)
 						newEquivalenceClasses[j++] = equivalenceClasses[i];
 
@@ -445,14 +464,17 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * @return the minimum leader >= c, or -1 if it does not exist
 	 */
 	public int getMinLeaderGreaterOrEqualtTo(int c, int var, Filter filter) {
-		int min = -1;
 		for (BitSet eqClass: equivalenceClasses) {
 			int leader = eqClass.nextSetBit(0);
-			if (leader >= c && (min < 0 || leader < min) && leader < var && filter.accept(eqClass))
-				min = leader;
+			// the following logic is correct since bitsets are kept in order
+			// wrt their leftmost bit set
+			if (leader >= var)
+				return -1;
+			else if (leader >= c && filter.accept(eqClass))
+				return leader;
 		}
 	
-		return min;
+		return -1;
 	}
 
 	public static interface Filter {

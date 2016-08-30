@@ -21,10 +21,7 @@ package com.juliasoft.beedeedee.bdd;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import com.juliasoft.beedeedee.er.EquivalenceRelation;
-import com.juliasoft.beedeedee.er.Pair;
 import com.juliasoft.beedeedee.factories.Factory;
 
 /**
@@ -52,6 +49,18 @@ public interface BDD {
 	
 	public boolean isOne();
 	
+	/**
+	 * @return true if this BDD represents a variable
+	 */
+	
+	public boolean isVar();
+
+	/**
+	 * @return true if this BDD represents the negation of a variable
+	 */
+	
+	public boolean isNotVar();
+
 	/**
 	 * Computes the logical OR of this bdd with another one.
 	 * 
@@ -273,7 +282,7 @@ public interface BDD {
 	 * @return the resulting BDD
 	 */
 	
-	public BDD exist(BDD var);
+	public BDD exist(BDD vars);
 
 	/**
 	 * Existential quantification.
@@ -410,24 +419,7 @@ public interface BDD {
 	public BDD low();
 
 	/**
-	 * Squeezes equivalent variables from the BDD.
-	 * 
-	 * @param r the object containing information on equivalent variables
-	 * @return the resulting BDD
-	 */
-	public BDD squeezeEquiv(EquivalenceRelation r);
-
-	/**
-	 * Squeezes equivalent variables from the BDD, storing the result in this
-	 * BDD.
-	 * 
-	 * @param r the object containing information on equivalent variables
-	 * @return this
-	 */
-	public BDD squeezeEquivWith(EquivalenceRelation r);
-
-	/**
-	 * @return the factory which created this BDD
+	 * @return the factory that created this BDD
 	 */
 	public Factory getFactory();
 
@@ -442,20 +434,4 @@ public interface BDD {
 	 * @return the maximum variable index, -1 for terminal nodes
 	 */
 	public int maxVar();
-
-	/**
-	 * Renames each variable in this BDD with its leader (least member of
-	 * equivalence class) according to the given equivalence relation.
-	 * 
-	 * @param r the equivalence relation
-	 * @return the modified BDD
-	 */
-	public BDD renameWithLeader(EquivalenceRelation r);
-
-	/**
-	 * Finds pairs of equivalent variables in this BDD.
-	 * 
-	 * @return the list of equivalent pairs
-	 */
-	public Set<Pair> equivVars();
 }
