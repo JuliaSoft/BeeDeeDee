@@ -471,15 +471,27 @@ public class ERFactory extends Factory {
 		 * @return the conjunction
 		 */
 		private BDDER and(BDDER other, boolean intoThis) {
+			EquivalenceRelation newL = l.addClasses(other.l);
+			int newId;
+			boolean normalize = true;
+			if (id == ONE && other.id == ONE) {
+				newId = id;
+				l = newL;
+				normalize = false;
+			}
+
+			newId = innerAnd(id, other.id);
 			if (intoThis) {
-				setId(innerAnd(id, other.id));
-				l = l.addClasses(other.l);
-				normalize();
-				
+				setId(newId);
+				l = newL;
+				if (normalize) {
+					normalize();
+				}
+
 				return this;
 			}
 			else
-				return new BDDER(innerAnd(id, other.id), l.addClasses(other.l), true);
+				return new BDDER(newId, newL, normalize);
 		}
 
 		private BDDER andNoNormalization(BDDER other, boolean intoThis) {
