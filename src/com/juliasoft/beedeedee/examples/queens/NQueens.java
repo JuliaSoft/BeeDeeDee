@@ -21,9 +21,9 @@ package com.juliasoft.beedeedee.examples.queens;
 import com.juliasoft.beedeedee.factories.JavaBDDAdapterFactory;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
-import com.juliasoft.utils.concurrent.Executors;
 
-import net.sf.javabdd.*;
+import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 
 /**
  * @author John Whaley
@@ -57,7 +57,6 @@ public class NQueens {
         time = System.currentTimeMillis() - time;
         System.out.println("Time: "+time/1000.+" seconds");
 
-        Executors.shutdown();
         //        BDDFactory.CacheStats cachestats = B.getCacheStats();
 //        if (cachestats != null && cachestats.uniqueAccess > 0) {
 //            System.out.println(cachestats);

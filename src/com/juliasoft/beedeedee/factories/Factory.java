@@ -30,13 +30,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.IntStream;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
-import com.juliasoft.utils.concurrent.Executors;
 
 /**
  * A factory for Binary Decision Diagrams with automatic resizing and garbage
@@ -192,9 +192,7 @@ public class Factory {
 	/**
 	 * Call this method when the factory is no longer needed.
 	 */
-	public void done() {
-		Executors.shutdown();
-	}
+	public void done() {}
 
 	protected final int MK(int var, int low, int high) {
 		return low == high ? low : ut.get(var, low, high);
@@ -1473,19 +1471,14 @@ public class Factory {
 
 	private void parallelMarkAliveNodes(final boolean[] aliveNodes) {
 		final int total = Runtime.getRuntime().availableProcessors();
-		@SuppressWarnings("unchecked")
-		final List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 
-		class AliveNodesMarker implements Runnable {
-			private final List<BDDImpl> alive = new ArrayList<>();
-			private final int num;
+		class AliveNodesMarker {
+			@SuppressWarnings("unchecked")
+			private final List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 
-			private AliveNodesMarker(int num) {
-				this.num = num;
-			}
+			public void mark(int num) {
+				List<BDDImpl> alive = new ArrayList<>();
 
-			@Override
-			public void run() {
 				for (BDDImpl bdd: copy) {
 					int id = bdd.id;
 					if (id % total == num) {
@@ -1494,21 +1487,22 @@ public class Factory {
 							markAsAlive(id, aliveNodes);
 					}
 				}
+
+				synchronized (allBDDsCreatedSoFar) {
+					allBDDsCreatedSoFar.addAll(alive);
+				}
 			}
 		}
 
-		AliveNodesMarker[] slaves = new AliveNodesMarker[total];
-		for (int num = 0; num < total; num++)
-			slaves[num] = new AliveNodesMarker(num);
+		AliveNodesMarker marker = new AliveNodesMarker();
 
 		allBDDsCreatedSoFar.clear();
 		for (int pos = 0; pos < NUMBER_OF_PREALLOCATED_NODES; pos++)
 			aliveNodes[pos] = true;
 
-		Executors.parallelise(slaves);
-
-		for (AliveNodesMarker slave: slaves)
-			allBDDsCreatedSoFar.addAll(slave.alive);
+		IntStream.range(0, total)
+			.parallel()
+			.forEach(marker::mark);
 	}
 
 	private void markAsAlive(int node, boolean[] aliveNodes) {

@@ -21,10 +21,10 @@ package com.juliasoft.beedeedee.factories;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.IntStream;
 
 import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
-import com.juliasoft.utils.concurrent.Executors;
 
 public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
@@ -486,7 +486,10 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	void updateHashTable() {
 		if (size >= 600000) {
-			parallelUpdateHashTable();
+			IntStream.range(1, total)
+				.parallel()
+				.forEach(this::updater);
+
 			return;
 		}
 
@@ -502,36 +505,17 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	private final static int total = Runtime.getRuntime().availableProcessors();
 
-	private void parallelUpdateHashTable() {
+	private void updater(int offset) {
+		for (int i = nextPos - 1 - offset, index = i * getNodeSize() + VAR_OFFSET; i >= 0; i -= total, index -= getNodeSize() * total)
+			// we only consider valid entries
+			if (ut[index] >= 0) {
+				int pos = hash(ut[index], ut[index + 1], ut[index + 2]);
 
-		class HashTableUpdater implements Runnable {
-			private final int offset;
-
-			private HashTableUpdater(int offset) {
-				this.offset = offset;
+				synchronized (updateLocks[pos % updateLocks.length]) {
+					setNext(i, H[pos]);
+					H[pos] = i;
+				}
 			}
-
-			@Override
-			public void run() {
-
-				for (int i = nextPos - 1 - offset, index = i * getNodeSize() + VAR_OFFSET; i >= 0; i -= total, index -= getNodeSize() * total)
-					// we only consider valid entries
-					if (ut[index] >= 0) {
-						int pos = hash(ut[index], ut[index + 1], ut[index + 2]);
-
-						synchronized (updateLocks[pos % updateLocks.length]) {
-							setNext(i, H[pos]);
-							H[pos] = i;
-						}
-					}
-			}
-		}
-
-		HashTableUpdater[] slaves = new HashTableUpdater[total];
-		for (int num = 0; num < total; num++)
-			slaves[num] = new HashTableUpdater(num);
-
-		Executors.parallelise(slaves);
 	}
 
 	int compactTable(boolean[] aliveNodes) {

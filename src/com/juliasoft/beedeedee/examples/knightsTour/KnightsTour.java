@@ -26,7 +26,6 @@ import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 import com.juliasoft.julia.checkers.nullness.NonNull;
-import com.juliasoft.utils.concurrent.Executors;
 
 /**
  * Example program solving the N-knights tour problem.
@@ -120,6 +119,5 @@ public class KnightsTour {
 
 	private static void cleanFactory() {
 		factory.done();
-		Executors.shutdown();
 	}
 }

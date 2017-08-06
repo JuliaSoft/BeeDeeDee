@@ -71,8 +71,8 @@ public class JavaBDDAdapterFactory extends BDDFactory {
 
 	@Override
 	protected void initialize(int nodenum, int cachesize) {
-		//factory = Factory.mk(nodenum, cachesize);
-		factory = Factory.mkER(nodenum, cachesize);
+		factory = Factory.mk(nodenum, cachesize);
+		//factory = Factory.mkER(nodenum, cachesize);
 		// we set the default call-backs
 
 		try {
