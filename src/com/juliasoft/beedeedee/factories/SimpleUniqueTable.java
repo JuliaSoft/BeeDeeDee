@@ -57,7 +57,7 @@ class SimpleUniqueTable implements UniqueTable {
 		this.rwlCache = new RenameWithLeaderCache(Math.max(1, cacheSize / 20));
 		this.squeezeEquivCache = new SqueezeEquivCache(Math.max(1, cacheSize / 20));
 
-		Arrays.fill(H, -1);
+		Arrays.parallelSetAll(H, _value -> -1);
 	}
 
 	protected int getNodeSize() {

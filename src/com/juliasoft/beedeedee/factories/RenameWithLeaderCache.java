@@ -3,9 +3,9 @@ package com.juliasoft.beedeedee.factories;
 import java.util.Arrays;
 
 public class RenameWithLeaderCache {
-	private int[] bdds;
-	private EquivalenceRelation[] ers;
-	private int[] results;
+	private final int[] bdds;
+	private final EquivalenceRelation[] ers;
+	private final int[] results;
 	private final Object[] locks = new Object[100];
 
 	RenameWithLeaderCache(int size) {

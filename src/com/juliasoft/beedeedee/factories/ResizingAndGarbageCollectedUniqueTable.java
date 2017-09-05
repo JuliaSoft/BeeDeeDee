@@ -331,7 +331,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		int collected = compactTable(aliveNodes);
 	
 		// update hash table
-		Arrays.fill(H, -1);
+		Arrays.parallelSetAll(H, _value -> -1);
 		updateHashTable();
 
 		long gcTime = System.currentTimeMillis() - start;
@@ -442,7 +442,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 				listener.onStart(table.numOfResizes, oldSize, newSize, table.totalResizeTime);
 
 			newH = new int[newSize];
-			Arrays.fill(newH, -1);
+			Arrays.parallelSetAll(newH, _value -> -1);
 			newUt = new int[newSize * getNodeSize()];
 
 			int sizeOfSmallCaches = Math.max(1, newCacheSize / 20);
