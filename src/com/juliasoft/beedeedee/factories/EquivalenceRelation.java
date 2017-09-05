@@ -461,7 +461,7 @@ public class EquivalenceRelation implements Iterable<BitSet> {
 	 * Finds the minimum leader that is greater or equal to c
 	 * 
 	 * @param c
-	 * @return the minimum leader >= c, or -1 if it does not exist
+	 * @return the minimum leader greater than or equal to c, or -1 if it does not exist
 	 */
 	public int getMinLeaderGreaterOrEqualtTo(int c, int var, Filter filter) {
 		int min = -1;

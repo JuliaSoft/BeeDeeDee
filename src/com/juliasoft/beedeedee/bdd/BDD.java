@@ -277,7 +277,7 @@ public interface BDD {
 	/**
 	 * Existential quantification.
 	 * 
-	 * @param var a set of variables represented by a positive <em>minterm</em> BDD
+	 * @param vars a set of variables represented by a positive <em>minterm</em> BDD
 	 * (a conjunction of variables in positive form)
 	 * @return the resulting BDD
 	 */
@@ -287,7 +287,7 @@ public interface BDD {
 	/**
 	 * Existential quantification.
 	 * 
-	 * @param var a set of variables
+	 * @param vars a set of variables
 	 * @return the resulting BDD
 	 */
 
