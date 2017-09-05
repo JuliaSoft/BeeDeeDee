@@ -18,8 +18,6 @@
 */
 package com.juliasoft.beedeedee.factories;
 
-import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
-
 import java.util.Arrays;
 
 class SimpleUniqueTable implements UniqueTable {
@@ -185,13 +183,11 @@ class SimpleUniqueTable implements UniqueTable {
 	
 	@Override
 	public final int getFromCache(Operator op, int bdd1, int bdd2) {
-		assertNonNull(op);
 		return computationCache.get(op, bdd1, bdd2);
 	}
 
 	@Override
 	public final void putIntoCache(Operator op, int bdd1, int bdd2, int result) {
-		assertNonNull(op);
 		computationCache.put(op, bdd1, bdd2, result);
 	}
 

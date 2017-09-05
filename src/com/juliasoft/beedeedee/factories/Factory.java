@@ -18,8 +18,6 @@
  */
 package com.juliasoft.beedeedee.factories;
 
-import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
-
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -36,7 +34,6 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.ReplacementWithExistingVarException;
 import com.juliasoft.beedeedee.bdd.UnsatException;
-import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
 
 /**
  * A factory for Binary Decision Diagrams with automatic resizing and garbage
@@ -487,7 +484,6 @@ public class Factory {
 	}
 
 	protected final int innerReplace(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
-		assertNonNull(renaming);
 		if (bdd < FIRST_NODE_NUM) // terminal node
 			return bdd;
 	
@@ -656,7 +652,6 @@ public class Factory {
 
 		@Override
 		public BDD or(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -666,8 +661,6 @@ public class Factory {
 
 		@Override
 		public BDD orWith(BDD other) {
-			assertNonNull(other);
-			
 			try (GCLock lock = new GCLock()) {
 				setId(innerOr(id, ((BDDImpl) other).id));
 			}
@@ -679,7 +672,6 @@ public class Factory {
 
 		@Override
 		public BDD and(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -689,8 +681,6 @@ public class Factory {
 
 		@Override
 		public BDD andWith(BDD other) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				setId(innerAnd(id, ((BDDImpl) other).id));
 			}
@@ -702,7 +692,6 @@ public class Factory {
 
 		@Override
 		public BDD xor(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -712,8 +701,6 @@ public class Factory {
 
 		@Override
 		public BDD xorWith(BDD other) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				setId(innerXor(id, ((BDDImpl) other).id));
 			}
@@ -725,7 +712,6 @@ public class Factory {
 
 		@Override
 		public BDD nand(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -735,8 +721,6 @@ public class Factory {
 
 		@Override
 		public BDD nandWith(BDD other) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				setId(innerImp(innerAnd(id, ((BDDImpl) other).id), ZERO));
 			}
@@ -766,7 +750,6 @@ public class Factory {
 
 		@Override
 		public BDD imp(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -776,8 +759,6 @@ public class Factory {
 
 		@Override
 		public BDD impWith(BDD other) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				setId(innerImp(id, ((BDDImpl) other).id));
 			}
@@ -789,7 +770,6 @@ public class Factory {
 
 		@Override
 		public BDD biimp(BDD other) {
-			assertNonNull(other);
 			ut.gcIfAlmostFull();
 
 			try (GCLock lock = new GCLock()) {
@@ -799,8 +779,6 @@ public class Factory {
 
 		@Override
 		public BDD biimpWith(BDD other) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				setId(innerBiimp(id, ((BDDImpl) other).id));
 			}
@@ -852,7 +830,7 @@ public class Factory {
 			}
 		}
 
-		private @Inner0NonNull List<Assignment> allSat(int bdd) {
+		private List<Assignment> allSat(int bdd) {
 			List<Assignment> list = new ArrayList<Assignment>();
 
 			if (bdd != ZERO)
@@ -918,8 +896,6 @@ public class Factory {
 
 		@Override
 		public BDD restrict(BDD var) {
-			assertNonNull(var);
-
 			try (GCLock lock = new GCLock()) {
 				int res = id;
 				for (int varId = ((BDDImpl) var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
@@ -934,8 +910,6 @@ public class Factory {
 
 		@Override
 		public BDD restrictWith(BDD var) {
-			assertNonNull(var);
-
 			try (GCLock lock = new GCLock()) {
 				int res = id;
 				for (int varId = ((BDDImpl) var).id; varId >= FIRST_NODE_NUM; varId = ut.high(varId))
@@ -966,8 +940,6 @@ public class Factory {
 
 		@Override
 		public BDD exist(BDD vars) {
-			assertNonNull(vars);
-
 			BitSet varsAsBitSet = vars.vars();
 			int hashCode = varsAsBitSet.hashCode();
 			
@@ -978,7 +950,6 @@ public class Factory {
 
 		@Override
 		public BDD exist(BitSet vars) {
-			assertNonNull(vars);
 			int hashCodeVars = vars.hashCode();
 
 			try (GCLock lock = new GCLock()) {
@@ -996,8 +967,6 @@ public class Factory {
 
 		@Override
 		public BDD forAll(BDD var) {
-			assertNonNull(var);
-
 			BitSet varsAsBitSet = var.vars();
 			int hashCodeVars = varsAsBitSet.hashCode();
 
@@ -1012,8 +981,6 @@ public class Factory {
 
 		@Override
 		public BDD simplify(BDD d) {
-			assertNonNull(d);
-			
 			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(simplify(((BDDImpl) d).id, id));
 			}
@@ -1108,7 +1075,6 @@ public class Factory {
 
 		@Override
 		public BDD replace(Map<Integer, Integer> renaming) {
-			assertNonNull(renaming);
 			if (id == ZERO)
 				return makeZero();
 			else if (id == ONE)
@@ -1123,7 +1089,6 @@ public class Factory {
 
 		@Override
 		public BDD replaceWith(Map<Integer, Integer> renaming) {
-			assertNonNull(renaming);
 			if (id < FIRST_NODE_NUM) // terminal node
 				return this;
 
@@ -1138,9 +1103,6 @@ public class Factory {
 
 		@Override
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
-			assertNonNull(thenBDD);
-			assertNonNull(elseBDD);
-
 			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(ite(id, ((BDDImpl) thenBDD).id, ((BDDImpl) elseBDD).id));
 			}
@@ -1187,16 +1149,12 @@ public class Factory {
 
 		@Override
 		public BDD relProd(BDD other, BDD var) {
-			assertNonNull(other);
-			assertNonNull(var);
-			// TODO this implementation is correct, but not efficient
+			// TODO this implementation is correct, but inefficient
 			return and(other).exist(var);
 		}
 
 		@Override
 		public BDD compose(BDD other, int var) {
-			assertNonNull(other);
-
 			try (GCLock lock = new GCLock()) {
 				return new BDDImpl(compose(id, ((BDDImpl) other).id, var));
 			}
@@ -1222,7 +1180,6 @@ public class Factory {
 
 		@Override
 		public boolean isEquivalentTo(BDD other) {
-			assertNonNull(other);
 			if (this == other)
 				return true;
 
@@ -1326,7 +1283,6 @@ public class Factory {
 
 		@Override
 		public boolean holds(BDD var) throws IndexOutOfBoundsException {
-			assertNonNull(var);
 			return holds(var.var());
 		}
 
@@ -1521,8 +1477,6 @@ public class Factory {
 	 * @return the total number of nodes
 	 */
 	public int nodeCount(Collection<BDD> bdds) {
-		assertNonNull(bdds, "the collection of BBDs cannot be null here");
-
 		int count = 0;
 		Set<Integer> seen = new HashSet<>();
 

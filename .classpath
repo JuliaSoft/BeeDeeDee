@@ -4,8 +4,7 @@
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
-	<classpathentry kind="lib" path="lib/julia-annotations-1.9.20.jar"/>
-	<classpathentry kind="lib" path="lib/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="lib" path="lib/javabdd-1.0b2.jar"/>
+	<classpathentry kind="lib" path="lib/mockito-all-1.9.5.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

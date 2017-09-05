@@ -1,13 +1,11 @@
 package com.juliasoft.beedeedee.factories;
 
-import static com.juliasoft.julia.checkers.nullness.assertions.NullnessAssertions.assertNonNull;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class RestrictCacheTest {
-
 	private RestrictCache cache;
 
 	@Before
@@ -17,8 +15,6 @@ public class RestrictCacheTest {
 
 	@Test
 	public void test() {
-		assertNonNull(cache, "This is a test: setUp() must be called before");
-
 		assertEquals(-1, cache.get(1, 2, true));
 		
 		cache.put(1, 2, true, 5);

@@ -7,8 +7,6 @@ import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.bdd.UnsatException;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
-import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
 
 public class QueenSolver extends Thread {
 	private final Object lockForIndices = new Object();
@@ -16,7 +14,7 @@ public class QueenSolver extends Thread {
 	private final int N;
 	private final boolean parallel;
 	private final Factory factory;
-	private final @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
+	private final BDD[][] X; /* BDD variable array */
 	private int i;
 	private int j;
 

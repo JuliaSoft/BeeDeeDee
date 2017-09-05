@@ -10,8 +10,6 @@ import java.util.concurrent.Future;
 
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
-import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
 
 /**
  * Solves the N-knights tour problem by starting from the bottom-left corner.
@@ -23,8 +21,8 @@ public class KnightSolver extends Thread {
 
 	private final int N;
 	private final Factory factory;
-	private final @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
-	private final @Inner0NonNull @Inner1NonNull BDD[][] Xp; /* next BDD variable array */
+	private final BDD[][] X; /* BDD variable array */
+	private final BDD[][] Xp; /* next BDD variable array */
 
 	private final int availableProcessors;
 

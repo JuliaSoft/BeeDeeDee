@@ -25,7 +25,6 @@ import java.util.Set;
 import com.juliasoft.beedeedee.factories.Factory;
 import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
-import com.juliasoft.julia.checkers.nullness.NonNull;
 
 /**
  * Example program computing more n-queens problem BDDs in parallel.
@@ -34,7 +33,7 @@ public class MultiQueens {
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
 	private static boolean parallel = false; // does each single queen solution must be computed in parallel
-	private static @NonNull Factory factory;
+	private static Factory factory;
 
 	public static void main(String[] args) throws InterruptedException {
 		ArrayList<Integer> ens = processArgs(args);

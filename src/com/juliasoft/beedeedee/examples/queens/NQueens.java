@@ -19,8 +19,6 @@
 package com.juliasoft.beedeedee.examples.queens;
 
 import com.juliasoft.beedeedee.factories.JavaBDDAdapterFactory;
-import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
-import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
 
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -33,7 +31,7 @@ public class NQueens {
 
     static boolean TRACE;
     static int N = 10; /* Size of the chess board */
-    static @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
+    static BDD[][] X; /* BDD variable array */
     static BDD queen; /* N-queen problem expressed as a BDD */
     static BDD solution; /* One solution */
 

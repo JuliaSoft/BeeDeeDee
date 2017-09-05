@@ -21,15 +21,12 @@ package com.juliasoft.beedeedee.examples.queens;
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
 import com.juliasoft.beedeedee.factories.Factory;
-import com.juliasoft.julia.checkers.nullness.Inner0NonNull;
-import com.juliasoft.julia.checkers.nullness.Inner1NonNull;
 
 public class Queens {
-
 	private static int N = 11;
 	private static int utSize = 1000 * 1000;
 	private static int cacheSize = 100000;
-	private static @Inner0NonNull @Inner1NonNull BDD[][] X; /* BDD variable array */
+	private static BDD[][] X; /* BDD variable array */
 
 	public static void main(String[] args) {
 
