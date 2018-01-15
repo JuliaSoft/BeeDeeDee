@@ -486,7 +486,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	void updateHashTable() {
 		if (size >= 600000) {
-			IntStream.range(1, total)
+			IntStream.range(0, total)
 				.parallel()
 				.forEach(this::updater);
 

@@ -67,17 +67,9 @@ class ReplaceCache {
 	int get(int bdd, Map<Integer, Integer> renaming, int hashOfRenaming) {
 		int pos = hash(bdd, hashOfRenaming);
 
-		// avoid double call to expensive equals on maps!
-		@SuppressWarnings("rawtypes")
-		Map oldRenaming;
-
-		if (cache[pos] == bdd && (oldRenaming = renamings[pos]) != null &&
-				(oldRenaming == renaming || oldRenaming.equals(renaming)))
-			synchronized (locks[pos % locks.length]) {
-				return (cache[pos] == bdd && oldRenaming == renamings[pos++]) ? cache[pos] : -1;
-			}
-
-		return -1;
+		synchronized (locks[pos % locks.length]) {
+			return cache[pos] == bdd && renaming.equals(renamings[pos++]) ? cache[pos] : -1;
+		}
 	}
 
 	private int hash(int bdd, int hashOfRenaming) {

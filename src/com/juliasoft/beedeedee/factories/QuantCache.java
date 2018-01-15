@@ -70,14 +70,9 @@ class QuantCache {
 
 		int pos = hash(bdd, hashCodeOfVs);
 
-		// avoid double call to expensive equals on arrays!
-		BitSet oldVarss = varss[pos];
-		if (cache[pos] == bdd && (oldVarss == vars || oldVarss.equals(vars)))
-			synchronized (locks[pos % locks.length]) {
-				return cache[pos] == bdd && oldVarss == varss[pos++] ? cache[pos] : -1;
-			}
-
-		return -1;
+		synchronized (locks[pos % locks.length]) {
+			return cache[pos] == bdd && varss[pos++].equals(vars) ? cache[pos] : -1;
+		}
 	}
 
 	private int hash(int bdd, int hashCodeOfVs) {
