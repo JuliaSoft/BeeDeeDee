@@ -18,7 +18,8 @@
 */
 package com.juliasoft.beedeedee.factories;
 
-import java.util.Arrays;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.IntStream;
@@ -27,6 +28,8 @@ import com.juliasoft.beedeedee.factories.Factory.GarbageCollectionListener;
 import com.juliasoft.beedeedee.factories.Factory.ResizeListener;
 
 public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
+
+	private final ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
 	/**
 	 * The maximal number of nodes that is added at each resize operation.
@@ -331,7 +334,9 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		int collected = compactTable(aliveNodes);
 	
 		// update hash table
-		Arrays.parallelSetAll(H, _value -> -1);
+		for (int i = H.length - 1; i >= 0; i--)
+			H[i] = -1;
+
 		updateHashTable();
 
 		long gcTime = System.currentTimeMillis() - start;
@@ -442,7 +447,9 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 				listener.onStart(table.numOfResizes, oldSize, newSize, table.totalResizeTime);
 
 			newH = new int[newSize];
-			Arrays.parallelSetAll(newH, _value -> -1);
+			for (int i = newH.length - 1; i >= 0; i--)
+				newH[i] = -1;
+
 			newUt = new int[newSize * getNodeSize()];
 
 			int sizeOfSmallCaches = Math.max(1, newCacheSize / 20);
@@ -486,9 +493,15 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 	void updateHashTable() {
 		if (size >= 600000) {
-			IntStream.range(0, total)
-				.parallel()
-				.forEach(this::updater);
+			try {
+				pool.submit(() -> 
+					IntStream.range(0, total)
+						.parallel()
+						.forEach(this::updater)).get();
+			}
+			catch (InterruptedException | ExecutionException e) {
+				throw new RuntimeException(e);
+			}
 
 			return;
 		}

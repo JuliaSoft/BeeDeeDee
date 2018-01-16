@@ -27,8 +27,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.IntStream;
 
 import com.juliasoft.beedeedee.bdd.Assignment;
 import com.juliasoft.beedeedee.bdd.BDD;
@@ -40,6 +41,8 @@ import com.juliasoft.beedeedee.bdd.UnsatException;
  * collection.
  */
 public class Factory {
+
+	private final ForkJoinPool pool = new ForkJoinPool(Runtime.getRuntime().availableProcessors());
 
 	/**
 	 * Constructs a factory with automatic resizing and garbage collection.
@@ -585,25 +588,26 @@ public class Factory {
 				id = -1;
 				ut.scheduleGC();
 				ut.gcIfAlmostFull();
+				shrinkTheListOfAllBDDsIfTooLarge();
 			}
-			else if (id >= 0) // already freed?
+			else if (id >= 0) { // already freed?
 				id = -1;
-
-			shrinkTheListOfAllBDDsIfTooLarge();
+				shrinkTheListOfAllBDDsIfTooLarge();
+			}
 		}
 
 		private void shrinkTheListOfAllBDDsIfTooLarge() {
-			if (++freedBDDsCounter > 100000)
+			if (++freedBDDsCounter > 100000 && freedBDDsCounter > (allBDDsCreatedSoFar.size() / 2))
 				try (GCLock lock = new GCLock()) {
 					synchronized (allBDDsCreatedSoFar) {
-						if (freedBDDsCounter > 100000) {
+						if (freedBDDsCounter > 100000 && freedBDDsCounter > (allBDDsCreatedSoFar.size() / 2)) {
 							@SuppressWarnings("unchecked")
 							List<BDDImpl> copy = (List<BDDImpl>) allBDDsCreatedSoFar.clone();
 							allBDDsCreatedSoFar.clear();
 
 							for (BDDImpl bdd: copy)
 								if (bdd.id >= 0)
-									allBDDsCreatedSoFar.add(bdd);									
+									allBDDsCreatedSoFar.add(bdd);
 
 							freedBDDsCounter = 0;
 						}
@@ -1417,48 +1421,41 @@ public class Factory {
 		List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 		allBDDsCreatedSoFar.clear();
 
-		for (BDDImpl bdd: copy) {
-			allBDDsCreatedSoFar.add(bdd);
+		for (BDDImpl bdd: copy)
+			if (bdd.id >= 0) {
+				allBDDsCreatedSoFar.add(bdd);
 
-			if (bdd.id >= NUMBER_OF_PREALLOCATED_NODES)
-				markAsAlive(bdd.id, aliveNodes);
-		}
+				if (bdd.id >= NUMBER_OF_PREALLOCATED_NODES)
+					markAsAlive(bdd.id, aliveNodes);
+			}
+
+		freedBDDsCounter = 0;
 	}
 
 	private void parallelMarkAliveNodes(final boolean[] aliveNodes) {
-		final int total = Runtime.getRuntime().availableProcessors();
-
-		class AliveNodesMarker {
-			@SuppressWarnings("unchecked")
-			private final List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
-
-			public void mark(int num) {
-				List<BDDImpl> alive = new ArrayList<>();
-
-				for (BDDImpl bdd: copy) {
-					int id = bdd.id;
-					if (id % total == num) {
-						alive.add(bdd);
-						if (id >= NUMBER_OF_PREALLOCATED_NODES)
-							markAsAlive(id, aliveNodes);
-					}
-				}
-
-				synchronized (allBDDsCreatedSoFar) {
-					allBDDsCreatedSoFar.addAll(alive);
-				}
-			}
-		}
-
-		AliveNodesMarker marker = new AliveNodesMarker();
-
+		@SuppressWarnings("unchecked")
+		List<BDDImpl> copy = (ArrayList<BDDImpl>) allBDDsCreatedSoFar.clone();
 		allBDDsCreatedSoFar.clear();
+
 		for (int pos = 0; pos < NUMBER_OF_PREALLOCATED_NODES; pos++)
 			aliveNodes[pos] = true;
 
-		IntStream.range(0, total)
-			.parallel()
-			.forEach(marker::mark);
+		try {
+			pool.submit(() -> copy.parallelStream()
+					.filter(bdd -> bdd.id >= 0)
+					.forEach(bdd -> {
+						synchronized (allBDDsCreatedSoFar) {
+							allBDDsCreatedSoFar.add(bdd);
+						}
+						if (bdd.id >= NUMBER_OF_PREALLOCATED_NODES)
+							markAsAlive(bdd.id, aliveNodes);
+					})).get();
+		}
+		catch (InterruptedException | ExecutionException e) {
+			throw new RuntimeException(e);
+		}
+
+		freedBDDsCounter = 0;
 	}
 
 	private void markAsAlive(int node, boolean[] aliveNodes) {
