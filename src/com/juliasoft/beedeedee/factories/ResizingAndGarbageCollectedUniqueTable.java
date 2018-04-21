@@ -436,8 +436,14 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		private ResizeData(ResizingAndGarbageCollectedUniqueTable table) {
 			start = System.currentTimeMillis();
 			oldSize = table.getSize();
-			newSize = oldSize * (table.increaseFactor - 1) > table.maxIncrease ?
-				oldSize + table.maxIncrease : (int) (oldSize * table.increaseFactor);
+			if(oldSize == MAX_SIZE){
+				throw new RuntimeException("BDD table cannot be enlarged beyond max size: " + MAX_SIZE);
+			}
+			int newSizeTemp = oldSize * (table.increaseFactor - 1) > table.maxIncrease
+				? oldSize + table.maxIncrease : (int) (oldSize * table.increaseFactor);
+			//SEE: comment on SimpleUniqueTable.MAX_SIZE
+			newSize = Math.min(MAX_SIZE, newSizeTemp);
+
 			int oldCacheSize = table.getCacheSize();
 			int newCacheSize = newSize * table.cacheRatio > oldCacheSize ?
 				((int) (newSize * table.cacheRatio)) : oldCacheSize;

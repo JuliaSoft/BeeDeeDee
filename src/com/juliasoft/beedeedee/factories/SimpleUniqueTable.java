@@ -29,6 +29,13 @@ class SimpleUniqueTable implements UniqueTable {
 	protected static final int HASHCODEAUX_OFFSET = 4;
 	protected static final int NODE_SIZE = 5;
 
+	//The maximum allowed size to prevent integer overflow (leading to
+	//  NegativeArraySizeException) and array over-allocation (leading to
+	//  OutOfMemoryError: Requested array size exceeds VM limit) when
+	//  allocating the unique table (i.e. 'ut'). Maximum array size is
+	//  somewhat VM dependent but OpenJDK typically uses Integer.MAX - 8.
+	protected static final int MAX_SIZE = (Integer.MAX_VALUE - 8) / NODE_SIZE;
+
 	protected volatile int[] ut;
 	protected volatile int[] H;
 	protected volatile int size;
@@ -46,9 +53,9 @@ class SimpleUniqueTable implements UniqueTable {
 	protected int hashCodeAuxCounter;
 
 	protected SimpleUniqueTable(int size, int cacheSize) {
-		this.size = size;
-		this.ut = new int[size * getNodeSize()];
-		this.H = new int[size];
+		this.size = Math.min(size, MAX_SIZE);
+		this.ut = new int[this.size * getNodeSize()];
+		this.H = new int[this.size];
 		this.computationCache = new ComputationCache(cacheSize);
 		this.restrictCache = new RestrictCache(Math.max(1, cacheSize / 20));
 		this.replaceCache = new ReplaceCache(Math.max(1, cacheSize / 20));
