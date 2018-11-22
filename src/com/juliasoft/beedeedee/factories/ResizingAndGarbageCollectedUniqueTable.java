@@ -419,7 +419,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		return oldMinFreeNodes;
 	}
 
-	private class ResizeData {
+	private static class ResizeData {
 		private final long start;
 		private final int oldSize;
 		private final int newSize;
@@ -427,6 +427,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		private final int[] newUt;
 		private final ComputationCache computationCache;
 		private final RestrictCache restrictCache;
+		private final ComposeCache composeCache;
 		private final QuantCache quantCache;
 		private final ReplaceCache replaceCache;
 		private final EquivCache equivCache;
@@ -456,11 +457,12 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 			for (int i = newH.length - 1; i >= 0; i--)
 				newH[i] = -1;
 
-			newUt = new int[newSize * getNodeSize()];
+			newUt = new int[newSize * table.getNodeSize()];
 
 			int sizeOfSmallCaches = Math.max(1, newCacheSize / 20);
 			computationCache = new ComputationCache(newCacheSize);
 			restrictCache = new RestrictCache(sizeOfSmallCaches);
+			composeCache = new ComposeCache(sizeOfSmallCaches);
 			replaceCache = new ReplaceCache(sizeOfSmallCaches);
 			quantCache = new QuantCache(sizeOfSmallCaches);
 			equivCache = new EquivCache(sizeOfSmallCaches);
@@ -478,6 +480,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 		this.size = data.newSize;
 		this.computationCache = data.computationCache;
 		this.restrictCache = data.restrictCache;
+		this.composeCache = data.composeCache;
 		this.replaceCache = data.replaceCache;
 		this.quantCache = data.quantCache;
 		this.equivCache = data.equivCache;
@@ -562,6 +565,7 @@ public class ResizingAndGarbageCollectedUniqueTable extends SimpleUniqueTable {
 
 		computationCache.clear();
 		restrictCache.clear();
+		composeCache.clear();
 		replaceCache.clear();
 		quantCache.clear();
 		equivCache.clear();

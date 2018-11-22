@@ -482,6 +482,72 @@ public class Factory {
 			return innerRestrict(ut.low(id), var, value);
 	}
 
+	protected final int innerCompose(int id1, int id2, int var) {
+		int result = ut.getComposeCache().get(id1, id2, var);
+		if (result >= 0)
+			return result;
+
+		int v1 = ut.var(id1);
+
+		if (v1 > var)
+			return id1;
+
+		if (v1 < var) {
+			int v2 = ut.var(id2);
+			if (v1 == v2)
+				result = MK(v1, innerCompose(ut.low(id1), ut.low(id2), var), innerCompose(ut.high(id1), ut.high(id2), var));
+			else if (v1 < v2)
+				result = MK(v1, innerCompose(ut.low(id1), id2, var), innerCompose(ut.high(id1), id2, var));
+			else
+				result = MK(v2, innerCompose(id1, ut.low(id2), var), innerCompose(id1, ut.high(id2), var));
+		}
+		else
+			result = ite(id2, ut.high(id1), ut.low(id1));
+
+		ut.getComposeCache().put(id1, id2, var, result);
+
+		return result;
+	}
+
+	private int ite(int f, int g, int h) {
+		if (f == ONE)
+			return g;
+		if (f == ZERO)
+			return h;
+		if (g == h)
+			return g;
+		if (g == ONE && h == ZERO)
+			return f;
+		if (g == ZERO && h == ONE)
+			return innerImp(f, ZERO);
+
+		int vf = ut.var(f);
+		int vg = ut.var(g);
+		int vh = ut.var(h);
+
+		if (vf == vg)
+			if (vf == vh)
+				return MK(vf, ite(ut.low(f), ut.low(g), ut.low(h)), ite(ut.high(f), ut.high(g), ut.high(h)));
+			else if (vf < vh)
+				return MK(vf, ite(ut.low(f), ut.low(g), h), ite(ut.high(f), ut.high(g), h));
+			else
+				return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+		else if (vf < vg)
+			if (vf == vh)
+				return MK(vf, ite(ut.low(f), g, ut.low(h)), ite(ut.high(f), g, ut.high(h)));
+			else if (vf < vh)
+				return MK(vf, ite(ut.low(f), g, h), ite(ut.high(f), g, h));
+			else
+				return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+		else
+			if (vg == vh)
+				return MK(vg, ite(f, ut.low(g), ut.low(h)), ite(f, ut.high(g), ut.high(h)));
+			else if (vg < vh)
+				return MK(vg, ite(f, ut.low(g), h), ite(f, ut.high(g), h));
+			else
+				return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
+	}
+
 	protected final int innerExist(int id, int var) {
 		return innerOr(innerRestrict(id, var, false), innerRestrict(id, var, true));
 	}
@@ -1108,47 +1174,8 @@ public class Factory {
 		@Override
 		public BDD ite(BDD thenBDD, BDD elseBDD) {
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(ite(id, ((BDDImpl) thenBDD).id, ((BDDImpl) elseBDD).id));
+				return new BDDImpl(Factory.this.ite(id, ((BDDImpl) thenBDD).id, ((BDDImpl) elseBDD).id));
 			}
-		}
-
-		private int ite(int f, int g, int h) {
-			if (f == ONE)
-				return g;
-			if (f == ZERO)
-				return h;
-			if (g == h)
-				return g;
-			if (g == ONE && h == ZERO)
-				return f;
-			if (g == ZERO && h == ONE)
-				return innerImp(f, ZERO);
-
-			int vf = ut.var(f);
-			int vg = ut.var(g);
-			int vh = ut.var(h);
-
-			if (vf == vg)
-				if (vf == vh)
-					return MK(vf, ite(ut.low(f), ut.low(g), ut.low(h)), ite(ut.high(f), ut.high(g), ut.high(h)));
-				else if (vf < vh)
-					return MK(vf, ite(ut.low(f), ut.low(g), h), ite(ut.high(f), ut.high(g), h));
-				else
-					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
-			else if (vf < vg)
-				if (vf == vh)
-					return MK(vf, ite(ut.low(f), g, ut.low(h)), ite(ut.high(f), g, ut.high(h)));
-				else if (vf < vh)
-					return MK(vf, ite(ut.low(f), g, h), ite(ut.high(f), g, h));
-				else
-					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
-			else
-				if (vg == vh)
-					return MK(vg, ite(f, ut.low(g), ut.low(h)), ite(f, ut.high(g), ut.high(h)));
-				else if (vg < vh)
-					return MK(vg, ite(f, ut.low(g), h), ite(f, ut.high(g), h));
-				else
-					return MK(vh, ite(f, g, ut.low(h)), ite(f, g, ut.high(h)));
 		}
 
 		@Override
@@ -1160,26 +1187,8 @@ public class Factory {
 		@Override
 		public BDD compose(BDD other, int var) {
 			try (GCLock lock = new GCLock()) {
-				return new BDDImpl(compose(id, ((BDDImpl) other).id, var));
+				return new BDDImpl(innerCompose(id, ((BDDImpl) other).id, var));
 			}
-		}
-
-		private int compose(int id1, int id2, int var) {
-			int v1 = ut.var(id1);
-			int v2 = ut.var(id2);
-
-			if (v1 > var)
-				return id1;
-
-			if (v1 < var)
-				if (v1 == v2)
-					return MK(v1, compose(ut.low(id1), ut.low(id2), var), compose(ut.high(id1), ut.high(id2), var));
-				else if (v1 < v2)
-					return MK(v1, compose(ut.low(id1), id2, var), compose(ut.high(id1), id2, var));
-				else
-					return MK(v2, compose(id1, ut.low(id2), var), compose(id1, ut.high(id2), var));
-			else
-				return ite(id2, ut.high(id1), ut.low(id1));
 		}
 
 		@Override

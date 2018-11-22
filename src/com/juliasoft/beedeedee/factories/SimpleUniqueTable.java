@@ -42,6 +42,7 @@ class SimpleUniqueTable implements UniqueTable {
 	protected volatile int nextPos;
 	protected volatile ComputationCache computationCache;
 	protected volatile RestrictCache restrictCache;
+	protected volatile ComposeCache composeCache;
 	protected volatile ReplaceCache replaceCache;
 	protected volatile QuantCache quantCache;
 	protected volatile EquivCache equivCache;
@@ -49,7 +50,7 @@ class SimpleUniqueTable implements UniqueTable {
 	protected volatile SqueezeEquivCache squeezeEquivCache;
 
 	private final int[] hitCounters = new int[Operator.values().length];
-	private final int[] opCounters = new int[Operator.values().length];
+	private final int[] opCounters = new int[hitCounters.length];
 	protected int hashCodeAuxCounter;
 
 	protected SimpleUniqueTable(int size, int cacheSize) {
@@ -57,12 +58,14 @@ class SimpleUniqueTable implements UniqueTable {
 		this.ut = new int[this.size * getNodeSize()];
 		this.H = new int[this.size];
 		this.computationCache = new ComputationCache(cacheSize);
-		this.restrictCache = new RestrictCache(Math.max(1, cacheSize / 20));
-		this.replaceCache = new ReplaceCache(Math.max(1, cacheSize / 20));
-		this.quantCache = new QuantCache(Math.max(1, cacheSize / 20));
-		this.equivCache = new EquivCache(Math.max(1, cacheSize / 20));
-		this.rwlCache = new RenameWithLeaderCache(Math.max(1, cacheSize / 20));
-		this.squeezeEquivCache = new SqueezeEquivCache(Math.max(1, cacheSize / 20));
+		int sizeOfSmallCaches = Math.max(1, cacheSize / 20);
+		this.restrictCache = new RestrictCache(sizeOfSmallCaches);
+		this.composeCache = new ComposeCache(sizeOfSmallCaches);
+		this.replaceCache = new ReplaceCache(sizeOfSmallCaches);
+		this.quantCache = new QuantCache(sizeOfSmallCaches);
+		this.equivCache = new EquivCache(sizeOfSmallCaches);
+		this.rwlCache = new RenameWithLeaderCache(sizeOfSmallCaches);
+		this.squeezeEquivCache = new SqueezeEquivCache(sizeOfSmallCaches);
 
 		Arrays.parallelSetAll(H, _value -> -1);
 	}
@@ -247,7 +250,11 @@ class SimpleUniqueTable implements UniqueTable {
 	public final RestrictCache getRestrictCache() {
 		return restrictCache;
 	}
-	
+
+	public final ComposeCache getComposeCache() {
+		return composeCache;
+	}
+
 	public final ReplaceCache getReplaceCache() {
 		return replaceCache;
 	}
